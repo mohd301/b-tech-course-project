@@ -1,0 +1,29 @@
+input::placeholder {
+  color: #7D7D7D;
+  opacity: 0.5;
+}
+
+.form-control::placeholder {
+  color: #7D7D7D;
+  opacity: 0.5;
+}
+
+.primaryButton {
+  background: #A5FF56; 
+  color: black;
+  width: 200px;
+  border-radius: 20px;
+  font-size: 2rem;
+}
+
+.primaryButton:hover {
+  background: #a5ff5677;
+  color: black; 
+  cursor: pointer;
+}
+
+a {
+  color: white;
+  font-weight: 300;
+  text-underline-offset: 5px;
+}
