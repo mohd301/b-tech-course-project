@@ -76,6 +76,10 @@ export default function Register() {
                                         <div className="d-flex align-items-end justify-content-end mt-5">
                                             <Button className="primaryButton" type="submit">Register</Button>
                                         </div>
+
+                                        <div className='text-center' style={{ minHeight: "2rem", color: colors.secondaryColor}}>
+                                            <u>{msg}</u>
+                                        </div>
                                     </CardBody>
                                 ) : (
                                     <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>
