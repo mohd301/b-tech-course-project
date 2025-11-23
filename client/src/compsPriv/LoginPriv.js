@@ -22,7 +22,7 @@ export default function LoginPriv() {
             navigate("/adminPage");
         }
         else if(msg === "Welcome" && type=="Admin"){
-            navigate("/Regulator")
+            navigate("/homere")
         }
     }, [msg, navigate]);
 

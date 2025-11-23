@@ -11,6 +11,7 @@ import Home from "./comps/Home";
 // Priviliged User
 import PrivLogin from "./compsPriv/LoginPriv";
 import AdminHome from "./compsAdmin/HomeAdmin";
+import HomeRegulator from "./compsRegulator/HomeRegulator";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
@@ -27,6 +28,7 @@ function App() {
           <Route path='/regUser' element={<Register />}></Route>
           <Route path='/logPriv' element={<PrivLogin />}></Route>
           <Route path='/homeAdmin' element={<AdminHome />}></Route>
+          <Route path='/homere' element={<HomeRegulator />}></Route>
           <Route path="/Home" element={<Home/>}></Route>
         </Routes>
       </BrowserRouter>
