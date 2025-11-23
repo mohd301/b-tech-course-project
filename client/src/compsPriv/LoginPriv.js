@@ -19,7 +19,7 @@ export default function LoginPriv() {
 
     useEffect(() => {
         if (msg === "Welcome" && type=="Admin") {
-            navigate("/adminPage");
+            navigate("/homeAdmin");
         }
         else if(msg === "Welcome" && type=="Admin"){
             navigate("/homere")

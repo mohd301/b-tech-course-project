@@ -44,7 +44,8 @@ subsidyApp.post("/addPriv", async (req, res) => {
             const encryptedPassword = await bcrypt.hash(req.body.Password, 10)
             const newPriv = {
                 Email: req.body.Email,
-                Password: encryptedPassword
+                Password: encryptedPassword,
+                Type:req.body.Type
             }
             await PrivUserModel.create(newPriv)
             res.json({ serverMsg: "Privileged user Added Successfully!", flag: true })

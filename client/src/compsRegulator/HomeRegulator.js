@@ -8,7 +8,16 @@ export default function HomeRegulator() {
         <div style={{ background: colors.primaryBackground, height: "80vh" }}>
             <Container fluid>
 
-
+                <Row>
+                    <col xs="2">&nbsp; &nbsp;</col>
+                    <Col xs="6">
+                <Card>
+                    <CardBody>
+                        <h3>Welcome Relulator</h3>
+                    </CardBody>
+                </Card>
+                </Col>
+                </Row>
 
             </Container>
         </div>

@@ -8,6 +8,16 @@ export default function HomeAdmin() {
         <div style={{ background: colors.primaryBackground, height: "80vh" }}>
             <Container fluid>
 
+                <Row>
+                    <col xs="2">&nbsp; &nbsp;</col>
+                    <Col xs="6">
+                <Card>
+                    <CardBody>
+                        <h3>Welcome Admin</h3>
+                    </CardBody>
+                </Card>
+                </Col>
+                </Row>
 
 
             </Container>

@@ -3,7 +3,7 @@ import axios from "axios"
 
 export const adminLoginThunk = createAsyncThunk("adminSlice/adminLoginThunk", async (adminData) => {
     try {
-        const loginAdmin = await axios.post("http://localhost:7500/loginAdmin", adminData)
+        const loginAdmin = await axios.post("http://localhost:7500/loginPriv", adminData)
         return (loginAdmin.data)
     } catch (err) {
         console.log(err)
