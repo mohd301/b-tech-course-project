@@ -15,6 +15,7 @@ export const adminLoginThunk = createAsyncThunk("adminSlice/adminLoginThunk", as
 const initialState = {
     msg: null,
     loading: false,
+    type:""
 }
 
 const adminSlice = createSlice(
@@ -32,6 +33,8 @@ const adminSlice = createSlice(
             builder.addCase(adminLoginThunk.fulfilled, (state, action) => {
                 state.msg = action.payload.serverMsg
                 state.loading = false
+                state.type = action.payload.type
+                
             })
 
             builder.addCase(adminLoginThunk.rejected, (state, action) => {

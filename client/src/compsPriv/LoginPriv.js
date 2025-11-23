@@ -15,10 +15,14 @@ export default function LoginPriv() {
     const loading = useSelector((state) => state.admin.loading)
     const adminLoginDispatch = useDispatch()
     const navigate = useNavigate()
+    const type = useSelector((state)=>state.admin.type)
 
     useEffect(() => {
-        if (msg === "Welcome") {
+        if (msg === "Welcome" && type=="Admin") {
             navigate("/adminPage");
+        }
+        else if(msg === "Welcome" && type=="Admin"){
+            navigate("/Regulator")
         }
     }, [msg, navigate]);
 

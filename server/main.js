@@ -65,7 +65,7 @@ subsidyApp.post("/loginPriv", async (req, res) => {
             if (!matchPassword) {
                 res.json({ serverMsg: "Incorrect Password!", flag: false })
             } else {
-                res.json({ serverMsg: "Welcome", flag: true })
+                res.json({ serverMsg: "Welcome", flag: true,type:privExist.Type })
             }
         }
     } catch (err) {
