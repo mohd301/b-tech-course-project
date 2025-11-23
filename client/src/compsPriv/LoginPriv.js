@@ -21,7 +21,7 @@ export default function LoginPriv() {
         if (msg === "Welcome" && type=="Admin") {
             navigate("/homeAdmin");
         }
-        else if(msg === "Welcome" && type=="Admin"){
+        else if(msg === "Welcome" && type=="Regulator"){
             navigate("/homere")
         }
     }, [msg, navigate]);
@@ -45,7 +45,7 @@ export default function LoginPriv() {
                 <Form >
                     <div className="d-flex justify-content-center align-items-center">
 
-                        <Card style={{ background: colors.secondaryBackground, height: "68vh", width: "50vw", borderRadius: "6vh" }}
+                        <Card style={{ background: colors.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
                             className="mt-4 p-3 ">
 
                             <CardTitle className="text-center" tag='h1' style={{ color: "white" }}>Admin Login</CardTitle>
@@ -55,14 +55,14 @@ export default function LoginPriv() {
 
                                         <FormGroup>
                                             <Label style={{ color: "white" }}>Admin User Name</Label>
-                                            <Input style={{ background: colors.primaryBackground, color: "white", width: "60%" }} name="UserName" placeholder="email@email.com"
+                                            <Input style={{  width: "60%" }} name="UserName" placeholder="email@email.com"
                                                 value={loginId} onChange={(e) => setLoginId(e.target.value)} />
                                         </FormGroup>
 
 
                                         <FormGroup>
                                             <Label style={{ color: "white" }}>Password</Label>
-                                            <Input name="pass" style={{ background: colors.primaryBackground, color: "white", width: "60%" }} placeholder="*******" type="password"
+                                            <Input name="pass" style={{  width: "60%" }} placeholder="*******" type="password"
                                                 value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
                                         </FormGroup>
 
@@ -77,7 +77,9 @@ export default function LoginPriv() {
                                                 <Button onClick={handleAdminLogin} type="button">Login</Button>
                                             </Col>
                                             <Col>
-                                                <Link to="/">User Login</Link>
+                                                <Link  to="/">
+                                                User Login
+                                                </Link>
                                             </Col>
                                         </Row>
                                     </CardFooter>

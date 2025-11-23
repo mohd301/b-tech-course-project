@@ -9,7 +9,7 @@ export default function HomeRegulator() {
             <Container fluid>
 
                 <Row>
-                    <col xs="2">&nbsp; &nbsp;</col>
+                    <Col xs="3">&nbsp; &nbsp;</Col>
                     <Col xs="6">
                 <Card>
                     <CardBody>
