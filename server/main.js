@@ -125,6 +125,15 @@ subsidyApp.get("/getUser", async (req, res) => {
         console.log(err)
     }
 })
+subsidyApp.get("/PrivUser",async(req,res)=>{
+    try{
+        const pUserlist=await PrivUserModel.find()
+        res.json({serverMsg:"Private user list fetched successfully ",data:pUserlist,flag:true})
+    }catch(e){
+        console.log(e)
+    }
+
+})
 
 // Delete User
 subsidyApp.delete("/delUser", async (req, res) => {
