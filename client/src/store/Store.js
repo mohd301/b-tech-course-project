@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "../slices/SliceUser";
-import adminReducer from "../slices/SliceAdmin";
+import privReducer from "../slices/SlicePriv";
 
 const Store = configureStore({
     reducer: { 
         user: userReducer, 
-        admin: adminReducer 
+        priv: privReducer 
     }
 })
 export default Store;
