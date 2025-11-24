@@ -10,6 +10,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import SchemaReg from "../validations/SchemaReg"
 
+import { getUserType } from "../functions/getUserType"
+import { determineRoute } from "../functions/determineRoute"
+
 export default function Register() {
     const msg = useSelector((state) => state.user.msg)
     const loading = useSelector((state) => state.user.loading)
@@ -23,6 +26,12 @@ export default function Register() {
     useEffect(() => {
         if (msg === "Registration Success!") {
             navigate("/");
+        }
+        const localToken = localStorage.getItem("authToken")
+        // Prevent authenticated user from registering
+        if (localToken) {
+            const route = determineRoute(getUserType())
+            navigate(route, { replace: true });
         }
     }, [msg, navigate]);
 
@@ -77,7 +86,7 @@ export default function Register() {
                                             <Button className="primaryButton" type="submit">Register</Button>
                                         </div>
 
-                                        <div className='text-center' style={{ minHeight: "2rem", color: colors.secondaryColor}}>
+                                        <div className='text-center' style={{ minHeight: "2rem", color: colors.secondaryColor }}>
                                             <u>{msg}</u>
                                         </div>
                                     </CardBody>
