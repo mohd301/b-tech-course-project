@@ -2,45 +2,57 @@ import { Container, Form, FormGroup, Label, Row, Col, Card, CardTitle, CardBody,
 import { Link } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect } from "react"
-import { adminLoginThunk } from "../slices/SliceAdmin.js"
+import { privLoginThunk } from "../slices/SlicePriv.js"
 import { useNavigate } from "react-router-dom"
 import { colors } from "../styles/colors.js"
+
+import { getUserType } from "../functions/getUserType"
+import { determineRoute } from "../functions/determineRoute"
 
 export default function LoginPriv() {
 
     const [loginId, setLoginId] = useState("")
     const [loginPwd, setLoginPwd] = useState("")
 
-    const msg = useSelector((state) => state.admin.msg)
-    const loading = useSelector((state) => state.admin.loading)
-    const adminLoginDispatch = useDispatch()
+    const msg = useSelector((state) => state.priv.msg)
+    const token = useSelector((state) => state.priv.token)
+    const loading = useSelector((state) => state.priv.loading)
+    const privLoginDispatch = useDispatch()
     const navigate = useNavigate()
-    const type = useSelector((state)=>state.admin.type)
 
     useEffect(() => {
-        if (msg === "Welcome" && type=="Admin") {
-            navigate("/homeAdmin");
+        if (msg === "Welcome" && token) {
+            localStorage.setItem("authToken", token);
+            const type = getUserType()
+            if (type === "Admin") {
+                navigate("/homeAdmin", { replace: true });
+            } else if (type === "Regulator") {
+                navigate("/homeReg", { replace: true })
+            }
         }
-        else if(msg === "Welcome" && type=="Regulator"){
-            navigate("/homere")
+        const localToken = localStorage.getItem("authToken")
+        // Prevent authenticated user from logging in again
+        if (localToken) {
+            const route=determineRoute(getUserType())
+            navigate(route, { replace: true });
         }
-    }, [msg, navigate]);
+    }, [msg, token, navigate]);
 
-    const handleAdminLogin = (e) => {
+    const handlePrivLogin = (e) => {
         try {
             e.preventDefault()
             const loginData = {
                 Email: loginId,
                 Password: loginPwd
             }
-            adminLoginDispatch(adminLoginThunk(loginData))
+            privLoginDispatch(privLoginThunk(loginData))
         } catch (err) {
             console.log(err)
         }
     }
 
     return (
-        <div style={{ background: colors.primaryBackground, height: "80vh" }}>
+        <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
             <Container fluid>
                 <Form >
                     <div className="d-flex justify-content-center align-items-center">
@@ -48,44 +60,39 @@ export default function LoginPriv() {
                         <Card style={{ background: colors.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
                             className="mt-4 p-3 ">
 
-                            <CardTitle className="text-center" tag='h1' style={{ color: "white" }}>Admin Login</CardTitle>
                             {!loading ? (
-                                <>
-                                    <CardBody>
+                                <CardBody>
+                                    <div className="mb-5">
+                                        <h1 className="text-center" style={{ color: "white" }}>Admin / Regulator Login</h1>
+                                    </div>
 
-                                        <FormGroup>
-                                            <Label style={{ color: "white" }}>Admin User Name</Label>
-                                            <Input style={{  width: "60%" }} name="UserName" placeholder="email@email.com"
-                                                value={loginId} onChange={(e) => setLoginId(e.target.value)} />
-                                        </FormGroup>
+                                    <FormGroup>
+                                        <Label tag="h5" style={{ color: "white" }}>Email:</Label>
+                                        <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
+                                            value={loginId} onChange={(e) => setLoginId(e.target.value)} />
+                                    </FormGroup>
 
 
-                                        <FormGroup>
-                                            <Label style={{ color: "white" }}>Password</Label>
-                                            <Input name="pass" style={{  width: "60%" }} placeholder="*******" type="password"
-                                                value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
-                                        </FormGroup>
+                                    <FormGroup>
+                                        <Label tag="h5" style={{ color: "white" }}>Password:</Label>
+                                        <Input name="pass" style={{ width: "45%" }} placeholder="*******" type="password"
+                                            value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
+                                    </FormGroup>
 
-                                        {
-                                            msg ? <div style={{ color: "red" }}>{msg}</div> : null
-                                        }
+                                    <div className="d-flex flex-column gap-4">
+                                        <Link className="form-group" to="/">User Login</Link>
+                                    </div>
 
-                                    </CardBody>
-                                    <CardFooter className="text-center">
-                                        <Row>
-                                            <Col>
-                                                <Button onClick={handleAdminLogin} type="button">Login</Button>
-                                            </Col>
-                                            <Col>
-                                                <Link  to="/">
-                                                User Login
-                                                </Link>
-                                            </Col>
-                                        </Row>
-                                    </CardFooter>
-                                </>
+                                    <div className="d-flex align-items-end justify-content-end mt-5">
+                                        <Button className="primaryButton" onClick={handlePrivLogin}>Login</Button>
+                                    </div>
+
+                                    {
+                                        msg ? <div className="text-center" style={{ color: colors.secondaryColor }}><u>{msg}</u></div> : null
+                                    }
+                                </CardBody>
                             ) : (
-                                <Container fluid className="d-flex justify-content-center align-items-center">
+                                <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>
                                     <Spinner color="light" />
                                 </Container>
                             )
