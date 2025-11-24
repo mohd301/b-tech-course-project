@@ -3,6 +3,7 @@ import cors from "cors"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
 import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
@@ -14,6 +15,8 @@ subsidyApp.use(cors())
 dotenv.config()
 
 const PORT = process.env.PORT;
+const JWT_SECRET = process.env.JWT_SECRET
+const JWT_EXPIRES = "1h"
 
 //Connection to MongoDB
 try {
@@ -45,7 +48,7 @@ subsidyApp.post("/addPriv", async (req, res) => {
             const newPriv = {
                 Email: req.body.Email,
                 Password: encryptedPassword,
-                Type:req.body.Type
+                Type: req.body.Type
             }
             await PrivUserModel.create(newPriv)
             res.json({ serverMsg: "Privileged user Added Successfully!", flag: true })
@@ -66,7 +69,12 @@ subsidyApp.post("/loginPriv", async (req, res) => {
             if (!matchPassword) {
                 res.json({ serverMsg: "Incorrect Password!", flag: false })
             } else {
-                res.json({ serverMsg: "Welcome", flag: true,type:privExist.Type })
+                const token = jwt.sign(
+                    { id: privExist._id, type: privExist.Type },
+                    JWT_SECRET,
+                    { expiresIn: JWT_EXPIRES }
+                )
+                res.json({ serverMsg: "Welcome", flag: true, token })
             }
         }
     } catch (err) {
@@ -107,8 +115,13 @@ subsidyApp.post("/loginUser", async (req, res) => {
             if (!matchPassword) {
                 res.json({ serverMsg: "Incorrect Password!", flag: false })
             } else {
+                const token = jwt.sign(
+                    { id: userExist._id, type: "User" },
+                    JWT_SECRET,
+                    { expiresIn: JWT_EXPIRES }
+                )
                 // Might add user details in future
-                res.json({ serverMsg: "Welcome", user: userExist.Name, flag: true })
+                res.json({ serverMsg: "Welcome", user: userExist.Name, flag: true, token })
             }
         }
     } catch (err) {
@@ -125,11 +138,13 @@ subsidyApp.get("/getUser", async (req, res) => {
         console.log(err)
     }
 })
-subsidyApp.get("/PrivUser",async(req,res)=>{
-    try{
-        const pUserlist=await PrivUserModel.find()
-        res.json({serverMsg:"Private user list fetched successfully ",data:pUserlist,flag:true})
-    }catch(e){
+
+// Get Privileged Users
+subsidyApp.get("/getPrivUser", async (req, res) => {
+    try {
+        const pUserlist = await PrivUserModel.find()
+        res.json({ serverMsg: "Private user list fetched successfully ", data: pUserlist, flag: true })
+    } catch (e) {
         console.log(e)
     }
 
@@ -138,7 +153,7 @@ subsidyApp.get("/PrivUser",async(req,res)=>{
 // Delete User
 subsidyApp.delete("/delUser", async (req, res) => {
     try {
-        await UserModel.deleteOne({Email:req.body.Email})
+        await UserModel.deleteOne({ Email: req.body.Email })
         res.json({ serverMsg: "User Removed", flag: true })
     } catch (err) {
         console.log(err)
