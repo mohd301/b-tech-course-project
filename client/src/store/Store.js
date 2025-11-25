@@ -5,7 +5,7 @@ import privReducer from "../slices/SlicePriv";
 const Store = configureStore({
     reducer: { 
         user: userReducer, 
-        priv: privReducer 
+        priv: privReducer,
     }
 })
 export default Store;

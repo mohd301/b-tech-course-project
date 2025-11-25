@@ -6,7 +6,7 @@ import { getUserType } from "../functions/getUserType";
 
 export default function Logout() {
     const navigate = useNavigate();
-    const logoutDispatch=useDispatch()
+    const logoutDispatch = useDispatch()
 
     const handleLogout = () => {
         const type=getUserType()
