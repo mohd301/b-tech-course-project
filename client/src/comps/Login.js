@@ -1,13 +1,12 @@
 import { Button, Container, Form, Input, Label, Card, CardBody, Spinner } from "reactstrap"
-import { Link, Route } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { colors } from "../styles/colors"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { userLoginThunk } from "../slices/SliceUser"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import { getUserType } from "../functions/getUserType"
-import { determineRoute } from "../functions/determineRoute"
+import { alertAuth } from "../functions/alertAuth"
 
 export default function Login() {
     const [loginId, setLoginId] = useState("")
@@ -18,17 +17,20 @@ export default function Login() {
     const loading = useSelector((state) => state.user.loading)
     const userlogindispatch = useDispatch()
     const navigate = useNavigate()
+    const alertedRef = useRef(false);
 
     useEffect(() => {
         if (msg === "Welcome" && token) {
             localStorage.setItem("authToken", token);
             navigate("/home", { replace: true });
+            return;
         }
         const localToken = localStorage.getItem("authToken")
         // Prevent authenticated user from logging in again
-        if (localToken) {
-            const route=determineRoute(getUserType())
-            navigate(route, { replace: true });
+        if (localToken && !alertedRef.current) {
+            // Prevent multiple alerts
+            alertedRef.current = true;
+            alertAuth(navigate);
         }
     }, [msg, token, navigate]);
 

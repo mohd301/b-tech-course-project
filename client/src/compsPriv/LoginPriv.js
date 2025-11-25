@@ -1,13 +1,13 @@
 import { Container, Form, FormGroup, Label, Row, Col, Card, CardTitle, CardBody, CardFooter, Input, Button, Spinner } from "reactstrap"
 import { Link } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { privLoginThunk } from "../slices/SlicePriv.js"
 import { useNavigate } from "react-router-dom"
 import { colors } from "../styles/colors.js"
 
-import { getUserType } from "../functions/getUserType"
-import { determineRoute } from "../functions/determineRoute"
+import { alertAuth } from "../functions/alertAuth"
+import { getUserType } from "../functions/getUserType.js"
 
 export default function LoginPriv() {
 
@@ -19,6 +19,7 @@ export default function LoginPriv() {
     const loading = useSelector((state) => state.priv.loading)
     const privLoginDispatch = useDispatch()
     const navigate = useNavigate()
+    const alertedRef = useRef(false);
 
     useEffect(() => {
         if (msg === "Welcome" && token) {
@@ -29,12 +30,14 @@ export default function LoginPriv() {
             } else if (type === "Regulator") {
                 navigate("/homeReg", { replace: true })
             }
+            return;
         }
         const localToken = localStorage.getItem("authToken")
         // Prevent authenticated user from logging in again
-        if (localToken) {
-            const route=determineRoute(getUserType())
-            navigate(route, { replace: true });
+        if (localToken && !alertedRef.current) {
+            // Prevent multiple alerts
+            alertedRef.current = true;
+            alertAuth(navigate);
         }
     }, [msg, token, navigate]);
 

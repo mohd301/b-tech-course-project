@@ -1,7 +1,7 @@
 import { Button, Container, Form, Input, Label, Card, Col, Row, CardBody, Spinner } from "reactstrap"
 import { colors } from "../styles/colors"
 import { Link } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { addUserThunk } from "../slices/SliceUser"
@@ -10,14 +10,14 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import SchemaReg from "../validations/SchemaReg"
 
-import { getUserType } from "../functions/getUserType"
-import { determineRoute } from "../functions/determineRoute"
+import { alertAuth } from "../functions/alertAuth"
 
 export default function Register() {
     const msg = useSelector((state) => state.user.msg)
     const loading = useSelector((state) => state.user.loading)
     const addUserDispatch = useDispatch()
     const navigate = useNavigate()
+    const alertedRef = useRef(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: yupResolver(SchemaReg)
@@ -29,9 +29,10 @@ export default function Register() {
         }
         const localToken = localStorage.getItem("authToken")
         // Prevent authenticated user from registering
-        if (localToken) {
-            const route = determineRoute(getUserType())
-            navigate(route, { replace: true });
+        if (localToken && !alertedRef.current) {
+            // Prevent multiple alerts
+            alertedRef.current = true;
+            alertAuth(navigate);
         }
     }, [msg, navigate]);
 
