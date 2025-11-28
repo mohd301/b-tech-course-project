@@ -121,7 +121,7 @@ subsidyApp.post("/loginUser", async (req, res) => {
                     { expiresIn: JWT_EXPIRES }
                 )
                 // Might add user details in future
-                res.json({ serverMsg: "Welcome", user: userExist.Name, flag: true, token })
+                res.json({ serverMsg: "Welcome", user: userExist.Email, flag: true, token })
             }
         }
     } catch (err) {
