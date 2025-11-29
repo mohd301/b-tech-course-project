@@ -7,6 +7,7 @@ import Footer from "./comps/Footer";
 import Header from "./comps/Header";
 import Register from "./comps/Register";
 import Home from "./comps/Home";
+import ChangePwd from "./comps/ChangePwd";
 
 // Priviliged User
 import PrivLogin from "./compsPriv/LoginPriv";
@@ -83,6 +84,7 @@ function App() {
             <Route path='/' element={<Login />}></Route>
             <Route path='/regUser' element={<Register />}></Route>
             <Route path='/logPriv' element={<PrivLogin />}></Route>
+            <Route path='/changePwd' element={<ChangePwd />}></Route>
 
             <Route path='/homeAdmin' element={
               <PrivateRoute allowedRoles={["Admin"]}>

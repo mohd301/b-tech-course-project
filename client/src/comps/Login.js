@@ -72,7 +72,7 @@ export default function Login() {
                                     <br />
 
                                     <div className="d-flex flex-column gap-4">
-                                        <Link className="form-group" to="">Change Password</Link>
+                                        <Link className="form-group" to="changePwd">Change Password</Link>
                                         <Link className="form-group" to="regUser">Register</Link>
                                         <Link className="form-group" to="logPriv">Admin / Regulator</Link>
                                     </div>
