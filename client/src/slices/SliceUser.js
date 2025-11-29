@@ -21,6 +21,16 @@ export const userLoginThunk = createAsyncThunk("sliceUser/userLoginThunk", async
     }
 })
 
+export const userChgPwdThunk = createAsyncThunk("sliceUser/userChgPwdThunk", async (userData) => {
+    try {
+        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/chgPassword`, userData)
+        return (User.data)
+    } catch (err) {
+        console.log(err)
+        return ({ serverMsg: "Server Error" })
+    }
+})
+
 const initialState = {
     user: null,
     msg: null,
@@ -74,6 +84,21 @@ const sliceUser = createSlice(
             })
 
             builder.addCase(userLoginThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
+
+            // Change Password
+            builder.addCase(userChgPwdThunk.pending, (state, action) => {
+                state.loading = true
+            })
+
+            builder.addCase(userChgPwdThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.loading = false
+            })
+
+            builder.addCase(userChgPwdThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.loading = false
             })

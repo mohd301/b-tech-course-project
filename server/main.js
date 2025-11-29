@@ -129,6 +129,31 @@ subsidyApp.post("/loginUser", async (req, res) => {
     }
 })
 
+// Change Password for User
+subsidyApp.put("/chgPassword", async (req, res) => {
+    try {
+        const userEmail = req.body.Email
+        const userExist = await UserModel.findOne({ Email: userEmail })
+        if (!userExist) {
+            res.json({ serverMsg: "User not found !", flag: false })
+        } else {
+            const matchPassword = await bcrypt.compare(req.body.oldPassword, userExist.Password)
+            if (!matchPassword) {
+                res.json({ serverMsg: "Incorrect Password!", flag: false })
+            } else {
+                const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
+                await UserModel.updateOne(
+                    { Email: userEmail },
+                    { Password: encryptedPassword }
+                )
+                res.json({ serverMsg: "Password changed successfully!", flag: true })
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+})
+
 // Get Users
 subsidyApp.get("/getUser", async (req, res) => {
     try {
