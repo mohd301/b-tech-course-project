@@ -37,7 +37,6 @@ export default function Register() {
     }, [msg, navigate]);
 
     const handleRegister = (data) => {
-        console.log(data)
         addUserDispatch(addUserThunk(data))
     }
 
