@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken"
 
 import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
+import otpModel from "./models/OtpModel.js"
+import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
 
 const subsidyApp = new express()
 subsidyApp.use(express.json())
@@ -102,6 +104,38 @@ subsidyApp.post("/addUser", async (req, res) => {
         console.log(err)
     }
 })
+
+// OTP
+// Send OTP 
+subsidyApp.post("/sendOtp", async (req, res) => {
+    const Email = req.body.Email;
+    const userExist = await UserModel.findOne({Email})
+    
+    if(userExist){
+        return res.json({ serverMsg: "Already Registered!", flag: true });
+    }
+
+    const otp = generateOtp();
+    await saveOtp(otpModel, Email, otp);
+    await sendOtpEmail(Email, otp);
+
+    res.json({ serverMsg: "OTP sent!", flag: true });
+});
+
+
+// Verify OTP
+subsidyApp.post("/verifyOtp", async (req, res) => {
+    const Email = req.body.Email;
+    const OTP = req.body.OTP;
+
+    const result = await verifyOtp(otpModel, Email, OTP);
+
+    if (result !== "success") {
+        return res.json({ serverMsg: result, flag: false });
+    }
+
+    res.json({ serverMsg: "OTP verified!", flag: true });
+});
 
 //Login verification
 subsidyApp.post("/loginUser", async (req, res) => {
