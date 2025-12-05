@@ -11,6 +11,26 @@ export const addUserThunk = createAsyncThunk("sliceUser/addUserThunk", async (us
     }
 })
 
+export const sendOtpThunk = createAsyncThunk("sliceUser/sendOtpThunk", async (userData) => {
+    try {
+        const sendOtp = await axios.post(`http://localhost:${process.env.REACT_APP_PORT}/sendOtp`, userData)
+        return (sendOtp.data)
+    } catch (err) {
+        console.log(err)
+        return ({ serverMsg: "Server Error" })
+    }
+})
+
+export const verifyOtpThunk = createAsyncThunk("sliceUser/verifyOtpThunk", async (userData) => {
+    try {
+        const verifyOtp = await axios.post(`http://localhost:${process.env.REACT_APP_PORT}/verifyOtp`, userData)
+        return (verifyOtp.data)
+    } catch (err) {
+        console.log(err)
+        return ({ serverMsg: "Server Error" })
+    }
+})
+
 export const userLoginThunk = createAsyncThunk("sliceUser/userLoginThunk", async (userData) => {
     try {
         const loginUser = await axios.post(`http://localhost:${process.env.REACT_APP_PORT}/loginUser`, userData)
@@ -51,7 +71,10 @@ const sliceUser = createSlice(
             },
             setUserToken: (state, action) => {
                 state.token = action.payload
-            }
+            },
+            setMsg: (state, action) => {
+                state.msg = action.payload
+            },
         },
         extraReducers: (builder) => {
 
@@ -67,6 +90,38 @@ const sliceUser = createSlice(
             })
 
             builder.addCase(addUserThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
+
+            // Send OTP
+            builder.addCase(sendOtpThunk.pending, (state, action) => {
+                state.loading = true
+            })
+
+            builder.addCase(sendOtpThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.loading = false
+
+            })
+
+            builder.addCase(sendOtpThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
+
+            // Verify OTP
+            builder.addCase(verifyOtpThunk.pending, (state, action) => {
+                state.loading = true
+            })
+
+            builder.addCase(verifyOtpThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.loading = false
+
+            })
+
+            builder.addCase(verifyOtpThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.loading = false
             })
@@ -106,5 +161,5 @@ const sliceUser = createSlice(
     }
 )
 
-export const { logoutUser, setUserToken } = sliceUser.actions
+export const { logoutUser, setUserToken, setMsg } = sliceUser.actions
 export default sliceUser.reducer
