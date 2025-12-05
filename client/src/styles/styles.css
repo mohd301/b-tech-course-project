@@ -22,6 +22,25 @@ input::placeholder {
   cursor: pointer;
 }
 
+.mainButton {
+  color: black; 
+  background-color: #A5FF56;
+}
+
+.mainButton:hover {
+  filter: brightness(85%); /* Dynamically reduce brightness */
+}
+
+.secondaryButton {
+  background-color: #FF3333;
+}
+
+.secondaryButton:hover {
+  filter: brightness(85%); 
+}
+
+
+
 a {
   color: white;
   font-weight: 300;

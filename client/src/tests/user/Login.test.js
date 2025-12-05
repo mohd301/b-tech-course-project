@@ -1,7 +1,6 @@
 import { fireEvent, render, screen, waitFor, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
-import { userLoginThunk } from "../../slices/SliceUser";
 import store from "../../store/Store";
 import Login from "../../comps/Login";
 import axios from "axios";
