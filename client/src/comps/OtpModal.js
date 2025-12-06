@@ -11,6 +11,7 @@ export default function OtpModal({ isOpen, toggle, Email }) {
 
     const otpDispatch = useDispatch()
     const loading = useSelector((state) => state.user.loading)
+    const msg = useSelector((state) => state.user.msg)
 
     // Countdown timer
     useEffect(() => {
@@ -65,11 +66,12 @@ export default function OtpModal({ isOpen, toggle, Email }) {
                             {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")} {/* padStart ensures string is 2 chars long. pads with 0s otherwise */}
                         </span>
                     </div>
-                    { expired && <span style={{ color: "red" }}>OTP Expired! close this and try again</span>}
+                    {expired && <span style={{ color: "red" }}>OTP Expired! close this and try again</span>}
                     <ModalFooter>
                         <Button className="secondaryButton" onClick={toggle}>Cancel</Button>
                         <Button className="mainButton" onClick={handleOtp} disabled={expired}>Confirm OTP</Button>
                     </ModalFooter>
+                    {msg === "Invalid OTP" && <div className="text-center" style={{ color: "red" }}>{msg}</div>}
                 </ModalBody>
             ) : (
                 <Container fluid className="d-flex justify-content-center align-items-center">
