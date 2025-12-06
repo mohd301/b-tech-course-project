@@ -1,8 +1,9 @@
-import { Button, Container, Form, Input, Label, Card, CardBody, Spinner } from "reactstrap"
+import { Button, Container, Form, Label, Card, CardBody, Spinner } from "reactstrap"
 import { Link } from "react-router-dom"
 import { colors } from "../styles/colors"
 import { useEffect, useRef } from "react"
 import { userChgPwdThunk } from "../slices/SliceUser"
+import { resetFlag } from "../slices/SliceUser"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
@@ -14,7 +15,7 @@ import { alertAuth } from "../functions/alertAuth"
 
 export default function ChangePwd() {
     const msg = useSelector((state) => state.user.msg)
-    const token = useSelector((state) => state.user.token)
+    const flag = useSelector((state) => state.user.flag)
     const loading = useSelector((state) => state.user.loading)
     const userchgPwdDispatch = useDispatch()
     const navigate = useNavigate()
@@ -25,18 +26,19 @@ export default function ChangePwd() {
     })
 
     useEffect(() => {
-        if (msg === "Password changed successfully!") {
+        if (msg === "Password changed successfully!" && flag) {
+            userchgPwdDispatch(resetFlag())
             navigate("/");
         }
+    }, [msg, userchgPwdDispatch, navigate]);
 
-        const localToken = localStorage.getItem("authToken")
-        // Prevent authenticated user from changing password
+    useEffect(() => {
+        const localToken = localStorage.getItem("authToken");
         if (localToken && !alertedRef.current) {
-            // Prevent multiple alerts
             alertedRef.current = true;
             alertAuth(navigate);
         }
-    }, [msg, navigate]);
+    }, [navigate]);
 
     const handleChgPwd = (data) => {
         try {
@@ -93,7 +95,7 @@ export default function ChangePwd() {
                                     </div>
 
                                     <div className="d-flex align-items-end justify-content-end mt-5">
-                                        <Button className="primaryButton" type="submit" style={{width:"15vw"}}>Change Password</Button>
+                                        <Button className="primaryButton" type="submit" style={{ width: "15vw" }}>Change Password</Button>
                                     </div>
 
                                     {

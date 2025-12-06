@@ -1,4 +1,4 @@
-import { Button, Container, Form, Input, Label, Card, Col, Row, CardBody, Spinner } from "reactstrap"
+import { Button, Container, Form, Label, Card, CardBody, Spinner } from "reactstrap"
 import { colors } from "../styles/colors"
 import { Link } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom"
 
 import { addUserThunk } from "../slices/SliceUser"
 import { sendOtpThunk } from "../slices/SliceUser"
-import { setMsg } from "../slices/SliceUser"
+import { resetFlag } from "../slices/SliceUser"
 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -21,35 +21,41 @@ export default function Register() {
     const [modalOpen, setModalOpen] = useState(false);
 
     const msg = useSelector((state) => state.user.msg)
+    const flag = useSelector((state) => state.user.flag)
     const loading = useSelector((state) => state.user.loading)
     const regUserDispatch = useDispatch()
     const navigate = useNavigate()
     const alertedRef = useRef(false);
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    const { register, handleSubmit, getValues, watch, formState: { errors } } = useForm({
         resolver: yupResolver(SchemaReg)
     })
 
+    const formValues = getValues(); // stable snapshot of form
+
     useEffect(() => {
         if (msg === "Already Registered!") {
-            setModalOpen(false)
+            setModalOpen(false);
         }
+
         if (msg === "OTP verified!") {
-            regUserDispatch(addUserThunk(watch()))
-            setModalOpen(false)
+            regUserDispatch(addUserThunk(formValues));
+            setModalOpen(false);
         }
-        if (msg === "Registration Success!") {
+
+        if (msg === "Registration Success!" && flag) {
+            regUserDispatch(resetFlag());
             navigate("/");
-            setMsg("")
         }
-        const localToken = localStorage.getItem("authToken")
-        // Prevent authenticated user from registering
+    }, [msg, regUserDispatch, navigate]);
+
+    useEffect(() => {
+        const localToken = localStorage.getItem("authToken");
         if (localToken && !alertedRef.current) {
-            // Prevent multiple alerts
             alertedRef.current = true;
             alertAuth(navigate);
         }
-    }, [msg, navigate]);
+    }, [navigate]);
 
     const handleRegister = (data) => {
         regUserDispatch(sendOtpThunk({ Email: data.Email }))

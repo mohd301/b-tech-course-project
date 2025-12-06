@@ -55,6 +55,7 @@ const initialState = {
     user: null,
     msg: null,
     token: null,
+    flag: false,
     loading: false
 }
 
@@ -72,8 +73,8 @@ const sliceUser = createSlice(
             setUserToken: (state, action) => {
                 state.token = action.payload
             },
-            setMsg: (state, action) => {
-                state.msg = action.payload
+            resetFlag: (state) => {
+                state.flag = false
             },
         },
         extraReducers: (builder) => {
@@ -85,6 +86,7 @@ const sliceUser = createSlice(
 
             builder.addCase(addUserThunk.fulfilled, (state, action) => {
                 state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
                 state.loading = false
 
             })
@@ -150,6 +152,7 @@ const sliceUser = createSlice(
 
             builder.addCase(userChgPwdThunk.fulfilled, (state, action) => {
                 state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
                 state.loading = false
             })
 
@@ -161,5 +164,5 @@ const sliceUser = createSlice(
     }
 )
 
-export const { logoutUser, setUserToken, setMsg } = sliceUser.actions
+export const { logoutUser, setUserToken, resetFlag } = sliceUser.actions
 export default sliceUser.reducer
