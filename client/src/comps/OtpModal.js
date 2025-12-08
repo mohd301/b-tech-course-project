@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Label, FormGroup, Button, Spinner, Container } from "reactstrap";
 import { verifyOtpThunk } from "../slices/SliceUser";
+import { colors } from "../styles/colors";
 
 export default function OtpModal({ isOpen, toggle, Email }) {
     const [otp, setOtp] = useState("")
@@ -62,16 +63,16 @@ export default function OtpModal({ isOpen, toggle, Email }) {
 
                     {/* Timer */}
                     <div style={{ marginTop: "1rem" }}>
-                        Time left: <span style={{ color: timeLeft < 60 ? "red" : "black" }}> {/* Turns red when less than 1 minute remaining */}
+                        Time left: <span style={{ color: timeLeft < 60 ? colors.secondaryColor : "black" }}> {/* Turns red when less than 1 minute remaining */}
                             {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")} {/* padStart ensures string is 2 chars long. pads with 0s otherwise */}
                         </span>
                     </div>
-                    {expired && <span style={{ color: "red" }}>OTP Expired! close this and try again</span>}
+                    {expired && <span style={{ color: colors.secondaryColor }}>OTP Expired! close this and try again</span>}
                     <ModalFooter>
                         <Button className="secondaryButton" onClick={toggle}>Cancel</Button>
                         <Button className="mainButton" onClick={handleOtp} disabled={expired}>Confirm OTP</Button>
                     </ModalFooter>
-                    {msg === "Invalid OTP" && <div className="text-center" style={{ color: "red" }}>{msg}</div>}
+                    {msg === "Invalid OTP" && <div className="text-center" style={{ color: colors.secondaryColor }}>{msg}</div>}
                 </ModalBody>
             ) : (
                 <Container fluid className="d-flex justify-content-center align-items-center">
