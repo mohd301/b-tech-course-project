@@ -1,3 +1,8 @@
+body {
+  background-color: #263238;
+  color: #ECEFF1;
+}
+
 input::placeholder {
   color: #7D7D7D;
   opacity: 0.5;
@@ -9,7 +14,7 @@ input::placeholder {
 }
 
 .primaryButton {
-  background: #A5FF56; 
+  background: #66BB6A;
   color: black;
   width: 200px;
   border-radius: 20px;
@@ -17,14 +22,14 @@ input::placeholder {
 }
 
 .primaryButton:hover {
-  background: #a5ff5677;
-  color: black; 
+  background: #66BB6A77;
+  color: black;
   cursor: pointer;
 }
 
 .mainButton {
-  color: black; 
-  background-color: #A5FF56;
+  color: black;
+  background-color: #66BB6A;
 }
 
 .mainButton:hover {
@@ -32,11 +37,11 @@ input::placeholder {
 }
 
 .secondaryButton {
-  background-color: #FF3333;
+  background-color: #EF5350;
 }
 
 .secondaryButton:hover {
-  filter: brightness(85%); 
+  filter: brightness(85%);
 }
 
 
