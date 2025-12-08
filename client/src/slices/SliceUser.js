@@ -74,7 +74,10 @@ const sliceUser = createSlice(
                 state.token = action.payload
             },
             resetFlag: (state) => {
-                state.flag = false
+                state.flag = false;
+            },
+            clearMsg: (state) => {
+                state.msg = null;
             },
         },
         extraReducers: (builder) => {
@@ -164,5 +167,5 @@ const sliceUser = createSlice(
     }
 )
 
-export const { logoutUser, setUserToken, resetFlag } = sliceUser.actions
+export const { logoutUser, setUserToken, resetFlag, clearMsg } = sliceUser.actions
 export default sliceUser.reducer
