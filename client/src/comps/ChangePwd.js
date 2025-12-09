@@ -1,8 +1,7 @@
 import { Button, Container, Form, Label, Card, CardBody, Spinner } from "reactstrap"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import { colors } from "../styles/colors"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { userChgPwdThunk } from "../slices/SliceUser"
 import { resetFlag } from "../slices/SliceUser"
 import { useDispatch, useSelector } from "react-redux"
@@ -13,11 +12,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import SchemaChgPwd from "../validations/SchemaChgPwd"
 
 import { alertAuth } from "../functions/alertAuth"
+import PasswordInput from "../compsMisc/PasswordInput"
 
 export default function ChangePwd() {
-    const [showOldPassword, setShowOldPassword] = useState(false);
-    const [showNewPassword, setShowNewPassword] = useState(false);
-    const [showConfPassword, setShowConfPassword] = useState(false);
     const msg = useSelector((state) => state.user.msg)
     const flag = useSelector((state) => state.user.flag)
     const loading = useSelector((state) => state.user.loading)
@@ -74,85 +71,19 @@ export default function ChangePwd() {
                                     </div>
 
                                     <Label tag="h5" style={{ color: "white" }}>Old Password:</Label>
-                                    <div style={{ position: 'relative', width: '45%' }}>
-                                        <input
-                                            className="form-control"
-                                            style={{ width: "100%" }}
-                                            name="OldPassword"
-                                            placeholder="*******"
-                                            type={showOldPassword ? "text" : "password"}
-                                            {...register('oldPassword')}
-                                        />
-                                        <span
-                                            onClick={() => setShowOldPassword(!showOldPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                cursor: 'pointer',
-                                                color: 'gray'
-                                            }}
-                                        >
-                                            {showOldPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </span>
-                                    </div>
+                                    <PasswordInput register={register} name={"oldPassword"} />
                                     <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
                                         <u>{errors.oldPassword?.message}</u>
                                     </div>
 
                                     <Label tag="h5" style={{ color: "white" }}>New Password:</Label>
-                                    <div style={{ position: 'relative', width: '45%' }}>
-                                        <input
-                                            className="form-control"
-                                            style={{ width: "100%" }}
-                                            name="NewPassword"
-                                            placeholder="*******"
-                                            type={showNewPassword ? "text" : "password"}
-                                            {...register('newPassword')}
-                                        />
-                                        <span
-                                            onClick={() => setShowNewPassword(!showNewPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                cursor: 'pointer',
-                                                color: 'gray'
-                                            }}
-                                        >
-                                            {showNewPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </span>
-                                    </div>
+                                    <PasswordInput register={register} name={"newPassword"} />
                                     <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
                                         <u>{errors.newPassword?.message}</u>
                                     </div>
 
                                     <Label tag="h5" style={{ color: "white" }}>Confirm New Password:</Label>
-                                    <div style={{ position: 'relative', width: '45%' }}>
-                                        <input
-                                            className="form-control"
-                                            style={{ width: "100%" }}
-                                            name="confpwd"
-                                            placeholder="*******"
-                                            type={showConfPassword ? "text" : "password"}
-                                            {...register('confpwd')}
-                                        />
-                                        <span
-                                            onClick={() => setShowConfPassword(!showConfPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                cursor: 'pointer',
-                                                color: 'gray'
-                                            }}
-                                        >
-                                            {showConfPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </span>
-                                    </div>
+                                    <PasswordInput register={register} name={"confpwd"} />
                                     <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
                                         <u>{errors.confpwd?.message}</u>
                                     </div>

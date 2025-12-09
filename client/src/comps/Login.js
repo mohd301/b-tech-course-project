@@ -1,5 +1,4 @@
 import { Button, Container, Form, Input, Label, Card, CardBody, Spinner } from "reactstrap"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import { colors } from "../styles/colors"
 import { useEffect, useState, useRef } from "react"
@@ -9,10 +8,11 @@ import { useNavigate } from "react-router-dom"
 
 import { alertAuth } from "../functions/alertAuth"
 
+import PasswordInput from "../compsMisc/PasswordInput"
+
 export default function Login() {
     const [loginId, setLoginId] = useState("")
     const [loginPwd, setLoginPwd] = useState("")
-    const [showPassword, setShowPassword] = useState(false)
 
     const msg = useSelector((state) => state.user.msg)
     const token = useSelector((state) => state.user.token)
@@ -69,29 +69,7 @@ export default function Login() {
                                     <br />
 
                                     <Label tag="h5" style={{ color: "white" }}>Password:</Label>
-                                    <div style={{ position: 'relative', width: '45%' }}>
-                                        <Input
-                                            name="pass"
-                                            style={{ width: "100%" }}
-                                            placeholder="*******"
-                                            type={showPassword ? "text" : "password"}
-                                            value={loginPwd}
-                                            onChange={(e) => setLoginPwd(e.target.value)}
-                                        />
-                                        <span
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                cursor: 'pointer',
-                                                color: 'gray'
-                                            }}
-                                        >
-                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </span>
-                                    </div>
+                                    <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
                                     <br />
 
                                     <div className="d-flex flex-column gap-4">

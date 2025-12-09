@@ -1,5 +1,4 @@
 import { Button, Container, Form, Label, Card, CardBody, Spinner } from "reactstrap"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
 import { colors } from "../styles/colors"
 import { Link } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
@@ -9,7 +8,6 @@ import { useNavigate } from "react-router-dom"
 import { addUserThunk } from "../slices/SliceUser"
 import { sendOtpThunk } from "../slices/SliceUser"
 import { resetFlag } from "../slices/SliceUser"
-import { clearMsg } from "../slices/SliceUser"
 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -19,10 +17,10 @@ import OtpModal from "./OtpModal"
 
 import { alertAuth } from "../functions/alertAuth"
 
+import PasswordInput from "../compsMisc/PasswordInput"
+
 export default function Register() {
     const [modalOpen, setModalOpen] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfPassword, setShowConfPassword] = useState(false);
 
     const msg = useSelector((state) => state.user.msg)
     const flag = useSelector((state) => state.user.flag)
@@ -35,7 +33,7 @@ export default function Register() {
         resolver: yupResolver(SchemaReg)
     })
 
-    const formValues = getValues(); // stable snapshot of form
+    const formValues = getValues();
 
     useEffect(() => {
         if (msg === "Already Registered!") {
@@ -61,20 +59,7 @@ export default function Register() {
         }
     }, [navigate]);
 
-    // Clear message when component unmounts
-    useEffect(() => {
-        return () => {
-            regUserDispatch(clearMsg());
-        };
-    }, [regUserDispatch]);
-
-    const handleModalToggle = () => {
-        setModalOpen(!modalOpen);
-        // Clear message when modal is closed
-        if (modalOpen) {
-            regUserDispatch(clearMsg());
-        }
-    };
+    const handleModalToggle = () => { setModalOpen(!modalOpen) };
 
     const handleRegister = (data) => {
         regUserDispatch(sendOtpThunk({ Email: data.Email }))
@@ -107,55 +92,13 @@ export default function Register() {
                                     </div>
 
                                     <Label tag="h5" style={{ color: "white" }}>Password</Label>
-                                    <div style={{ position: 'relative', width: '45%' }}>
-                                        <input
-                                            className="form-control"
-                                            style={{ width: "100%" }}
-                                            placeholder="******"
-                                            type={showPassword ? "text" : "password"}
-                                            {...register('Password')}
-                                        />
-                                        <span
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                cursor: 'pointer',
-                                                color: 'gray'
-                                            }}
-                                        >
-                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </span>
-                                    </div>
+                                    <PasswordInput register={register} name={'Password'} />
                                     <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
                                         <u>{errors.Password?.message}</u>
                                     </div>
 
                                     <Label tag="h5" style={{ color: "white" }}>Confirm Password</Label>
-                                    <div style={{ position: 'relative', width: '45%' }}>
-                                        <input
-                                            className="form-control"
-                                            style={{ width: "100%" }}
-                                            placeholder="******"
-                                            type={showConfPassword ? "text" : "password"}
-                                            {...register('confpwd')}
-                                        />
-                                        <span
-                                            onClick={() => setShowConfPassword(!showConfPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                cursor: 'pointer',
-                                                color: 'gray'
-                                            }}
-                                        >
-                                            {showConfPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </span>
-                                    </div>
+                                    <PasswordInput register={register} name={'confpwd'} />
                                     <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
                                         <u>{errors.confpwd?.message}</u>
                                     </div>
