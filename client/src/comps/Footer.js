@@ -5,7 +5,8 @@ export default function Footer(){
     return(
         <>
     
-        <Container fluid style={{background:colors.primaryColor,height:'10vh'}} className="p-4 text-center mt-2">
+        <Container fluid style={{background:colors.primaryColor,height:'10vh'}} className="align-content-center text-center ">
+            
             <Row >
             <Col md="4"><h4 style={{color:"white"}}><u> Contact us </u></h4>
             </Col>
