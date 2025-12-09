@@ -15,7 +15,7 @@ input::placeholder {
 
 .primaryButton {
   background: #66BB6A;
-  color: black;
+  color: white;
   width: 200px;
   border-radius: 20px;
   font-size: 2rem;
@@ -23,12 +23,12 @@ input::placeholder {
 
 .primaryButton:hover {
   background: #66BB6A77;
-  color: black;
+  color: white;
   cursor: pointer;
 }
 
 .mainButton {
-  color: black;
+  color: blwhiteack;
   background-color: #66BB6A;
 }
 
