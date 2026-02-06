@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { privLoginThunk } from "../slices/SlicePriv.js"
 import { useNavigate } from "react-router-dom"
 import { colors } from "../styles/colors.js"
+import { toast } from "react-toastify"
 
 import { alertAuth } from "../functions/alertAuth"
 import { getUserType } from "../functions/getUserType.js"
@@ -17,23 +18,12 @@ export default function LoginPriv() {
     const [loginPwd, setLoginPwd] = useState("")
 
     const msg = useSelector((state) => state.priv.msg)
-    const token = useSelector((state) => state.priv.token)
     const loading = useSelector((state) => state.priv.loading)
     const privLoginDispatch = useDispatch()
     const navigate = useNavigate()
     const alertedRef = useRef(false);
 
     useEffect(() => {
-        if (msg === "Welcome" && token) {
-            localStorage.setItem("authToken", token);
-            const type = getUserType()
-            if (type === "Admin") {
-                navigate("/homeAdmin", { replace: true });
-            } else if (type === "Regulator") {
-                navigate("/homeReg", { replace: true })
-            }
-            return;
-        }
         const localToken = localStorage.getItem("authToken")
         // Prevent authenticated user from logging in again
         if (localToken && !alertedRef.current) {
@@ -41,16 +31,32 @@ export default function LoginPriv() {
             alertedRef.current = true;
             alertAuth(navigate);
         }
-    }, [msg, token, navigate]);
+    }, [navigate]);
 
-    const handlePrivLogin = (e) => {
+    const handlePrivLogin = async (e) => {
         try {
             e.preventDefault()
             const loginData = {
                 Email: loginId,
                 Password: loginPwd
             }
-            privLoginDispatch(privLoginThunk(loginData))
+            const res = await privLoginDispatch(privLoginThunk(loginData)).unwrap()
+            const { serverMsg, token } = res
+            if (serverMsg === "Welcome" && token) {
+                toast.success(serverMsg)
+                localStorage.setItem("authToken", token);
+
+                const type = getUserType()
+                if (type === "Admin") {
+                    navigate("/homeAdmin", { replace: true });
+                } else if (type === "Regulator") {
+                    navigate("/homeReg", { replace: true })
+                }
+                return;
+            } else {
+                toast.error(serverMsg);
+                return;
+            }
         } catch (err) {
             console.log(err)
         }
@@ -91,9 +97,6 @@ export default function LoginPriv() {
                                         <Button className="primaryButton" onClick={handlePrivLogin}>Login</Button>
                                     </div>
 
-                                    {
-                                        msg ? <div className="text-center" style={{ color: colors.secondaryColor }}><u>{msg}</u></div> : null
-                                    }
                                 </CardBody>
                             ) : (
                                 <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 
 import { addUserThunk } from "../slices/SliceUser"
 import { sendOtpThunk } from "../slices/SliceUser"
@@ -36,10 +37,6 @@ export default function Register() {
     const formValues = getValues();
 
     useEffect(() => {
-        if (msg === "Already Registered!") {
-            setModalOpen(false);
-        }
-
         if (msg === "OTP verified!") {
             regUserDispatch(addUserThunk(formValues));
             setModalOpen(false);
@@ -47,6 +44,7 @@ export default function Register() {
 
         if (msg === "Registration Success!" && flag) {
             regUserDispatch(resetFlag());
+            toast.success(msg)
             navigate("/");
         }
     }, [msg, regUserDispatch, navigate]);
@@ -61,9 +59,18 @@ export default function Register() {
 
     const handleModalToggle = () => { setModalOpen(!modalOpen) };
 
-    const handleRegister = (data) => {
-        regUserDispatch(sendOtpThunk({ Email: data.Email }))
-        setModalOpen(true)
+    const handleRegister = async (data) => {
+        try {
+            const res = await regUserDispatch(sendOtpThunk({ Email: data.Email })).unwrap()
+            let serverMsg = res.serverMsg
+            if (serverMsg === "OTP sent!") {
+                setModalOpen(true)
+            } else {
+                toast.error(serverMsg)
+            }
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     return (
@@ -111,9 +118,6 @@ export default function Register() {
                                         <Button className="primaryButton" type="submit">Register</Button>
                                     </div>
 
-                                    <div className='text-center' style={{ minHeight: "2rem", color: colors.secondaryColor }}>
-                                        <u>{msg}</u>
-                                    </div>
                                 </CardBody>
                             ) : (
                                 <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>

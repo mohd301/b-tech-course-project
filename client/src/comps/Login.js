@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react"
 import { userLoginThunk } from "../slices/SliceUser"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 
 import { alertAuth } from "../functions/alertAuth"
 
@@ -15,18 +16,12 @@ export default function Login() {
     const [loginPwd, setLoginPwd] = useState("")
 
     const msg = useSelector((state) => state.user.msg)
-    const token = useSelector((state) => state.user.token)
     const loading = useSelector((state) => state.user.loading)
     const userlogindispatch = useDispatch()
     const navigate = useNavigate()
     const alertedRef = useRef(false);
 
     useEffect(() => {
-        if (msg === "Welcome" && token) {
-            localStorage.setItem("authToken", token);
-            navigate("/home", { replace: true });
-            return;
-        }
         const localToken = localStorage.getItem("authToken")
         // Prevent authenticated user from logging in again
         if (localToken && !alertedRef.current) {
@@ -34,16 +29,26 @@ export default function Login() {
             alertedRef.current = true;
             alertAuth(navigate);
         }
-    }, [msg, token, navigate]);
+    }, [navigate]);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         try {
             e.preventDefault()
             const loginData = {
                 Email: loginId,
                 Password: loginPwd
             }
-            userlogindispatch(userLoginThunk(loginData))
+            const res = await userlogindispatch(userLoginThunk(loginData)).unwrap()
+            const { serverMsg, token } = res
+            if (serverMsg === "Welcome" && token) {
+                toast.success(serverMsg)
+                localStorage.setItem("authToken", token);
+                navigate("/home", { replace: true });
+                return;
+            } else {
+                toast.error(serverMsg);
+                return;
+            }
         } catch (err) {
             console.log(err)
         }
@@ -82,9 +87,6 @@ export default function Login() {
                                         <Button className="primaryButton" onClick={handleLogin}>Login</Button>
                                     </div>
 
-                                    {
-                                        msg ? <div className="text-center" style={{ color: colors.secondaryColor }}><u>{msg}</u></div> : null
-                                    }
                                 </CardBody>
                             ) : (
                                 <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>

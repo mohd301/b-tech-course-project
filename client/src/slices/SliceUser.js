@@ -7,7 +7,7 @@ export const addUserThunk = createAsyncThunk("sliceUser/addUserThunk", async (us
         return (newUser.data)
     } catch (err) {
         console.log(err)
-        return ({ serverMsg: "Server Error" })
+        throw(err)
     }
 })
 
@@ -17,7 +17,7 @@ export const sendOtpThunk = createAsyncThunk("sliceUser/sendOtpThunk", async (us
         return (sendOtp.data)
     } catch (err) {
         console.log(err)
-        return ({ serverMsg: "Server Error" })
+        throw(err)
     }
 })
 
@@ -27,7 +27,7 @@ export const verifyOtpThunk = createAsyncThunk("sliceUser/verifyOtpThunk", async
         return (verifyOtp.data)
     } catch (err) {
         console.log(err)
-        return ({ serverMsg: "Server Error" })
+        throw(err)
     }
 })
 
@@ -37,7 +37,7 @@ export const userLoginThunk = createAsyncThunk("sliceUser/userLoginThunk", async
         return (loginUser.data)
     } catch (err) {
         console.log(err)
-        return ({ serverMsg: "Server Error" })
+        throw(err)
     }
 })
 
@@ -47,7 +47,7 @@ export const userChgPwdThunk = createAsyncThunk("sliceUser/userChgPwdThunk", asy
         return (User.data)
     } catch (err) {
         console.log(err)
-        return ({ serverMsg: "Server Error" })
+        throw(err)
     }
 })
 
@@ -134,6 +134,7 @@ const sliceUser = createSlice(
             // Login check
             builder.addCase(userLoginThunk.pending, (state, action) => {
                 state.loading = true
+                state.msg = null
             })
 
             builder.addCase(userLoginThunk.fulfilled, (state, action) => {
