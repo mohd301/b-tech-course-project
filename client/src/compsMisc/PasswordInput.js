@@ -11,7 +11,8 @@ export default function PasswordInput({
     placeholder = "*******",
     className = "form-control",
     width = "45%",
-    iconColor = "gray"
+    iconColor = "gray",
+    required = false
 }) {
     const [show, setShow] = useState(false);
 
@@ -27,7 +28,10 @@ export default function PasswordInput({
                 // Controlled mode (only when register is NOT used)
                 {...(!register ? { value, onChange } : {})}
 
-                style={{ width: "100%" }}/>
+                style={{ width: "100%" }}
+
+                required={required}
+            />
 
             <span onClick={() => setShow(!show)}
                 style={{
