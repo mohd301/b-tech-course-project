@@ -17,6 +17,7 @@ import HomeRegulator from "./compsRegulator/HomeRegulator";
 import { useEffect, useState, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { ToastContainer } from "react-toastify"
 
 import { getUserType } from "./functions/getUserType";
 import { determineRoute } from "./functions/determineRoute";
@@ -80,6 +81,7 @@ function App() {
       <div className="d-flex flex-column min-vh-100">
         <Header />
         <main className="flex-fill">
+          <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
           <Routes>
             <Route path='/' element={<Login />}></Route>
             <Route path='/regUser' element={<Register />}></Route>
