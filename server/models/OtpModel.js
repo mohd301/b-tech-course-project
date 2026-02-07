@@ -4,7 +4,7 @@ const otpSchema = new mongoose.Schema(
     {
         Email: { type: String, required: true },
         OTP: { type: String, required: true },
-        Expiration: { type: Date, required: true }
+        Expiration: { type: Date, required: true, index: { expires: 0 } }
     },
     {
         versionKey: false

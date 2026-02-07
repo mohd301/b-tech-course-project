@@ -109,9 +109,10 @@ subsidyApp.post("/addUser", async (req, res) => {
 // Send OTP 
 subsidyApp.post("/sendOtp", async (req, res) => {
     const Email = req.body.Email;
-    const userExist = await UserModel.findOne({Email})
-    
-    if(userExist){
+    const use = req.body.use;
+    const userExist = await UserModel.findOne({ Email })
+
+    if (use === "Reg" && userExist) {
         return res.json({ serverMsg: "Already Registered!", flag: true });
     }
 
@@ -127,7 +128,6 @@ subsidyApp.post("/sendOtp", async (req, res) => {
 subsidyApp.post("/verifyOtp", async (req, res) => {
     const Email = req.body.Email;
     const OTP = req.body.OTP;
-
     const result = await verifyOtp(otpModel, Email, OTP);
 
     if (result !== "success") {
@@ -182,6 +182,26 @@ subsidyApp.put("/chgPassword", async (req, res) => {
                 )
                 res.json({ serverMsg: "Password changed successfully!", flag: true })
             }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+})
+
+// Forgot Password for User
+subsidyApp.put("/forgotPassword", async (req, res) => {
+    try {
+        const userEmail = req.body.Email
+        const userExist = await UserModel.findOne({ Email: userEmail })
+        if (!userExist) {
+            res.json({ serverMsg: "User not found !", flag: false })
+        } else {
+            const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
+            await UserModel.updateOne(
+                { Email: userEmail },
+                { Password: encryptedPassword }
+            )
+            res.json({ serverMsg: "Password changed successfully!", flag: true })
         }
     } catch (err) {
         console.log(err)
