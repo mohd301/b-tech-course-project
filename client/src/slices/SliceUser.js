@@ -7,7 +7,7 @@ export const addUserThunk = createAsyncThunk("sliceUser/addUserThunk", async (us
         return (newUser.data)
     } catch (err) {
         console.log(err)
-        throw(err)
+        throw (err)
     }
 })
 
@@ -17,7 +17,7 @@ export const sendOtpThunk = createAsyncThunk("sliceUser/sendOtpThunk", async (us
         return (sendOtp.data)
     } catch (err) {
         console.log(err)
-        throw(err)
+        throw (err)
     }
 })
 
@@ -27,7 +27,7 @@ export const verifyOtpThunk = createAsyncThunk("sliceUser/verifyOtpThunk", async
         return (verifyOtp.data)
     } catch (err) {
         console.log(err)
-        throw(err)
+        throw (err)
     }
 })
 
@@ -37,7 +37,7 @@ export const userLoginThunk = createAsyncThunk("sliceUser/userLoginThunk", async
         return (loginUser.data)
     } catch (err) {
         console.log(err)
-        throw(err)
+        throw (err)
     }
 })
 
@@ -47,7 +47,17 @@ export const userChgPwdThunk = createAsyncThunk("sliceUser/userChgPwdThunk", asy
         return (User.data)
     } catch (err) {
         console.log(err)
-        throw(err)
+        throw (err)
+    }
+})
+
+export const userForgotPwdThunk = createAsyncThunk("sliceUser/userForgotPwdThunk", async (userData) => {
+    try {
+        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/forgotPassword`, userData)
+        return (User.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
     }
 })
 
@@ -85,6 +95,8 @@ const sliceUser = createSlice(
             // Register new user
             builder.addCase(addUserThunk.pending, (state, action) => {
                 state.loading = true
+                state.flag = false
+                state.msg = ""
             })
 
             builder.addCase(addUserThunk.fulfilled, (state, action) => {
@@ -102,6 +114,8 @@ const sliceUser = createSlice(
             // Send OTP
             builder.addCase(sendOtpThunk.pending, (state, action) => {
                 state.loading = true
+                state.flag = false
+                state.msg = ""
             })
 
             builder.addCase(sendOtpThunk.fulfilled, (state, action) => {
@@ -118,6 +132,8 @@ const sliceUser = createSlice(
             // Verify OTP
             builder.addCase(verifyOtpThunk.pending, (state, action) => {
                 state.loading = true
+                state.flag = false
+                state.msg = ""
             })
 
             builder.addCase(verifyOtpThunk.fulfilled, (state, action) => {
@@ -134,7 +150,8 @@ const sliceUser = createSlice(
             // Login check
             builder.addCase(userLoginThunk.pending, (state, action) => {
                 state.loading = true
-                state.msg = null
+                state.flag = false
+                state.msg = ""
             })
 
             builder.addCase(userLoginThunk.fulfilled, (state, action) => {
@@ -152,6 +169,8 @@ const sliceUser = createSlice(
             // Change Password
             builder.addCase(userChgPwdThunk.pending, (state, action) => {
                 state.loading = true
+                state.flag = false
+                state.msg = ""
             })
 
             builder.addCase(userChgPwdThunk.fulfilled, (state, action) => {
@@ -161,6 +180,24 @@ const sliceUser = createSlice(
             })
 
             builder.addCase(userChgPwdThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
+
+            // Forgot Password
+            builder.addCase(userForgotPwdThunk.pending, (state, action) => {
+                state.loading = true
+                state.flag = false
+                state.msg = ""
+            })
+
+            builder.addCase(userForgotPwdThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(userForgotPwdThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.loading = false
             })
