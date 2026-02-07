@@ -63,13 +63,6 @@ export default function ChangePwd() {
                                         <h1 className="text-center" style={{ color: "white" }}>Change Password</h1>
                                     </div>
 
-                                    <Label tag="h5" style={{ color: "white" }}>Email:</Label>
-                                    <input className="form-control" style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
-                                        {...register('Email')} />
-                                    <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
-                                        <u>{errors.Email?.message}</u>
-                                    </div>
-
                                     <Label tag="h5" style={{ color: "white" }}>Old Password:</Label>
                                     <PasswordInput register={register} name={"oldPassword"} />
                                     <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
@@ -96,9 +89,6 @@ export default function ChangePwd() {
                                         <Button className="primaryButton" type="submit" style={{ width: "15vw" }}>Change Password</Button>
                                     </div>
 
-                                    {
-                                        msg ? <div className="text-center" style={{ color: colors.secondaryColor }}><u>{msg}</u></div> : null
-                                    }
                                 </CardBody>
                             ) : (
                                 <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>

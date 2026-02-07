@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
 import { alertAuth } from "../functions/alertAuth"
+import { clearMsg } from "../slices/SliceUser"
 
 import PasswordInput from "../compsMisc/PasswordInput"
 
@@ -22,6 +23,8 @@ export default function Login() {
     const alertedRef = useRef(false);
 
     useEffect(() => {
+        userlogindispatch(clearMsg())
+
         const localToken = localStorage.getItem("authToken")
         // Prevent authenticated user from logging in again
         if (localToken && !alertedRef.current) {
@@ -78,7 +81,7 @@ export default function Login() {
                                     <br />
 
                                     <div className="d-flex flex-column gap-4">
-                                        <Link className="form-group" to="changePwd">Change Password</Link>
+                                        <Link className="form-group" to="forgotPwd">Forgot Password</Link>
                                         <Link className="form-group" to="regUser">Register</Link>
                                         <Link className="form-group" to="logPriv">Admin / Regulator</Link>
                                     </div>

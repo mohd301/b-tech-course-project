@@ -8,7 +8,7 @@ import { toast } from "react-toastify"
 
 import { addUserThunk } from "../slices/SliceUser"
 import { sendOtpThunk } from "../slices/SliceUser"
-import { resetFlag } from "../slices/SliceUser"
+import { clearMsg } from "../slices/SliceUser"
 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -24,7 +24,6 @@ export default function Register() {
     const [modalOpen, setModalOpen] = useState(false);
 
     const msg = useSelector((state) => state.user.msg)
-    const flag = useSelector((state) => state.user.flag)
     const loading = useSelector((state) => state.user.loading)
     const regUserDispatch = useDispatch()
     const navigate = useNavigate()
@@ -42,9 +41,9 @@ export default function Register() {
             setModalOpen(false);
         }
 
-        if (msg === "Registration Success!" && flag) {
-            regUserDispatch(resetFlag());
+        if (msg === "Registration Success!") {
             toast.success(msg)
+            regUserDispatch(clearMsg())
             navigate("/");
         }
     }, [msg, regUserDispatch, navigate]);
@@ -61,8 +60,8 @@ export default function Register() {
 
     const handleRegister = async (data) => {
         try {
-            const res = await regUserDispatch(sendOtpThunk({ Email: data.Email })).unwrap()
-            let serverMsg = res.serverMsg
+            const res = await regUserDispatch(sendOtpThunk({ Email: data.Email, use:"Reg" })).unwrap()
+            const serverMsg = res.serverMsg
             if (serverMsg === "OTP sent!") {
                 setModalOpen(true)
             } else {
