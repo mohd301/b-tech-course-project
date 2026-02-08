@@ -1,4 +1,4 @@
-import { Container, Form, FormGroup, Label, Row, Col, Card, CardTitle, CardBody, CardFooter, Input, Button, Spinner } from "reactstrap"
+import { Container, Form, FormGroup, Label, Row, Col, Card, CardTitle, CardBody, CardFooter, Input, Button } from "reactstrap"
 import { Link } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
@@ -7,10 +7,11 @@ import { useNavigate } from "react-router-dom"
 import { colors } from "../styles/colors.js"
 import { toast } from "react-toastify"
 
-import { alertAuth } from "../functions/alertAuth"
+import { checkAuth } from "../functions/checkAuth.js"
 import { getUserType } from "../functions/getUserType.js"
 
 import PasswordInput from "../compsMisc/PasswordInput.js"
+import CenteredSpinner from "../compsMisc/CentredSpinner.js"
 
 export default function LoginPriv() {
 
@@ -24,13 +25,7 @@ export default function LoginPriv() {
     const alertedRef = useRef(false);
 
     useEffect(() => {
-        const localToken = localStorage.getItem("authToken")
-        // Prevent authenticated user from logging in again
-        if (localToken && !alertedRef.current) {
-            // Prevent multiple alerts
-            alertedRef.current = true;
-            alertAuth(navigate);
-        }
+        checkAuth(alertedRef, navigate)
     }, [navigate]);
 
     const handlePrivLogin = async (e) => {
@@ -64,52 +59,46 @@ export default function LoginPriv() {
 
     return (
         <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
-            <Container fluid>
-                <Form >
-                    <div className="d-flex justify-content-center align-items-center">
+            <Form >
+                <div className="d-flex justify-content-center align-items-center">
 
-                        <Card style={{ background: colors.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
-                            className="mt-4 p-3 ">
+                    <Card style={{ background: colors.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
+                        className="d-flex justify-content-center mt-4 mb-4">
 
-                            {!loading ? (
-                                <CardBody>
-                                    <div className="mb-5">
-                                        <h1 className="text-center" style={{ color: "white" }}>Admin / Regulator Login</h1>
-                                    </div>
+                        {!loading ? (
+                            <CardBody className="p-4">
+                                <div className="mb-5">
+                                    <h1 className="text-center" style={{ color: "white" }}>Admin / Regulator Login</h1>
+                                </div>
 
-                                    <FormGroup>
-                                        <Label tag="h5" style={{ color: "white" }}>Email:</Label>
-                                        <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
-                                            value={loginId} onChange={(e) => setLoginId(e.target.value)} />
-                                    </FormGroup>
+                                <FormGroup>
+                                    <Label tag="h5" style={{ color: "white" }}>Email:</Label>
+                                    <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
+                                        value={loginId} onChange={(e) => setLoginId(e.target.value)} />
+                                </FormGroup>
 
 
-                                    <FormGroup>
-                                        <Label tag="h5" style={{ color: "white" }}>Password:</Label>
-                                        <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
-                                    </FormGroup>
+                                <FormGroup>
+                                    <Label tag="h5" style={{ color: "white" }}>Password:</Label>
+                                    <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
+                                </FormGroup>
 
-                                    <div className="d-flex flex-column gap-4">
-                                        <Link className="form-group" to="/">User Login</Link>
-                                    </div>
+                                <div className="d-flex flex-column gap-4">
+                                    <Link className="form-group" to="/">User Login</Link>
+                                </div>
 
-                                    <div className="d-flex align-items-end justify-content-end mt-5">
-                                        <Button className="primaryButton" onClick={handlePrivLogin}>Login</Button>
-                                    </div>
+                                <div className="d-flex align-items-end justify-content-end mt-5">
+                                    <Button className="primaryButton" onClick={handlePrivLogin}>Login</Button>
+                                </div>
 
-                                </CardBody>
-                            ) : (
-                                <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>
-                                    <Spinner color="light" />
-                                </Container>
-                            )
-                            }
-                        </Card>
-
-                    </div>
-
-                </Form>
-            </Container>
+                            </CardBody>
+                        ) : (
+                            <CenteredSpinner />
+                        )
+                        }
+                    </Card>
+                </div>
+            </Form>
         </div>
     )
 }

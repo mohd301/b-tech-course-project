@@ -7,10 +7,10 @@ import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
-import CenteredSpinner from "../compsMisc/CentredSpinner"
-import { alertAuth } from "../functions/alertAuth"
 import { clearMsg } from "../slices/SliceUser"
+import { checkAuth } from "../functions/checkAuth"
 
+import CenteredSpinner from "../compsMisc/CentredSpinner"
 import PasswordInput from "../compsMisc/PasswordInput"
 
 export default function Login() {
@@ -25,14 +25,7 @@ export default function Login() {
 
     useEffect(() => {
         userlogindispatch(clearMsg())
-
-        const localToken = localStorage.getItem("authToken")
-        // Prevent authenticated user from logging in again
-        if (localToken && !alertedRef.current) {
-            // Prevent multiple alerts
-            alertedRef.current = true;
-            alertAuth(navigate);
-        }
+        checkAuth(alertedRef,navigate)
     }, [navigate]);
 
     const handleLogin = async (e) => {

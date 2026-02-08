@@ -9,7 +9,7 @@ import { toast } from "react-toastify"
 import { addUserThunk } from "../slices/SliceUser"
 import { sendOtpThunk } from "../slices/SliceUser"
 import { clearMsg } from "../slices/SliceUser"
-import { alertAuth } from "../functions/alertAuth"
+import { checkAuth } from "../functions/checkAuth"
 
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -48,11 +48,7 @@ export default function Register() {
     }, [msg, regUserDispatch, navigate]);
 
     useEffect(() => {
-        const localToken = localStorage.getItem("authToken");
-        if (localToken && !alertedRef.current) {
-            alertedRef.current = true;
-            alertAuth(navigate);
-        }
+        checkAuth(alertedRef, navigate)
     }, [navigate]);
 
     const handleModalToggle = () => { setModalOpen(!modalOpen) };
@@ -76,8 +72,8 @@ export default function Register() {
             <Form onSubmit={handleSubmit(handleRegister)}>
                 <div className="d-flex justify-content-center align-items-center">
 
-                    <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }} 
-                    className="d-flex justify-content-center mt-4 mb-4">
+                    <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
+                        className="d-flex justify-content-center mt-4 mb-4">
 
                         {!loading ? (
                             <CardBody className="p-4">
