@@ -1,4 +1,4 @@
-import { Button, Container, Form, Input, Label, Card, CardBody, Spinner } from "reactstrap"
+import { Button, Container, Form, Input, Label, Card, CardBody } from "reactstrap"
 import { Link } from "react-router-dom"
 import { colors } from "../styles/colors"
 import { useEffect, useState, useRef } from "react"
@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
+import CenteredSpinner from "../compsMisc/CentredSpinner"
 import { alertAuth } from "../functions/alertAuth"
 import { clearMsg } from "../slices/SliceUser"
 
@@ -58,52 +59,45 @@ export default function Login() {
     }
     return (
         <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
-            <Container fluid>
-                <Form >
-                    <div className="d-flex justify-content-center align-items-center">
+            <Form >
+                <div className="d-flex justify-content-center align-items-center">
 
-                        <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
-                            className="mt-4 p-3 ">
+                    <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
+                        className="d-flex justify-content-center mt-4 mb-4">
 
-                            {!loading ? (
-                                <CardBody>
-                                    <div className="mb-5">
-                                        <h1 className="text-center" style={{ color: "white" }}>Login</h1>
-                                    </div>
+                        {!loading ? (
+                            <CardBody className="p-4">
+                                <div className="mb-5">
+                                    <h1 className="text-center" style={{ color: "white" }}>Login</h1>
+                                </div>
 
-                                    <Label tag="h5" style={{ color: "white" }}>Email:</Label>
-                                    <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
-                                        value={loginId} onChange={(e) => setLoginId(e.target.value)} />
-                                    <br />
+                                <Label tag="h5" style={{ color: "white" }}>Email:</Label>
+                                <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
+                                    value={loginId} onChange={(e) => setLoginId(e.target.value)} />
+                                <br />
 
-                                    <Label tag="h5" style={{ color: "white" }}>Password:</Label>
-                                    <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
-                                    <br />
+                                <Label tag="h5" style={{ color: "white" }}>Password:</Label>
+                                <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
+                                <br />
 
-                                    <div className="d-flex flex-column gap-4">
-                                        <Link className="form-group" to="forgotPwd">Forgot Password</Link>
-                                        <Link className="form-group" to="regUser">Register</Link>
-                                        <Link className="form-group" to="logPriv">Admin / Regulator</Link>
-                                    </div>
+                                <div className="d-flex flex-column gap-4">
+                                    <Link className="form-group" to="forgotPwd">Forgot Password</Link>
+                                    <Link className="form-group" to="regUser">Register</Link>
+                                    <Link className="form-group" to="logPriv">Admin / Regulator</Link>
+                                </div>
 
-                                    <div className="d-flex align-items-end justify-content-end mt-5">
-                                        <Button className="primaryButton" onClick={handleLogin}>Login</Button>
-                                    </div>
+                                <div className="d-flex align-items-end justify-content-end mt-5">
+                                    <Button className="primaryButton" onClick={handleLogin}>Login</Button>
+                                </div>
 
-                                </CardBody>
-                            ) : (
-                                <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>
-                                    <Spinner color="light" />
-                                </Container>
-                            )
-                            }
+                            </CardBody>
+                        ) : (
+                            <CenteredSpinner />
+                        )}
 
-                        </Card>
-
-                    </div>
-
-                </Form>
-            </Container>
+                    </Card>
+                </div>
+            </Form>
         </div>
     )
 }

@@ -1,7 +1,7 @@
 export const colors = {
   primaryColor: '#66BB6A', 
-  secondaryColor: '#f04a47ff', 
-  tertiaryColor: '#6d6d6dff', 
+  secondaryColor: 'rgb(236, 68, 65)', 
+  tertiaryColor: 'rgb(116, 116, 116)', 
   primaryBackground: '#dfe4e6ff', 
   textColor: '#ECEFF1' 
 };

@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Label, FormGroup, Button, Spinner, Container } from "reactstrap";
+import { Modal, ModalHeader, ModalBody, ModalFooter, Label, FormGroup, Button, Container } from "reactstrap";
+
 import { verifyOtpThunk } from "../slices/SliceUser";
 import { colors } from "../styles/colors";
+
+import CenteredSpinner from "../compsMisc/CentredSpinner";
 
 export default function OtpModal({ isOpen, toggle, Email }) {
     const [otp, setOtp] = useState("")
@@ -75,11 +78,8 @@ export default function OtpModal({ isOpen, toggle, Email }) {
                     {msg === "Invalid OTP" && <div className="text-center" style={{ color: colors.secondaryColor }}>{msg}</div>}
                 </ModalBody>
             ) : (
-                <Container fluid className="d-flex justify-content-center align-items-center">
-                    <Spinner color="light" />
-                </Container>
+                <CenteredSpinner height="10vh" color="primary" />
             )}
         </Modal>
-
     )
 }

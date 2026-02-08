@@ -1,4 +1,4 @@
-import { Button, Container, Form, Label, Card, CardBody, Spinner } from "reactstrap"
+import { Button, Container, Form, Label, Card, CardBody } from "reactstrap"
 import { Link } from "react-router-dom"
 import { colors } from "../styles/colors"
 import { useState, useEffect, useRef } from "react"
@@ -17,6 +17,7 @@ import { userForgotPwdThunk } from "../slices/SliceUser"
 
 import PasswordInput from "../compsMisc/PasswordInput"
 import OtpModal from "./OtpModal"
+import CenteredSpinner from "../compsMisc/CentredSpinner"
 
 export default function ForgotPwd() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -81,15 +82,14 @@ export default function ForgotPwd() {
 
     return (
         <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
-            <Container fluid>
                 <Form onSubmit={msg !== "OTP verified!" ? handleSubmit(handleForgotPwd) : handleSubmit(handleChgPwd)}>
                     <div className="d-flex justify-content-center align-items-center">
 
                         <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
-                            className="mt-4 p-3 ">
+                            className="d-flex justify-content-center mt-4 mb-4">
 
                             {!loading ? (
-                                <CardBody>
+                                <CardBody className="p-4">
                                     <div className="mb-5">
                                         <h1 className="text-center" style={{ color: "white" }}>Forgot Password</h1>
                                     </div>
@@ -97,7 +97,7 @@ export default function ForgotPwd() {
                                     <Label tag="h5" style={{ color: "white" }}>Email:</Label>
                                     <input className="form-control" style={{ width: "45%" }} placeholder="eg@email.com" disabled={msg === "OTP verified!"}
                                         {...register('Email')} />
-                                    <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
+                                    <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.9rem" }}>
                                         <u>{errors.Email?.message}</u>
                                     </div>
 
@@ -106,13 +106,13 @@ export default function ForgotPwd() {
                                             <>
                                                 <Label tag="h5" style={{ color: "white" }}>New Password:</Label>
                                                 <PasswordInput register={register} name={"newPassword"} />
-                                                <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
+                                                <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.9rem" }}>
                                                     <u>{errors.newPassword?.message}</u>
                                                 </div>
 
                                                 <Label tag="h5" style={{ color: "white" }}>Confirm New Password:</Label>
                                                 <PasswordInput register={register} name={"confpwd"} />
-                                                <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.85rem" }}>
+                                                <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.9rem" }}>
                                                     <u>{errors.confpwd?.message}</u>
                                                 </div>
                                             </>)
@@ -128,16 +128,12 @@ export default function ForgotPwd() {
 
                                 </CardBody>
                             ) : (
-                                <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: "68vh" }}>
-                                    <Spinner color="light" />
-                                </Container>
+                                <CenteredSpinner />
                             )
                             }
 
                         </Card>
-
                     </div>
-
                 </Form>
 
                 {/* OTP Modal */}
@@ -146,7 +142,7 @@ export default function ForgotPwd() {
                     toggle={handleModalToggle}
                     Email={watch("Email")}
                 />
-            </Container>
+
         </div >
     )
 }
