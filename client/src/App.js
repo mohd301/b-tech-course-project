@@ -91,8 +91,11 @@ function App() {
             <Route path='/logPriv' element={<PrivLogin />}></Route>
             <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
 
-            { /*Might be removed*/ }
-            <Route path='/changePwd' element={<ChangePwd />}></Route>
+            <Route path='/changePwd' element={
+              <PrivateRoute allowedRoles={["User"]}>
+                <ChangePwd />
+              </PrivateRoute>}>
+            </Route>
 
             <Route path='/homeAdmin' element={
               <PrivateRoute allowedRoles={["Admin"]}>
