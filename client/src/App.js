@@ -21,6 +21,8 @@ import { useEffect, useState, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer } from "react-toastify"
+import { FaMoon } from "react-icons/fa6";
+import { FaSun } from "react-icons/fa6";
 
 import { getUserType } from "./functions/getUserType";
 import { determineRoute } from "./functions/determineRoute";
@@ -30,7 +32,11 @@ import { logoutPriv } from "./slices/SlicePriv";
 import { setUserToken } from "./slices/SliceUser";
 import { setPrivToken } from "./slices/SlicePriv";
 
+import { useTheme } from "./compsMisc/ThemeContext";
+
 function App() {
+  const {toggleTheme, mode} = useTheme();
+
   const alertedRef = useRef(false);
   const [authMsg, setAuthMsg] = useState("");
 
@@ -80,46 +86,50 @@ function App() {
   }, [userToken, privToken, authMsg, dispatch]);
 
   return (
-    <BrowserRouter>
-      <div className="d-flex flex-column min-vh-100">
-        <Header />
-        <main className="flex-fill">
-          <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
-          <Routes>
-            <Route path='/' element={<Login />}></Route>
-            <Route path='/regUser' element={<Register />}></Route>
-            <Route path='/logPriv' element={<PrivLogin />}></Route>
-            <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
+      <BrowserRouter>
+        <div className="d-flex flex-column min-vh-100">
+          <Header />
+          <main className="flex-fill">
+            <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
+            <Routes>
+              <Route path='/' element={<Login />}></Route>
+              <Route path='/regUser' element={<Register />}></Route>
+              <Route path='/logPriv' element={<PrivLogin />}></Route>
+              <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
 
-            <Route path='/changePwd' element={
-              <PrivateRoute allowedRoles={["User"]}>
-                <ChangePwd />
-              </PrivateRoute>}>
-            </Route>
+              <Route path='/changePwd' element={
+                <PrivateRoute allowedRoles={["User"]}>
+                  <ChangePwd />
+                </PrivateRoute>}>
+              </Route>
 
-            <Route path='/homeAdmin' element={
-              <PrivateRoute allowedRoles={["Admin"]}>
-                <HomeAdmin />
-              </PrivateRoute>}>
-            </Route>
+              <Route path='/homeAdmin' element={
+                <PrivateRoute allowedRoles={["Admin"]}>
+                  <HomeAdmin />
+                </PrivateRoute>}>
+              </Route>
 
-            <Route path='/homeReg' element={
-              <PrivateRoute allowedRoles={["Regulator"]}>
-                <HomeRegulator />
-              </PrivateRoute>}>
-            </Route>
+              <Route path='/homeReg' element={
+                <PrivateRoute allowedRoles={["Regulator"]}>
+                  <HomeRegulator />
+                </PrivateRoute>}>
+              </Route>
 
-            <Route path="/home" element={
-              <PrivateRoute allowedRoles={["User"]}>
-                <Home />
-              </PrivateRoute>}>
-            </Route>
-          </Routes>
-        </main>
+              <Route path="/home" element={
+                <PrivateRoute allowedRoles={["User"]}>
+                  <Home />
+                </PrivateRoute>}>
+              </Route>
+            </Routes>
 
-        <Footer />
-      </div>
-    </BrowserRouter>
+            <button className="themeButton" onClick={toggleTheme}>
+              {mode === "light" ? <FaMoon /> : <FaSun />}
+            </button>
+          </main>
+
+          <Footer />
+        </div>
+      </BrowserRouter>
   );
 }
 
