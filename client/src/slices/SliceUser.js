@@ -60,6 +60,15 @@ export const userForgotPwdThunk = createAsyncThunk("sliceUser/userForgotPwdThunk
         throw (err)
     }
 })
+export const userUpdusrThunk = createAsyncThunk("sliceUser/upduser", async (userData) => {
+    try {
+        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/upduser`, userData)
+        return (User.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
 
 const initialState = {
     user: null,
@@ -199,6 +208,21 @@ const sliceUser = createSlice(
 
             builder.addCase(userForgotPwdThunk.rejected, (state, action) => {
                 state.msg = action.error.message
+                state.loading = false
+            })
+            builder.addCase(userUpdusrThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+            builder.addCase(userChgPwdThunk.pending, (state, action) => {
+                state.msg = ""
+                state.flag = false
+                state.loading = true
+            })
+            builder.addCase(userChgPwdThunk.rejected, (state, action) => {
+                state.msg = action.error.serverMsg
+                
                 state.loading = false
             })
         }

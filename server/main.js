@@ -238,3 +238,22 @@ subsidyApp.delete("/delUser", async (req, res) => {
         console.log(err)
     }
 })
+subsidyApp.put("/upduser", async (req,res)=>{
+    try {
+        const userEmail = req.body.Email
+        const userExist = await UserModel.findOne({ Email: userEmail })
+        if (!userExist) {
+            res.json({ serverMsg: "User not found !", flag: false })
+        } else {
+            const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
+            await UserModel.updateOne(
+                { Email: userEmail },
+                { Password: encryptedPassword },
+                {Phone:req.body.newPhone}
+            )
+            res.json({ serverMsg: "Account updated successfully", flag: true })
+        }
+    }catch(e){
+        console.log(e)
+    }
+})
