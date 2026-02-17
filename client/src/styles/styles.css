@@ -57,6 +57,20 @@ input::placeholder {
   cursor: pointer;
 }
 
+.iconButton {
+  background: var(--primaryColor);
+  color: var(--textColorAlt);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.iconButton:hover {
+  filter: brightness(85%);
+}
+
 /* Link Styles */
 
 a {
@@ -79,13 +93,13 @@ a:hover {
   /* change success progress bar color to avoid green on green */
 }
 
-.Toastify__toast{
+.Toastify__toast {
   background: var(--altBackground);
   color: var(--textColorAlt);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
-.Toastify__close-button{
+.Toastify__close-button {
   color: var(--textColorAlt);
   opacity: 0.9;
 }
@@ -103,20 +117,6 @@ input:disabled {
   height: 40px;
   border-radius: 50%;
   background-color: #fff;
-}
-
-.iconButton {
-  background: var(--primaryColor);
-  color: var(--textColorAlt);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 1.6rem;
-  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
-}
-
-.iconButton:hover {
-  filter: brightness(85%);
 }
 
 .showPwd:hover {
