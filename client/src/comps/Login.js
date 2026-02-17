@@ -1,6 +1,5 @@
 import { Button, Container, Form, Input, Label, Card, CardBody } from "reactstrap"
 import { Link } from "react-router-dom"
-import { colors } from "../styles/colors"
 import { useEffect, useState, useRef } from "react"
 import { userLoginThunk } from "../slices/SliceUser"
 import { useDispatch, useSelector } from "react-redux"
@@ -9,11 +8,14 @@ import { toast } from "react-toastify"
 
 import { clearMsg } from "../slices/SliceUser"
 import { checkAuth } from "../functions/checkAuth"
+import { useTheme } from "../compsMisc/ThemeContext"
 
 import CenteredSpinner from "../compsMisc/CentredSpinner"
 import PasswordInput from "../compsMisc/PasswordInput"
 
 export default function Login() {
+    const { theme } = useTheme();
+
     const [loginId, setLoginId] = useState("")
     const [loginPwd, setLoginPwd] = useState("")
 
@@ -25,7 +27,7 @@ export default function Login() {
 
     useEffect(() => {
         userlogindispatch(clearMsg())
-        checkAuth(alertedRef,navigate)
+        checkAuth(alertedRef, navigate)
     }, [navigate]);
 
     const handleLogin = async (e) => {
@@ -51,11 +53,11 @@ export default function Login() {
         }
     }
     return (
-        <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
+        <div style={{ background: theme.primaryBackground, minHeight: "82.1vh" }}>
             <Form >
                 <div className="d-flex justify-content-center align-items-center">
 
-                    <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
+                    <Card style={{ background: theme.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
                         className="d-flex justify-content-center mt-4 mb-4">
 
                         {!loading ? (
@@ -73,10 +75,10 @@ export default function Login() {
                                 <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
                                 <br />
 
-                                <div className="d-flex flex-column gap-4">
-                                    <Link className="form-group" to="forgotPwd">Forgot Password</Link>
-                                    <Link className="form-group" to="regUser">Register</Link>
-                                    <Link className="form-group" to="logPriv">Admin / Regulator</Link>
+                                <div className="d-flex flex-column gap-4" style={{width:"50%"}}>
+                                    <Link to="forgotPwd">Forgot Password</Link>
+                                    <Link to="regUser">Register</Link>
+                                    <Link to="logPriv">Admin / Regulator</Link>
                                 </div>
 
                                 <div className="d-flex align-items-end justify-content-end mt-5">

@@ -1,6 +1,5 @@
 import { Button, Container, Form, Label, Card, CardBody } from "reactstrap"
 import { Link } from "react-router-dom"
-import { colors } from "../styles/colors"
 import { useState, useEffect, useRef } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
@@ -14,12 +13,15 @@ import SchemaEmail from "../validations/SchemaEmail"
 import { sendOtpThunk } from "../slices/SliceUser"
 import { userForgotPwdThunk } from "../slices/SliceUser"
 import { checkAuth } from "../functions/checkAuth"
+import { useTheme } from "../compsMisc/ThemeContext"
 
 import PasswordInput from "../compsMisc/PasswordInput"
 import OtpModal from "./OtpModal"
 import CenteredSpinner from "../compsMisc/CentredSpinner"
 
 export default function ForgotPwd() {
+    const { theme } = useTheme();
+
     const [modalOpen, setModalOpen] = useState(false);
     const handleModalToggle = () => { setModalOpen(!modalOpen) };
 
@@ -77,11 +79,11 @@ export default function ForgotPwd() {
     }
 
     return (
-        <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
+        <div style={{ background: theme.primaryBackground, minHeight: "80vh" }}>
             <Form onSubmit={msg !== "OTP verified!" ? handleSubmit(handleForgotPwd) : handleSubmit(handleChgPwd)}>
                 <div className="d-flex justify-content-center align-items-center">
 
-                    <Card style={{ background: colors.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
+                    <Card style={{ background: theme.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
                         className="d-flex justify-content-center mt-4 mb-4">
 
                         {!loading ? (
@@ -93,7 +95,7 @@ export default function ForgotPwd() {
                                 <Label tag="h5" style={{ color: "white" }}>Email:</Label>
                                 <input className="form-control" style={{ width: "45%" }} placeholder="eg@email.com" disabled={msg === "OTP verified!"}
                                     {...register('Email')} />
-                                <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.9rem" }}>
+                                <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
                                     <u>{errors.Email?.message}</u>
                                 </div>
 
@@ -102,19 +104,19 @@ export default function ForgotPwd() {
                                         <>
                                             <Label tag="h5" style={{ color: "white" }}>New Password:</Label>
                                             <PasswordInput register={register} name={"newPassword"} />
-                                            <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.9rem" }}>
+                                            <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
                                                 <u>{errors.newPassword?.message}</u>
                                             </div>
 
                                             <Label tag="h5" style={{ color: "white" }}>Confirm New Password:</Label>
                                             <PasswordInput register={register} name={"confpwd"} />
-                                            <div style={{ minHeight: "2rem", color: colors.secondaryColor, fontSize: "0.9rem" }}>
+                                            <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
                                                 <u>{errors.confpwd?.message}</u>
                                             </div>
                                         </>)
                                 }
 
-                                <div className="d-flex flex-column gap-4">
+                                <div className="d-flex flex-column" style={{width:"50%"}}>
                                     <Link className="form-group" to="/">Login</Link>
                                 </div>
 

@@ -42,7 +42,7 @@ export default function PasswordInput({
                     cursor: "pointer",
                     color: iconColor
                 }}>
-                {show ? <FaEyeSlash /> : <FaEye />}
+                {show ? <FaEyeSlash className="showPwd" /> : <FaEye className="showPwd" />}
             </span>
         </div>
     );

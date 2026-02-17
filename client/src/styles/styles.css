@@ -1,6 +1,6 @@
 body {
-  background-color: #dfe4e6ff;
-  color: #000000;
+  background-color: var(--primaryBackground);
+  color: var(--textColor);
 }
 
 input::placeholder {
@@ -13,56 +13,87 @@ input::placeholder {
   opacity: 0.5;
 }
 
+/* Button Styles */
 .primaryButton {
-  background: #66BB6A;
+  background: var(--primaryColor);
   color: white;
   width: 200px;
   border-radius: 20px;
   font-size: 2rem;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .primaryButton:hover {
+  background: var(--primaryColor);
   filter: brightness(85%);
-  color: white;
+  transform: scale(1.05);
+  transition: transform 0.2s ease, color 0.2s ease;
   cursor: pointer;
 }
 
 .mainButton {
-  color: blwhiteack;
-  background-color: #66BB6A;
+  background-color: var(--primaryColor);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .mainButton:hover {
+  background-color: var(--primaryColor);
   filter: brightness(85%);
-  /* Dynamically reduce brightness */
+  transform: scale(1.05);
+  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
 }
 
 .secondaryButton {
-  background-color: #EF5350;
+  background-color: var(--secondaryColor);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .secondaryButton:hover {
+  background-color: var(--secondaryColor);
   filter: brightness(85%);
+  transform: scale(1.05);
+  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
 }
+
+/* Link Styles */
 
 a {
   color: white;
   font-weight: 300;
   text-underline-offset: 5px;
+  transform-origin: center center;
 }
+
+a:hover {
+  color: white;
+  transition: transform 0.2s ease, color 0.2s ease;
+  transform: scale(1.05);
+}
+
+/* Toastify Custom Styles */
 
 .Toastify__progress-bar--success {
   background: #1fcfb2;
   /* change success progress bar color to avoid green on green */
 }
 
+.Toastify__toast{
+  background: var(--altBackground);
+  color: var(--textColorAlt);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.Toastify__close-button{
+  color: var(--textColorAlt);
+  opacity: 0.9;
+}
+
 input:disabled {
   background-color: #dad9d9 !important;
-  /* light grey background */
   color: #2e2e2e;
-  /* muted text */
   opacity: 1;
-  /* keep text readable */
   cursor: not-allowed;
 }
 
@@ -75,8 +106,8 @@ input:disabled {
 }
 
 .iconButton {
-  background: #66BB6A;
-  color: black;
+  background: var(--primaryColor);
+  color: var(--textColorAlt);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -88,6 +119,12 @@ input:disabled {
   filter: brightness(85%);
 }
 
+.showPwd:hover {
+  filter: brightness(85%);
+  transform: scale(1.1);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
 /* CSS Classes for User Profile */
 .profileMenu {
   position: relative;
@@ -97,10 +134,10 @@ input:disabled {
 .dropdownMenu {
   position: absolute;
   top: 110%;
-  background: white;
+  background: var(--tertiaryColor);
   min-width: 160px;
   border-radius: 8px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
   opacity: 0;
   visibility: hidden;
@@ -118,7 +155,8 @@ input:disabled {
 }
 
 .dropdownMenu a:hover {
-  background: #f5f5f5;
+  filter: brightness(150%);
+  transform: scale(105%);
 }
 
 /* Show menu on hover */
@@ -126,4 +164,54 @@ input:disabled {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+.themeButton {
+  position: fixed;
+  bottom: 10vh;
+  /* distance from bottom */
+  left: 20px;
+  /* distance from right */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  /* makes it a circle */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--primaryColor);
+  color: var(--textColorAlt);
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.themeButton:hover {
+  transform: scale(1.05);
+  filter: brightness(85%);
+}
+
+/* Modal Styles */
+
+.modal {
+  background-color: rgba(0, 0, 0, 0.205);
+  border-radius: 12px;
+  border: none;
+}
+
+.modal-content {
+  background-color: var(--altBackground);
+  color: var(--textColorAlt);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--textColorAlt);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--textColorAlt);
 }

@@ -4,16 +4,17 @@ import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
 import { privLoginThunk } from "../slices/SlicePriv.js"
 import { useNavigate } from "react-router-dom"
-import { colors } from "../styles/colors.js"
 import { toast } from "react-toastify"
 
 import { checkAuth } from "../functions/checkAuth.js"
 import { getUserType } from "../functions/getUserType.js"
+import { useTheme } from "../compsMisc/ThemeContext.js"
 
 import PasswordInput from "../compsMisc/PasswordInput.js"
 import CenteredSpinner from "../compsMisc/CentredSpinner.js"
 
 export default function LoginPriv() {
+    const { theme } = useTheme();
 
     const [loginId, setLoginId] = useState("")
     const [loginPwd, setLoginPwd] = useState("")
@@ -58,11 +59,11 @@ export default function LoginPriv() {
     }
 
     return (
-        <div style={{ background: colors.primaryBackground, minHeight: "80vh" }}>
+        <div style={{ background: theme.primaryBackground, minHeight: "80vh" }}>
             <Form >
                 <div className="d-flex justify-content-center align-items-center">
 
-                    <Card style={{ background: colors.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
+                    <Card style={{ background: theme.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
                         className="d-flex justify-content-center mt-4 mb-4">
 
                         {!loading ? (
@@ -83,7 +84,7 @@ export default function LoginPriv() {
                                     <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
                                 </FormGroup>
 
-                                <div className="d-flex flex-column gap-4">
+                                <div className="d-flex flex-column" style={{ width: "50%" }}>
                                     <Link className="form-group" to="/">User Login</Link>
                                 </div>
 
