@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken"
 import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
 import otpModel from "./models/OtpModel.js"
+import MLmodel from "./models/MlModel.js"
 import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
 
 const subsidyApp = new express()
@@ -256,4 +257,13 @@ subsidyApp.put("/upduser", async (req,res)=>{
     }catch(e){
         console.log(e)
     }
+})
+subsidyApp.post("/moreinfo", async (req,res)=>{
+    try{
+        const userEmail=req.body.Email
+        const userExist = UserModel.findOne({Email:userEmail})
+        if(userExist){
+            
+        }
+    }catch(e){}
 })
