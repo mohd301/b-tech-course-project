@@ -279,3 +279,19 @@ subsidyApp.post("/addmoreinfo", async (req,res)=>{
         console.log(e)
     }
 })
+subsidyApp.put("/updmoreinfo",async (req,res)=>{
+    try{
+    const userEmail=req.body.Email
+    const docexist=MLmodel.findOne({Email:userEmail})
+    if(docexist){
+        MLmodel.findOneandUpdate({Email:userEmail},{$set:{NID:req.body.NID,
+            Vehicle_Ownership:req.body.Vehicle_Ownership,
+            Cylinder_Count:req.body.Cylinder_Count}})
+        res.json({serverMsg:"Updated data!",flag:true})
+
+    }else{
+        res.json({serverMsg:"no data found for this user",flag:false})
+    }}catch(e){
+        console.log(e)
+    }
+})
