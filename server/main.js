@@ -239,6 +239,7 @@ subsidyApp.delete("/delUser", async (req, res) => {
         console.log(err)
     }
 })
+// Update user
 subsidyApp.put("/upduser", async (req,res)=>{
     try {
         const userEmail = req.body.Email
@@ -258,6 +259,7 @@ subsidyApp.put("/upduser", async (req,res)=>{
         console.log(e)
     }
 })
+//Add additon info
 subsidyApp.post("/addmoreinfo", async (req,res)=>{
     try{
         const userEmail=req.body.Email
@@ -279,6 +281,7 @@ subsidyApp.post("/addmoreinfo", async (req,res)=>{
         console.log(e)
     }
 })
+//Update additon info
 subsidyApp.put("/updmoreinfo",async (req,res)=>{
     try{
     const userEmail=req.body.Email
@@ -292,6 +295,45 @@ subsidyApp.put("/updmoreinfo",async (req,res)=>{
     }else{
         res.json({serverMsg:"no data found for this user",flag:false})
     }}catch(e){
+        console.log(e)
+    }
+})
+// Delete additon info
+subsidyApp.delete("/delmoreinfo",async(req,res)=>{
+    try{
+        const userEmail=req.body.Email
+        const docexist=MLmodel.findOne({Email:userEmail})
+        if (docexist){
+            await MLmodel.deleteOne({Email:userEmail})
+            res.json({serverMsg:"Deleted!",flag:true})
+
+        }else{
+            res.json({serverMsg:"Error not found",flag:false})
+        }
+    }catch(e){
+        console.log(e)
+    }
+})
+// view additon info
+subsidyApp.get("/viewmoreinfo",async(req,res)=>{
+    try{
+        const datalist = MLmodel.find()
+        res.json({serverMsg:"all data retived",data:datalist,flag:true})
+    }catch(e){
+        console.log(e)
+    }
+})
+// Search additon info
+subsidyApp.get("/findmoreinfo",async(req,res)=>{
+    try{
+        const userEmail=req.body.Email
+        const docexist = findOne({Email:userEmail})
+        if(docexist){
+            res.json({serverMsg:"data fount",data:docexist,flag:true})
+        }else{
+            res,json({serverMsg:"data not found",flag:false})
+        }
+    }catch(e){
         console.log(e)
     }
 })
