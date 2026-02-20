@@ -258,12 +258,24 @@ subsidyApp.put("/upduser", async (req,res)=>{
         console.log(e)
     }
 })
-subsidyApp.post("/moreinfo", async (req,res)=>{
+subsidyApp.post("/addmoreinfo", async (req,res)=>{
     try{
         const userEmail=req.body.Email
         const userExist = UserModel.findOne({Email:userEmail})
         if(userExist){
-            
+            const newinfo={
+                Email:req.body.Email,
+                NID:req.body.usernid,
+                Vehicle_Ownership:req.body.Vehicle_Ownership,
+                Cylinder_Count:req.body.Cylinder_Count,
+            }
+            await MLmodel.create(newinfo)
+            res.json({serverMsg:"New data added!",flag:true})
+
+        }else{
+            res.json({serverMsg:"user not found!",flag:false})
         }
-    }catch(e){}
+    }catch(e){
+        console.log(e)
+    }
 })
