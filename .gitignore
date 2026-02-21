@@ -1,7 +1,9 @@
-# Claude Code
+# IDE and local tool config
 .mcp.json
-CLAUDE.md
 
-# Local planning and notes (not for repo)
+# Local notes (not for repo)
 plan.md
+fullplan.md
+designplan.md
 CHANGES.md
+CLAUDE.md
