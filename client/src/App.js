@@ -1,136 +1,111 @@
-import "bootstrap/dist/css/bootstrap.css";
-import "./styles/styles.css";
+import { Toaster } from "sonner"
+import { TooltipProvider } from "./components/ui/tooltip.jsx"
+
+// Layouts
+import AuthLayout from "./layouts/AuthLayout"
+import MainLayout from "./layouts/MainLayout"
+
+// Auth
+import Login from "./components/auth/Login.jsx"
+import Register from "./components/auth/Register.jsx"
+import ForgotPwd from "./components/auth/ForgotPwd.jsx"
+import LoginPriv from "./components/auth/LoginPriv.jsx"
 
 // User
-import Login from "./comps/Login";
-import Footer from "./comps/Footer";
-import Header from "./comps/Header";
-import Register from "./comps/Register";
-import Home from "./comps/Home";
-import ForgotPwd from "./comps/ForgotPwd"
+import UserHome from "./components/user/UserHome.jsx"
 
-// Might be removed
-import ChangePwd from "./comps/ChangePwd";
+// Privileged
+import AdminHome from "./components/admin/AdminHome.jsx"
+import RegulatorHome from "./components/regulator/RegulatorHome.jsx"
 
-// Priviliged User
-import PrivLogin from "./compsPriv/LoginPriv";
-import HomeAdmin from "./compsAdmin/HomeAdmin";
-import HomeRegulator from "./compsRegulator/HomeRegulator";
+import { useEffect, useRef, useState } from "react"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
 
-import { useEffect, useState, useRef } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { ToastContainer } from "react-toastify"
-import { FaMoon } from "react-icons/fa6";
-import { FaSun } from "react-icons/fa6";
+import { getUserType } from "./functions/getUserType"
+import { determineRoute } from "./functions/determineRoute"
 
-import { getUserType } from "./functions/getUserType";
-import { determineRoute } from "./functions/determineRoute";
-
-import { logoutUser } from "./slices/SliceUser";
-import { logoutPriv } from "./slices/SlicePriv";
-import { setUserToken } from "./slices/SliceUser";
-import { setPrivToken } from "./slices/SlicePriv";
-
-import { useTheme } from "./compsMisc/ThemeContext";
+import { logoutUser, setUserToken } from "./slices/SliceUser"
+import { logoutPriv, setPrivToken } from "./slices/SlicePriv"
 
 function App() {
-  const {toggleTheme, mode} = useTheme();
+  const alertedRef = useRef(false)
+  const [authMsg, setAuthMsg] = useState("")
 
-  const alertedRef = useRef(false);
-  const [authMsg, setAuthMsg] = useState("");
-
-  // Protect routes to prevent unauthorised access
   function PrivateRoute({ children, allowedRoles }) {
-    let route = "";
-    const type = getUserType();
-
+    const type = getUserType()
     if (!allowedRoles.includes(type)) {
-      setAuthMsg("Unauthorized access");
-      route = determineRoute(type);
-      return <Navigate to={route} />
+      setAuthMsg("Unauthorized access")
+      return <Navigate to={determineRoute(type)} />
     }
-
-    // Only return children when user is of authorized type
-    return children;
+    return children
   }
 
-  const userToken = useSelector((state) => state.user.token);
-  const privToken = useSelector((state) => state.priv.token);
-  const dispatch = useDispatch();
+  const userToken = useSelector((state) => state.user.token)
+  const privToken = useSelector((state) => state.priv.token)
+  const dispatch = useDispatch()
 
   useEffect(() => {
-    const localToken = localStorage.getItem("authToken");
-    const type = getUserType();
+    const localToken = localStorage.getItem("authToken")
+    const type = getUserType()
 
     if (authMsg === "Unauthorized access" && !alertedRef.current) {
-      alertedRef.current = true;
-      alert(authMsg);
+      alertedRef.current = true
+      alert(authMsg)
     }
 
-    if (!type) return; // no valid token
+    if (!type) return
 
-    // If token exists but redux is empty then fill redux
     if ((type === "Admin" || type === "Regulator") && !privToken && localToken) {
-      dispatch(setPrivToken(localToken));
-    } else if ((type === "Admin" || type === "Regulator") && privToken && !localToken) { // If no token but redux has value then reset redux
-      dispatch(logoutPriv());
+      dispatch(setPrivToken(localToken))
+    } else if ((type === "Admin" || type === "Regulator") && privToken && !localToken) {
+      dispatch(logoutPriv())
     }
 
-    // same logic but for user
     if (type === "User" && !userToken && localToken) {
-      dispatch(setUserToken(localToken));
+      dispatch(setUserToken(localToken))
     } else if (type === "User" && userToken && !localToken) {
-      dispatch(logoutUser());
+      dispatch(logoutUser())
     }
-  }, [userToken, privToken, authMsg, dispatch]);
+  }, [userToken, privToken, authMsg, dispatch])
 
   return (
-      <BrowserRouter>
-        <div className="d-flex flex-column min-vh-100">
-          <Header />
-          <main className="flex-fill">
-            <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
-            <Routes>
-              <Route path='/' element={<Login />}></Route>
-              <Route path='/regUser' element={<Register />}></Route>
-              <Route path='/logPriv' element={<PrivLogin />}></Route>
-              <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
+    <BrowserRouter>
+      <TooltipProvider>
+      <div className="min-h-screen">
+        <Toaster position="top-right" richColors />
+        <Routes>
+          {/* Auth routes */}
+          <Route path="/" element={<AuthLayout><Login /></AuthLayout>} />
+          <Route path="/regUser" element={<AuthLayout><Register /></AuthLayout>} />
+          <Route path="/logPriv" element={<AuthLayout><LoginPriv /></AuthLayout>} />
+          <Route path="/forgotPwd" element={<AuthLayout><ForgotPwd /></AuthLayout>} />
 
-              <Route path='/changePwd' element={
-                <PrivateRoute allowedRoles={["User"]}>
-                  <ChangePwd />
-                </PrivateRoute>}>
-              </Route>
+          {/* User routes */}
+          <Route path="/home" element={
+            <PrivateRoute allowedRoles={["User"]}>
+              <MainLayout><UserHome /></MainLayout>
+            </PrivateRoute>
+          } />
 
-              <Route path='/homeAdmin' element={
-                <PrivateRoute allowedRoles={["Admin"]}>
-                  <HomeAdmin />
-                </PrivateRoute>}>
-              </Route>
+          {/* Admin routes */}
+          <Route path="/homeAdmin" element={
+            <PrivateRoute allowedRoles={["Admin"]}>
+              <MainLayout><AdminHome /></MainLayout>
+            </PrivateRoute>
+          } />
 
-              <Route path='/homeReg' element={
-                <PrivateRoute allowedRoles={["Regulator"]}>
-                  <HomeRegulator />
-                </PrivateRoute>}>
-              </Route>
-
-              <Route path="/home" element={
-                <PrivateRoute allowedRoles={["User"]}>
-                  <Home />
-                </PrivateRoute>}>
-              </Route>
-            </Routes>
-
-            <button className="themeButton" onClick={toggleTheme}>
-              {mode === "light" ? <FaMoon /> : <FaSun />}
-            </button>
-          </main>
-
-          <Footer />
-        </div>
-      </BrowserRouter>
-  );
+          {/* Regulator routes */}
+          <Route path="/homeReg" element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <MainLayout><RegulatorHome /></MainLayout>
+            </PrivateRoute>
+          } />
+        </Routes>
+      </div>
+      </TooltipProvider>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App

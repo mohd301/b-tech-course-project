@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Eye, EyeOff } from "lucide-react";
 
 // Standardized password input component (all in one place)
 export default function PasswordInput({
@@ -42,7 +42,7 @@ export default function PasswordInput({
                     cursor: "pointer",
                     color: iconColor
                 }}>
-                {show ? <FaEyeSlash className="showPwd" /> : <FaEye className="showPwd" />}
+                {show ? <EyeOff className="showPwd" /> : <Eye className="showPwd" />}
             </span>
         </div>
     );

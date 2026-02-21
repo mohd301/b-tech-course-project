@@ -70,12 +70,62 @@ export const userUpdusrThunk = createAsyncThunk("sliceUser/upduser", async (user
     }
 })
 
+export const addMoreInfoThunk = createAsyncThunk("sliceUser/addMoreInfo", async (data) => {
+    try {
+        const result = await axios.post(`http://localhost:${process.env.REACT_APP_PORT}/addmoreinfo`, data, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+        })
+        return (result.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
+export const updateMoreInfoThunk = createAsyncThunk("sliceUser/updateMoreInfo", async (data) => {
+    try {
+        const result = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/updmoreinfo`, data, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+        })
+        return (result.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
+export const getMoreInfoThunk = createAsyncThunk("sliceUser/getMoreInfo", async () => {
+    try {
+        const result = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/findmoreinfo`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+        })
+        return (result.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
+export const deleteMoreInfoThunk = createAsyncThunk("sliceUser/deleteMoreInfo", async () => {
+    try {
+        const result = await axios.delete(`http://localhost:${process.env.REACT_APP_PORT}/delmoreinfo`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+        })
+        return (result.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
 const initialState = {
     user: null,
     msg: null,
     token: null,
     flag: false,
-    loading: false
+    loading: false,
+    moreInfo: null,
+    eligibilityResult: null
 }
 
 const sliceUser = createSlice(
@@ -98,6 +148,12 @@ const sliceUser = createSlice(
             clearMsg: (state) => {
                 state.msg = null;
             },
+            clearMoreInfo: (state) => {
+                state.moreInfo = null;
+            },
+            setEligibilityResult: (state, action) => {
+                state.eligibilityResult = action.payload;
+            }
         },
         extraReducers: (builder) => {
 
@@ -215,9 +271,66 @@ const sliceUser = createSlice(
                 state.flag = action.payload.flag
                 state.loading = false
             })
+
+            // Add More Info
+            builder.addCase(addMoreInfoThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+            builder.addCase(addMoreInfoThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.moreInfo = action.payload.data
+                state.loading = false
+            })
+            builder.addCase(addMoreInfoThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
+
+            // Update More Info
+            builder.addCase(updateMoreInfoThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+            builder.addCase(updateMoreInfoThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.moreInfo = action.payload.data
+                state.loading = false
+            })
+            builder.addCase(updateMoreInfoThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
+
+            // Get More Info
+            builder.addCase(getMoreInfoThunk.pending, (state) => {
+                state.loading = true
+            })
+            builder.addCase(getMoreInfoThunk.fulfilled, (state, action) => {
+                state.moreInfo = action.payload.data
+                state.loading = false
+            })
+            builder.addCase(getMoreInfoThunk.rejected, (state) => {
+                state.loading = false
+            })
+
+            // Delete More Info
+            builder.addCase(deleteMoreInfoThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+            builder.addCase(deleteMoreInfoThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.moreInfo = null
+                state.loading = false
+            })
+            builder.addCase(deleteMoreInfoThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
+            })
         }
     }
 )
 
-export const { logoutUser, setUserToken, resetFlag, clearMsg } = sliceUser.actions
+export const { logoutUser, setUserToken, resetFlag, clearMsg, clearMoreInfo, setEligibilityResult } = sliceUser.actions
 export default sliceUser.reducer

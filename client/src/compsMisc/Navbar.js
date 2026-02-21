@@ -1,6 +1,6 @@
 import { Container, Col, Row } from "reactstrap";
 import { useDispatch, useSelector } from "react-redux"
-import { FaUser } from "react-icons/fa6";
+import { User } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { useTheme } from "./ThemeContext.js";
@@ -14,7 +14,7 @@ export default function Navbar() {
             {user && (
                 <div className="profileMenu" style={{ position: 'absolute', left: '1rem', fontSize: '1.5rem' }}>
                     <div className="iconButton d-flex align-items-center justify-content-center">
-                        <FaUser />
+                        <User />
                     </div>
 
                     <div className="dropdownMenu">
