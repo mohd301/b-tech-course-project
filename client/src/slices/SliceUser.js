@@ -215,16 +215,6 @@ const sliceUser = createSlice(
                 state.flag = action.payload.flag
                 state.loading = false
             })
-            builder.addCase(userChgPwdThunk.pending, (state, action) => {
-                state.msg = ""
-                state.flag = false
-                state.loading = true
-            })
-            builder.addCase(userChgPwdThunk.rejected, (state, action) => {
-                state.msg = action.error.serverMsg
-                
-                state.loading = false
-            })
         }
     }
 )
