@@ -27,10 +27,8 @@ import { FaSun } from "react-icons/fa6";
 import { getUserType } from "./functions/getUserType";
 import { determineRoute } from "./functions/determineRoute";
 
-import { logoutUser } from "./slices/SliceUser";
-import { logoutPriv } from "./slices/SlicePriv";
-import { setUserToken } from "./slices/SliceUser";
-import { setPrivToken } from "./slices/SlicePriv";
+import { logout } from "./slices/SliceAuth";
+import { setToken } from "./slices/SliceAuth";
 
 import { useTheme } from "./compsMisc/ThemeContext";
 
@@ -55,8 +53,7 @@ function App() {
     return children;
   }
 
-  const userToken = useSelector((state) => state.user.token);
-  const privToken = useSelector((state) => state.priv.token);
+  const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -71,19 +68,12 @@ function App() {
     if (!type) return; // no valid token
 
     // If token exists but redux is empty then fill redux
-    if ((type === "Admin" || type === "Regulator") && !privToken && localToken) {
-      dispatch(setPrivToken(localToken));
-    } else if ((type === "Admin" || type === "Regulator") && privToken && !localToken) { // If no token but redux has value then reset redux
-      dispatch(logoutPriv());
+    if (!token && localToken) {
+      dispatch(setToken(localToken));
+    } else if ( token && !localToken) { // If no token but redux has value then reset redux
+      dispatch(logout());
     }
-
-    // same logic but for user
-    if (type === "User" && !userToken && localToken) {
-      dispatch(setUserToken(localToken));
-    } else if (type === "User" && userToken && !localToken) {
-      dispatch(logoutUser());
-    }
-  }, [userToken, privToken, authMsg, dispatch]);
+  }, [token, authMsg, dispatch]);
 
   return (
       <BrowserRouter>

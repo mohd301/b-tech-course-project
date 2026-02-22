@@ -6,7 +6,7 @@ import { useTheme } from "../compsMisc/ThemeContext.js";
 export default function Header() {
     const { theme } = useTheme();
 
-    const user = useSelector(state => state.user.user)
+    const user = useSelector(state => state.auth.user)
     return (
         <>
             <Container fluid style={{ background: theme.primaryColor, minHeight: '7vh' }} className="p-4 d-flex align-items-center justify-content-center">

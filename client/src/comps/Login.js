@@ -1,12 +1,12 @@
 import { Button, Container, Form, Input, Label, Card, CardBody } from "reactstrap"
 import { Link } from "react-router-dom"
 import { useEffect, useState, useRef } from "react"
-import { userLoginThunk } from "../slices/SliceUser"
+import { userLoginThunk } from "../slices/SliceAuth"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
-import { clearMsg } from "../slices/SliceUser"
+import { clearMsg } from "../slices/SliceAuth"
 import { checkAuth } from "../functions/checkAuth"
 import { useTheme } from "../compsMisc/ThemeContext"
 
@@ -19,8 +19,8 @@ export default function Login() {
     const [loginId, setLoginId] = useState("")
     const [loginPwd, setLoginPwd] = useState("")
 
-    const msg = useSelector((state) => state.user.msg)
-    const loading = useSelector((state) => state.user.loading)
+    const msg = useSelector((state) => state.auth.msg)
+    const loading = useSelector((state) => state.auth.loading)
     const userlogindispatch = useDispatch()
     const navigate = useNavigate()
     const alertedRef = useRef(false);

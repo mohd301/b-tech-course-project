@@ -9,10 +9,8 @@ import Logout from "./Logout.js";
 export default function Navbar() {
     const { theme } = useTheme();
 
-    const user = useSelector(state => state.user.user)
-    const priv = useSelector(state => state.priv.priv)
+    //const user = useSelector(state => state.auth.user)
     return (
-        user && (
             <Container fluid style={{ background: theme.secondaryColor, minHeight: '5vh' }} className="p-4 d-flex position-relative align-items-center justify-content-center">
                 <div className="profileMenu" style={{ position: 'absolute', left: '1rem', fontSize: '1.5rem' }}>
                     <div className="iconButton d-flex align-items-center justify-content-center">
@@ -25,6 +23,5 @@ export default function Navbar() {
                     </div>
                 </div>
             </Container>
-        )
     )
 }

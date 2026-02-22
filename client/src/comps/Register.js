@@ -7,7 +7,7 @@ import { toast } from "react-toastify"
 
 import { addUserThunk } from "../slices/SliceUser"
 import { sendOtpThunk } from "../slices/SliceUser"
-import { clearMsg } from "../slices/SliceUser"
+import { clearMsg } from "../slices/SliceAuth"
 import { checkAuth } from "../functions/checkAuth"
 import { useTheme } from "../compsMisc/ThemeContext"
 

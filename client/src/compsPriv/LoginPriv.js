@@ -2,7 +2,7 @@ import { Container, Form, FormGroup, Label, Row, Col, Card, CardTitle, CardBody,
 import { Link } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
-import { privLoginThunk } from "../slices/SlicePriv.js"
+import { privLoginThunk } from "../slices/SliceAuth.js"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
 
