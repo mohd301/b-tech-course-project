@@ -9,19 +9,17 @@ export default function Logout() {
     const logoutDispatch = useDispatch()
 
     const handleLogout = () => {
-        const type=getUserType()
+        const type = getUserType()
         localStorage.removeItem("authToken");
-        if(type==="User"){
+        if (type === "User") {
             logoutDispatch(logoutUser());
-        } else if(type==="Admin" || type==="Regulator"){
+        } else if (type === "Admin" || type === "Regulator") {
             logoutDispatch(logoutPriv())
         }
         navigate("/", { replace: true });
     };
 
     return (
-        <button className="primaryButton" onClick={handleLogout}>
-            Logout
-        </button>
+        <p className="txtBtn text-center" onClick={handleLogout}><u>Logout</u></p>
     );
 }

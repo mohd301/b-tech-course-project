@@ -86,6 +86,23 @@ a:hover {
   transform: scale(1.05);
 }
 
+/* Text Styles */
+
+.txtBtn {
+  font-size: 1rem;
+  color: white;
+  font-weight: 300;
+  text-underline-offset: 5px;
+  transform-origin: center center;
+}
+
+.txtBtn:hover {
+  color: white;
+  transition: transform 0.2s ease, color 0.2s ease;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
 /* Toastify Custom Styles */
 
 .Toastify__progress-bar--success {
