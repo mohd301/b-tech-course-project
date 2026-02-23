@@ -15,6 +15,7 @@ import ChangePwd from "./comps/ChangePwd";
 // Priviliged User
 import PrivLogin from "./compsPriv/LoginPriv";
 import HomeAdmin from "./compsAdmin/HomeAdmin";
+import ManageUsers from "./compsAdmin/ManageUsers";
 import HomeRegulator from "./compsRegulator/HomeRegulator";
 
 import { useEffect, useState, useRef } from "react";
@@ -106,6 +107,12 @@ function App() {
               <Route path='/homeAdmin' element={
                 <PrivateRoute allowedRoles={["Admin"]}>
                   <HomeAdmin />
+                </PrivateRoute>}>
+              </Route>
+
+              <Route path='/manageUsers' element={
+                <PrivateRoute allowedRoles={["Admin"]}>
+                  <ManageUsers />
                 </PrivateRoute>}>
               </Route>
 
