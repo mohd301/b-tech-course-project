@@ -215,3 +215,75 @@ input:disabled {
 .modal-footer {
   border-top: 1px solid var(--textColorAlt);
 }
+
+/* User Management Card Styles */
+.user-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.user-card .card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-card .card-text {
+  flex-grow: 1;
+}
+
+.user-card .btn-group {
+  margin-top: auto;
+}
+
+/* Admin Dashboard Card Styles */
+.admin-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* User Management Table Styles */
+.table-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.user-table {
+  margin-bottom: 0;
+  background-color: var(--altBackground);
+}
+
+.user-table thead th {
+  background-color: var(--primaryColor);
+  color: var(--textColorAlt);
+  border: none;
+  font-weight: 600;
+  padding: 16px;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.user-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  color: var(--textColorAlt);
+  border-color: rgba(116, 116, 116, 0.2);
+}
+
+.user-table tbody tr:hover {
+  background-color: rgba(102, 187, 106, 0.1);
+}
+
+.user-table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.user-table .btn {
+  margin-right: 6px;
+  font-size: 0.8rem;
+}
+
+.user-table .btn:last-child {
+  margin-right: 0;
+}
