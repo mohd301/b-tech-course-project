@@ -73,7 +73,7 @@ export default function ChangePwd() {
                                     <u>{errors.confpwd?.message}</u>
                                 </div>
 
-                                <div className="d-flex flex-column gap-4">
+                                <div className="d-flex flex-column" style={{ width: "50%" }}>
                                     <Link className="form-group" to="/home">Home</Link>
                                 </div>
 
