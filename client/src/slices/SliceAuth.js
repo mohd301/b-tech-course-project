@@ -22,7 +22,6 @@ export const userLoginThunk = createAsyncThunk("sliceAuth/userLoginThunk", async
 })
 
 const initialState = {
-    user: null,
     msg: null,
     token: null,
     flag: false,
@@ -37,7 +36,6 @@ const sliceAuth = createSlice(
             // Handle token deletion (logout)
             logout: (state) => {
                 state.token = null;
-                state.user = null;
                 state.msg = null;
             },
             setToken: (state, action) => {
@@ -61,7 +59,6 @@ const sliceAuth = createSlice(
 
             builder.addCase(userLoginThunk.fulfilled, (state, action) => {
                 state.msg = action.payload.serverMsg
-                state.user = action.payload.user
                 state.token = action.payload.token
                 state.flag = action.payload.flag
                 state.loading = false
