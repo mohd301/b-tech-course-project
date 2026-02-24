@@ -30,10 +30,6 @@ export default function HomeAdmin() {
 
     return (
         <Container className="py-5">
-            <div className="d-flex justify-content-between align-items-center mb-5">
-                <h2 style={{ color: theme.textColorAlt }}>Welcome Admin</h2>
-                <Logout />
-            </div>
 
             <Row className="g-4">
                 <Col md="6" lg="4">
