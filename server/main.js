@@ -239,101 +239,113 @@ subsidyApp.delete("/delUser", async (req, res) => {
         console.log(err)
     }
 })
-// Update user
-subsidyApp.put("/upduser", async (req,res)=>{
+// Update user Admin
+subsidyApp.put("/upduser", async (req, res) => {
     try {
-        const userEmail = req.body.Email
-        const userExist = await UserModel.findOne({ Email: userEmail })
+        const { Email, newPhone, newEmail } = req.body
+        const userExist = await UserModel.findOne({ Email })
+
         if (!userExist) {
-            res.json({ serverMsg: "User not found !", flag: false })
+            return res.json({ serverMsg: "User not found!", flag: false })
+
         } else {
-            const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
-            await UserModel.updateOne(
-                { Email: userEmail },
-                { Password: encryptedPassword },
-                {Phone:req.body.newPhone}
-            )
+            const updates = {}
+            if (newPhone) updates.Phone = newPhone
+            if (newEmail) updates.Email = newEmail
+
+            if (Object.keys(updates).length > 0) {
+                await UserModel.updateOne({ Email }, { $set: updates })
+            }
+
             res.json({ serverMsg: "Account updated successfully", flag: true })
         }
-    }catch(e){
+
+
+    } catch (e) {
         console.log(e)
+        res.json({ serverMsg: "Update failed", flag: false })
     }
 })
 //Add additon info
-subsidyApp.post("/addmoreinfo", async (req,res)=>{
-    try{
-        const userEmail=req.body.Email
-        const userExist = UserModel.findOne({Email:userEmail})
-        if(userExist){
-            const newinfo={
-                Email:req.body.Email,
-                NID:req.body.usernid,
-                Vehicle_Ownership:req.body.Vehicle_Ownership,
-                Cylinder_Count:req.body.Cylinder_Count,
+subsidyApp.post("/addmoreinfo", async (req, res) => {
+    try {
+        const userEmail = req.body.Email
+        const userExist = UserModel.findOne({ Email: userEmail })
+        if (userExist) {
+            const newinfo = {
+                Email: req.body.Email,
+                NID: req.body.usernid,
+                Vehicle_Ownership: req.body.Vehicle_Ownership,
+                Cylinder_Count: req.body.Cylinder_Count,
             }
             await MLmodel.create(newinfo)
-            res.json({serverMsg:"New data added!",flag:true})
+            res.json({ serverMsg: "New data added!", flag: true })
 
-        }else{
-            res.json({serverMsg:"user not found!",flag:false})
+        } else {
+            res.json({ serverMsg: "user not found!", flag: false })
         }
-    }catch(e){
+    } catch (e) {
         console.log(e)
     }
 })
 //Update additon info
-subsidyApp.put("/updmoreinfo",async (req,res)=>{
-    try{
-    const userEmail=req.body.Email
-    const docexist=MLmodel.findOne({Email:userEmail})
-    if(docexist){
-        MLmodel.findOneandUpdate({Email:userEmail},{$set:{NID:req.body.NID,
-            Vehicle_Ownership:req.body.Vehicle_Ownership,
-            Cylinder_Count:req.body.Cylinder_Count}})
-        res.json({serverMsg:"Updated data!",flag:true})
+subsidyApp.put("/updmoreinfo", async (req, res) => {
+    try {
+        const userEmail = req.body.Email
+        const docexist = MLmodel.findOne({ Email: userEmail })
+        if (docexist) {
+            MLmodel.findOneandUpdate({ Email: userEmail }, {
+                $set: {
+                    NID: req.body.NID,
+                    Vehicle_Ownership: req.body.Vehicle_Ownership,
+                    Cylinder_Count: req.body.Cylinder_Count
+                }
+            })
+            res.json({ serverMsg: "Updated data!", flag: true })
 
-    }else{
-        res.json({serverMsg:"no data found for this user",flag:false})
-    }}catch(e){
+        } else {
+            res.json({ serverMsg: "no data found for this user", flag: false })
+        }
+    } catch (e) {
         console.log(e)
     }
 })
 // Delete additon info
-subsidyApp.delete("/delmoreinfo",async(req,res)=>{
-    try{
-        const userEmail=req.body.Email
-        const docexist=MLmodel.findOne({Email:userEmail})
-        if (docexist){
-            await MLmodel.deleteOne({Email:userEmail})
-            res.json({serverMsg:"Deleted!",flag:true})
+subsidyApp.delete("/delmoreinfo", async (req, res) => {
+    try {
+        const userEmail = req.body.Email
+        const docexist = MLmodel.findOne({ Email: userEmail })
+        if (docexist) {
+            await MLmodel.deleteOne({ Email: userEmail })
+            res.json({ serverMsg: "Deleted!", flag: true })
 
-        }else{
-            res.json({serverMsg:"Error not found",flag:false})
+        } else {
+            res.json({ serverMsg: "Error not found", flag: false })
         }
-    }catch(e){
+    } catch (e) {
         console.log(e)
     }
 })
 // view additon info
-subsidyApp.get("/viewmoreinfo",async(req,res)=>{
-    try{
+subsidyApp.get("/viewmoreinfo", async (req, res) => {
+    try {
         const datalist = MLmodel.find()
-        res.json({serverMsg:"all data retived",data:datalist,flag:true})
-    }catch(e){
+        res.json({ serverMsg: "all data retived", data: datalist, flag: true })
+    } catch (e) {
         console.log(e)
     }
 })
 // Search additon info
-subsidyApp.get("/findmoreinfo",async(req,res)=>{
-    try{
-        const userEmail=req.body.Email
-        const docexist = findOne({Email:userEmail})
-        if(docexist){
-            res.json({serverMsg:"data fount",data:docexist,flag:true})
-        }else{
-            res,json({serverMsg:"data not found",flag:false})
+subsidyApp.get("/findmoreinfo", async (req, res) => {
+    try {
+        const userEmail = req.body.Email
+        const docexist = findOne({ Email: userEmail })
+        if (docexist) {
+            res.json({ serverMsg: "data fount", data: docexist, flag: true })
+        } else {
+            res, json({ serverMsg: "data not found", flag: false })
         }
-    }catch(e){
+    } catch (e) {
         console.log(e)
     }
 })
