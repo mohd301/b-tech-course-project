@@ -8,7 +8,7 @@ import Header from "./comps/Header";
 import Register from "./comps/Register";
 import Home from "./comps/Home";
 import ForgotPwd from "./comps/ForgotPwd"
-
+import GovOf  from "./comps/GovOf";
 // Might be removed
 import ChangePwd from "./comps/ChangePwd";
 
@@ -87,6 +87,7 @@ function App() {
               <Route path='/regUser' element={<Register />}></Route>
               <Route path='/logPriv' element={<PrivLogin />}></Route>
               <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
+              <Route path="/gov" element={<GovOf/>}></Route>
 
               <Route path='/changePwd' element={
                 <PrivateRoute allowedRoles={["User"]}>

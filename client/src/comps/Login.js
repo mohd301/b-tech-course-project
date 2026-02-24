@@ -13,6 +13,7 @@ import { useTheme } from "../compsMisc/ThemeContext"
 import CenteredSpinner from "../compsMisc/CentredSpinner"
 import PasswordInput from "../compsMisc/PasswordInput"
 
+
 export default function Login() {
     const { theme } = useTheme();
 
@@ -93,6 +94,7 @@ export default function Login() {
                     </Card>
                 </div>
             </Form>
+            
         </div>
     )
 }
