@@ -19,8 +19,8 @@ export default function LoginPriv() {
     const [loginId, setLoginId] = useState("")
     const [loginPwd, setLoginPwd] = useState("")
 
-    const msg = useSelector((state) => state.priv.msg)
-    const loading = useSelector((state) => state.priv.loading)
+    const msg = useSelector((state) => state.auth.msg)
+    const loading = useSelector((state) => state.auth.loading)
     const privLoginDispatch = useDispatch()
     const navigate = useNavigate()
     const alertedRef = useRef(false);
