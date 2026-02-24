@@ -77,7 +77,7 @@ subsidyApp.post("/loginPriv", async (req, res) => {
                     JWT_SECRET,
                     { expiresIn: JWT_EXPIRES }
                 )
-                res.json({ serverMsg: "Welcome", flag: true, token })
+                res.json({ serverMsg: "Welcome", flag: true, token})
             }
         }
     } catch (err) {
@@ -156,7 +156,7 @@ subsidyApp.post("/loginUser", async (req, res) => {
                     { expiresIn: JWT_EXPIRES }
                 )
                 // Might add user details in future
-                res.json({ serverMsg: "Welcome", user: userExist.Email, flag: true, token })
+                res.json({ serverMsg: "Welcome", flag: true, token })
             }
         }
     } catch (err) {
@@ -231,9 +231,9 @@ subsidyApp.get("/getPrivUser", async (req, res) => {
 })
 
 // Delete User
-subsidyApp.delete("/delUser", async (req, res) => {
+subsidyApp.delete("/delUser/:id", async (req, res) => {
     try {
-        await UserModel.deleteOne({ Email: req.body.Email })
+        await UserModel.deleteOne({ _id: req.params.id })
         res.json({ serverMsg: "User Removed", flag: true })
     } catch (err) {
         console.log(err)
@@ -242,24 +242,14 @@ subsidyApp.delete("/delUser", async (req, res) => {
 // Update user Admin
 subsidyApp.put("/upduser", async (req, res) => {
     try {
-        const { Email, newPhone, newEmail } = req.body
-        const userExist = await UserModel.findOne({ Email })
+        const userExist = await UserModel.findOne({ _id: req.body._id })
 
         if (!userExist) {
             return res.json({ serverMsg: "User not found!", flag: false })
-
         } else {
-            const updates = {}
-            if (newPhone) updates.Phone = newPhone
-            if (newEmail) updates.Email = newEmail
-
-            if (Object.keys(updates).length > 0) {
-                await UserModel.updateOne({ Email }, { $set: updates })
-            }
-
+            await UserModel.updateOne({ _id: req.body._id }, { $set: req.body })
             res.json({ serverMsg: "Account updated successfully", flag: true })
         }
-
 
     } catch (e) {
         console.log(e)
