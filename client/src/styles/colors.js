@@ -6,7 +6,9 @@ export const lightTheme = {
   textColor: '#ECEFF1',
   textError: '#f33c3c', 
   textColorAlt: '#000000',
+  textColorBlack: '#000000',
   altBackground: '#ffffff',
+  shadowColor: "rgba(0, 0, 0, 0.5)",
 };
 
 export const darkTheme = {
@@ -16,6 +18,8 @@ export const darkTheme = {
   primaryBackground: 'rgb(24, 24, 24)', 
   textColor: '#ECEFF1',
   textError: '#d43e3e',
-  textColorAlt: '#d1d1d1',
+  textColorAlt: '#ffffff',
+  textColorBlack: '#000000',
   altBackground: '#000000',  
+  shadowColor: "rgba(255, 255, 255, 0.5)",
 };

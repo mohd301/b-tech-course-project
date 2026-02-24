@@ -71,6 +71,14 @@ input::placeholder {
   filter: brightness(85%);
 }
 
+.simpleButton {
+  background: none;
+}
+
+.simpleButton:hover {
+  filter: brightness(85%);
+}
+
 /* Link Styles */
 
 a {
@@ -262,7 +270,7 @@ input:disabled {
 .table-wrapper {
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 4px 4px 4px var(--shadowColor);
 }
 
 .user-table {
@@ -284,7 +292,7 @@ input:disabled {
 .user-table tbody td {
   padding: 14px 16px;
   vertical-align: middle;
-  color: var(--textColorAlt);
+  color: var(--textColorBlack);
   border-color: rgba(116, 116, 116, 0.2);
 }
 
