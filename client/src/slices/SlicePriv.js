@@ -24,9 +24,10 @@ export const deleteUserThunk = createAsyncThunk("sliceUser/deleteUserThunk", asy
 })
 
 // Admin: Update details
-export const updateUserThunk = createAsyncThunk("sliceUser/updateUserThunk", async (userData) => {
+export const updateUserThunk = createAsyncThunk("sliceUser/updateUserThunk", async (userData ) => {
     try {
-        const response = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/upduser`, userData)
+        const response = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/upduser/${userData._id}`, userData,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }) // Include token in Authorization header for logging purposes
         return (response.data)
     } catch (err) {
         console.log(err)
