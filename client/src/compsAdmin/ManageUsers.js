@@ -12,7 +12,7 @@ export default function ManageUsers() {
     const dispatch = useDispatch();
     const users = useSelector((state) => state.priv.userList);
     const loading = useSelector((state) => state.priv.loading);
-    
+
     const [deleteModal, setDeleteModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -69,7 +69,7 @@ export default function ManageUsers() {
     const handleUpdate = async () => {
         if (selectedUser) {
             try {
-                await dispatch(updateUserThunk({ ...formData, _id: selectedUser._id })).unwrap();
+                await dispatch(updateUserThunk({ _id: selectedUser._id, ...formData })).unwrap();
                 toast.success("User updated successfully");
                 dispatch(fetchUsersThunk());
             } catch (err) {
