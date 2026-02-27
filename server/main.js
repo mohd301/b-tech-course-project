@@ -9,6 +9,8 @@ import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
 import otpModel from "./models/OtpModel.js"
 import MLmodel from "./models/MlModel.js"
+import audit from "./audit/audit.js"
+
 import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
 
 const subsidyApp = new express()
@@ -77,7 +79,7 @@ subsidyApp.post("/loginPriv", async (req, res) => {
                     JWT_SECRET,
                     { expiresIn: JWT_EXPIRES }
                 )
-                res.json({ serverMsg: "Welcome", flag: true, token})
+                res.json({ serverMsg: "Welcome", flag: true, token })
             }
         }
     } catch (err) {
@@ -114,7 +116,7 @@ subsidyApp.post("/sendOtp", async (req, res) => {
     const userExist = await UserModel.findOne({ Email })
 
     if (use === "Reg" && userExist) {
-        return res.json({ serverMsg: "Already Registered!", flag: true });
+        return res.json({ serverMsg: "Already Registered!", flag: false });
     }
 
     const otp = generateOtp();
@@ -139,30 +141,51 @@ subsidyApp.post("/verifyOtp", async (req, res) => {
 });
 
 //Login verification
-subsidyApp.post("/loginUser", async (req, res) => {
-    try {
-        const userEmail = req.body.Email
-        const userExist = await UserModel.findOne({ Email: userEmail })
-        if (!userExist) {
-            res.json({ serverMsg: "User not found !", flag: false })
-        } else {
-            const matchPassword = await bcrypt.compare(req.body.Password, userExist.Password)
-            if (!matchPassword) {
-                res.json({ serverMsg: "Incorrect Password!", flag: false })
-            } else {
-                const token = jwt.sign(
-                    { id: userExist._id, type: "User" },
-                    JWT_SECRET,
-                    { expiresIn: JWT_EXPIRES }
-                )
-                // Might add user details in future
-                res.json({ serverMsg: "Welcome", flag: true, token })
+subsidyApp.post(
+    "/loginUser",
+    audit("LOGIN", {
+        type: "Auth",
+        id: req => req.body.Email // temporary identifier
+    }),
+    async (req, res) => {
+        try {
+            const userEmail = req.body.Email;
+            const userExist = await UserModel.findOne({ Email: userEmail });
+
+            if (!userExist) {
+                // mark failed attempt
+                req.auditSuccess = false;
+                req.auditActor = "unknown"; // we don't know the user 
+                return res.json({ serverMsg: "User not found !", flag: false });
             }
+
+            // actor is known now
+            req.auditActor = userExist._id.toString();
+
+            const matchPassword = await bcrypt.compare(req.body.Password, userExist.Password);
+
+            if (!matchPassword) {
+                req.auditSuccess = false;
+
+                return res.json({ serverMsg: "Incorrect Password!", flag: false });
+            }
+
+            const token = jwt.sign(
+                { id: userExist._id, type: "User" },
+                JWT_SECRET,
+                { expiresIn: JWT_EXPIRES }
+            );
+
+            // mark success
+            req.auditSuccess = true;
+            res.json({ serverMsg: "Welcome", flag: true, token });
+
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err);
         }
-    } catch (err) {
-        console.log(err)
     }
-})
+);
 
 // Change Password for User
 subsidyApp.put("/chgPassword", async (req, res) => {
@@ -239,23 +262,42 @@ subsidyApp.delete("/delUser/:id", async (req, res) => {
         console.log(err)
     }
 })
+
 // Update user Admin
-subsidyApp.put("/upduser", async (req, res) => {
-    try {
-        const userExist = await UserModel.findOne({ _id: req.body._id })
+subsidyApp.put("/upduser/:id",
+    audit("UPDATE_USER", { type: "User", id: req => req.params.id }),
+    async (req, res) => {
+        try {
+            const userExist = await UserModel.findOne({ _id: req.params.id })
 
-        if (!userExist) {
-            return res.json({ serverMsg: "User not found!", flag: false })
-        } else {
-            await UserModel.updateOne({ _id: req.body._id }, { $set: req.body })
-            res.json({ serverMsg: "Account updated successfully", flag: true })
+            if (!userExist) {
+                req.auditSuccess = false;
+                return res.json({ serverMsg: "User not found!", flag: false })
+            } else {
+                req.auditSuccess = true;
+                await UserModel.updateOne({ _id: req.params.id }, { $set: req.body })
+
+                // identify changes for logging purposes
+                let changes = {}
+                console.log("Request body for update:", req.body);
+                for (const key of Object.keys(req.body)) {
+                    if (key !== "_id") {
+                        if (userExist[key] !== req.body[key]) {
+                            changes[key] = { "Old": userExist[key], "New": req.body[key] }
+                        }
+                    }
+                }
+                req.changes = changes
+
+                res.json({ serverMsg: "Account updated successfully", flag: true })
+            }
+
+        } catch (e) {
+            console.log(e)
+            res.json({ serverMsg: "Update failed", flag: false })
         }
+    })
 
-    } catch (e) {
-        console.log(e)
-        res.json({ serverMsg: "Update failed", flag: false })
-    }
-})
 //Add additon info
 subsidyApp.post("/addmoreinfo", async (req, res) => {
     try {
@@ -278,6 +320,7 @@ subsidyApp.post("/addmoreinfo", async (req, res) => {
         console.log(e)
     }
 })
+
 //Update additon info
 subsidyApp.put("/updmoreinfo", async (req, res) => {
     try {
@@ -300,6 +343,7 @@ subsidyApp.put("/updmoreinfo", async (req, res) => {
         console.log(e)
     }
 })
+
 // Delete additon info
 subsidyApp.delete("/delmoreinfo", async (req, res) => {
     try {
@@ -316,6 +360,7 @@ subsidyApp.delete("/delmoreinfo", async (req, res) => {
         console.log(e)
     }
 })
+
 // view additon info
 subsidyApp.get("/viewmoreinfo", async (req, res) => {
     try {
@@ -325,6 +370,7 @@ subsidyApp.get("/viewmoreinfo", async (req, res) => {
         console.log(e)
     }
 })
+
 // Search additon info
 subsidyApp.get("/findmoreinfo", async (req, res) => {
     try {
