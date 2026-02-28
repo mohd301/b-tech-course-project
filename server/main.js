@@ -9,7 +9,10 @@ import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
 import otpModel from "./models/OtpModel.js"
 import MLmodel from "./models/MlModel.js"
+import AuditModel from "./models/AuditModel.js"
+
 import audit from "./audit/audit.js"
+import authAudit from "./audit/authAudit.js"
 
 import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
 
@@ -64,81 +67,126 @@ subsidyApp.post("/addPriv", async (req, res) => {
 })
 
 // Privileged user Login verification
-subsidyApp.post("/loginPriv", async (req, res) => {
-    try {
-        const privExist = await PrivUserModel.findOne({ Email: req.body.Email })
-        if (!privExist) {
-            res.json({ serverMsg: "Privileged user not found!", flag: false })
-        } else {
-            const matchPassword = await bcrypt.compare(req.body.Password, privExist.Password)
-            if (!matchPassword) {
-                res.json({ serverMsg: "Incorrect Password!", flag: false })
+subsidyApp.post("/loginPriv",
+    audit("LOGIN_PRIV", {
+        type: "Auth",
+        id: req => req.body.Email
+    }),
+    async (req, res) => {
+        try {
+            const privExist = await PrivUserModel.findOne({ Email: req.body.Email })
+
+            if (!privExist) {
+                req.auditSuccess = false;
+                res.json({ serverMsg: "Privileged user not found!", flag: false })
+
             } else {
-                const token = jwt.sign(
-                    { id: privExist._id, type: privExist.Type },
-                    JWT_SECRET,
-                    { expiresIn: JWT_EXPIRES }
-                )
-                res.json({ serverMsg: "Welcome", flag: true, token })
+                const matchPassword = await bcrypt.compare(req.body.Password, privExist.Password)
+                req.auditActor = privExist._id.toString();
+
+                if (!matchPassword) {
+                    req.auditSuccess = false;
+                    res.json({ serverMsg: "Incorrect Password!", flag: false })
+                } else {
+                    const token = jwt.sign(
+                        { id: privExist._id, type: privExist.Type },
+                        JWT_SECRET,
+                        { expiresIn: JWT_EXPIRES }
+                    )
+
+                    req.auditSuccess = true;
+                    res.json({ serverMsg: "Welcome", flag: true, token })
+                }
             }
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
         }
-    } catch (err) {
-        console.log(err)
-    }
-})
+    })
 
 // Register a new user with encrypted password
-subsidyApp.post("/addUser", async (req, res) => {
-    try {
-        const userExist = await UserModel.findOne({ Email: req.body.Email })
-        if (userExist) {
-            res.json({ serverMsg: "User already exists!", flag: false })
-        } else {
-            const encryptedPassword = await bcrypt.hash(req.body.Password, 10)
-            const newUser = {
-                Email: req.body.Email,
-                Phone: req.body.Phone,
-                Password: encryptedPassword
+subsidyApp.post("/addUser",
+    audit("REGISTRATION", {
+        type: "User",
+        id: req => req.body.Email
+    }),
+    async (req, res) => {
+        try {
+            const userExist = await UserModel.findOne({ Email: req.body.Email })
+            if (userExist) {
+                req.auditActor = userExist._id.toString();
+                req.auditSuccess = false;
+                res.json({ serverMsg: "User already exists!", flag: false })
+            } else {
+                const encryptedPassword = await bcrypt.hash(req.body.Password, 10)
+                const newUser = {
+                    Email: req.body.Email,
+                    Phone: req.body.Phone,
+                    Password: encryptedPassword
+                }
+                await UserModel.create(newUser)
+
+                req.auditActor = newUser.Email;
+                req.auditSuccess = true;
+                res.json({ serverMsg: "Registration Success!", flag: true })
             }
-            await UserModel.create(newUser)
-            res.json({ serverMsg: "Registration Success!", flag: true })
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
         }
-    } catch (err) {
-        console.log(err)
-    }
-})
+    })
 
 // OTP
 // Send OTP 
-subsidyApp.post("/sendOtp", async (req, res) => {
-    const Email = req.body.Email;
-    const use = req.body.use;
-    const userExist = await UserModel.findOne({ Email })
+subsidyApp.post("/sendOtp",
+    audit("SEND_OTP", {
+        type: "Verification",
+        id: req => req.body.Email
+    }),
+    async (req, res) => {
+        req.auditActor = "SYSTEM"; // This action is initiated by the system
 
-    if (use === "Reg" && userExist) {
-        return res.json({ serverMsg: "Already Registered!", flag: false });
-    }
+        const Email = req.body.Email;
+        const use = req.body.use;
+        const userExist = await UserModel.findOne({ Email })
 
-    const otp = generateOtp();
-    await saveOtp(otpModel, Email, otp);
-    await sendOtpEmail(Email, otp);
+        if (use === "Reg" && userExist) {
+            req.auditSuccess = false;
+            return res.json({ serverMsg: "Already Registered!", flag: false });
+        }
 
-    res.json({ serverMsg: "OTP sent!", flag: true });
-});
+        const otp = generateOtp();
+        await saveOtp(otpModel, Email, otp);
+        await sendOtpEmail(Email, otp);
+
+        req.auditSuccess = true;
+
+        res.json({ serverMsg: "OTP sent!", flag: true });
+    });
 
 
 // Verify OTP
-subsidyApp.post("/verifyOtp", async (req, res) => {
-    const Email = req.body.Email;
-    const OTP = req.body.OTP;
-    const result = await verifyOtp(otpModel, Email, OTP);
+subsidyApp.post("/verifyOtp",
+    audit("VERIFY_OTP", {
+        type: "Verification",
+        id: req => req.body.Email
+    }),
+    async (req, res) => {
+        req.auditActor = "SYSTEM";
 
-    if (result !== "success") {
-        return res.json({ serverMsg: result, flag: false });
-    }
+        const Email = req.body.Email;
+        const OTP = req.body.OTP;
 
-    res.json({ serverMsg: "OTP verified!", flag: true });
-});
+        const result = await verifyOtp(otpModel, Email, OTP);
+
+        if (result !== "success") {
+            req.auditSuccess = false;
+            return res.json({ serverMsg: result, flag: false });
+        }
+
+        req.auditSuccess = true;
+        res.json({ serverMsg: "OTP verified!", flag: true });
+    });
 
 //Login verification
 subsidyApp.post(
@@ -155,7 +203,6 @@ subsidyApp.post(
             if (!userExist) {
                 // mark failed attempt
                 req.auditSuccess = false;
-                req.auditActor = "unknown"; // we don't know the user 
                 return res.json({ serverMsg: "User not found !", flag: false });
             }
 
@@ -166,7 +213,6 @@ subsidyApp.post(
 
             if (!matchPassword) {
                 req.auditSuccess = false;
-
                 return res.json({ serverMsg: "Incorrect Password!", flag: false });
             }
 
@@ -188,65 +234,94 @@ subsidyApp.post(
 );
 
 // Change Password for User
-subsidyApp.put("/chgPassword", async (req, res) => {
-    try {
-        const userEmail = req.body.Email
-        const userExist = await UserModel.findOne({ Email: userEmail })
-        if (!userExist) {
-            res.json({ serverMsg: "User not found !", flag: false })
-        } else {
-            const matchPassword = await bcrypt.compare(req.body.oldPassword, userExist.Password)
+subsidyApp.put("/chgPassword",
+    authAudit, // This will decode user authenticatication and attach user info to req.user
+    audit("CHANGE_PASSWORD_USER", {
+        type: "User",
+        id: req => req.user.id // use authenticated user's ID for logging
+    }),
+    async (req, res) => {
+        try {
+            const user = await UserModel.findById(req.user.id)
+            if (!user) {
+                req.auditSuccess = false;
+                return res.json({ serverMsg: "User not found !", flag: false })
+            }
+            const matchPassword = await bcrypt.compare(req.body.oldPassword, user.Password)
+
             if (!matchPassword) {
+                req.auditSuccess = false;
                 res.json({ serverMsg: "Incorrect Password!", flag: false })
+            } else {
+                const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
+                await UserModel.findByIdAndUpdate(req.user.id, { Password: encryptedPassword })
+
+                req.auditSuccess = true;
+                res.json({ serverMsg: "Password changed successfully!", flag: true })
+            }
+
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
+        }
+    })
+
+// Forgot Password for User
+subsidyApp.put("/forgotPassword",
+    audit("FORGOT_PASSWORD_USER", {
+        type: "User",
+        id: req => req.body.Email
+    }),
+    async (req, res) => {
+        try {
+            const userEmail = req.body.Email
+            const userExist = await UserModel.findOne({ Email: userEmail })
+            if (!userExist) {
+                req.auditSuccess = false;
+                req.auditActor = "unknown";
+
+                res.json({ serverMsg: "User not found !", flag: false })
             } else {
                 const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
                 await UserModel.updateOne(
                     { Email: userEmail },
                     { Password: encryptedPassword }
                 )
+
+                req.auditSuccess = true;
+                req.auditActor = userExist._id.toString();
                 res.json({ serverMsg: "Password changed successfully!", flag: true })
             }
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
         }
-    } catch (err) {
-        console.log(err)
-    }
-})
-
-// Forgot Password for User
-subsidyApp.put("/forgotPassword", async (req, res) => {
-    try {
-        const userEmail = req.body.Email
-        const userExist = await UserModel.findOne({ Email: userEmail })
-        if (!userExist) {
-            res.json({ serverMsg: "User not found !", flag: false })
-        } else {
-            const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
-            await UserModel.updateOne(
-                { Email: userEmail },
-                { Password: encryptedPassword }
-            )
-            res.json({ serverMsg: "Password changed successfully!", flag: true })
-        }
-    } catch (err) {
-        console.log(err)
-    }
-})
+    })
 
 // Get Users
-subsidyApp.get("/getUser", async (req, res) => {
-    try {
-        const userList = await UserModel.find()
-        res.json({ serverMsg: "User list fetched successfully!", data: userList, flag: true })
-    } catch (err) {
-        console.log(err)
-    }
-})
+subsidyApp.get("/getUser",
+    audit("GET_USERS", {
+        type: "User",
+        id: req => "all_users"
+    }),
+    async (req, res) => {
+        try {
+            const userList = await UserModel.find()
+
+            req.auditSuccess = true;
+            req.auditActor = "SYSTEM";
+            res.json({ serverMsg: "User list fetched successfully!", data: userList, flag: true })
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
+        }
+    })
 
 // Get Privileged Users
 subsidyApp.get("/getPrivUser", async (req, res) => {
     try {
         const pUserlist = await PrivUserModel.find()
-        res.json({ serverMsg: "Private user list fetched successfully ", data: pUserlist, flag: true })
+        res.json({ serverMsg: "Privileged user list fetched successfully ", data: pUserlist, flag: true })
     } catch (e) {
         console.log(e)
     }
@@ -254,17 +329,26 @@ subsidyApp.get("/getPrivUser", async (req, res) => {
 })
 
 // Delete User
-subsidyApp.delete("/delUser/:id", async (req, res) => {
-    try {
-        await UserModel.deleteOne({ _id: req.params.id })
-        res.json({ serverMsg: "User Removed", flag: true })
-    } catch (err) {
-        console.log(err)
-    }
-})
+subsidyApp.delete("/delUser/:id",
+    authAudit,
+    audit("DELETE_USER", {
+        type: "User",
+        id: req => req.user.id
+    }), async (req, res) => {
+        try {
+            await UserModel.deleteOne({ _id: req.params.id })
+
+            req.auditSuccess = true;
+            res.json({ serverMsg: "User Removed", flag: true })
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
+        }
+    })
 
 // Update user Admin
 subsidyApp.put("/upduser/:id",
+    authAudit,
     audit("UPDATE_USER", { type: "User", id: req => req.params.id }),
     async (req, res) => {
         try {
@@ -279,7 +363,6 @@ subsidyApp.put("/upduser/:id",
 
                 // identify changes for logging purposes
                 let changes = {}
-                console.log("Request body for update:", req.body);
                 for (const key of Object.keys(req.body)) {
                     if (key !== "_id") {
                         if (userExist[key] !== req.body[key]) {
@@ -293,8 +376,25 @@ subsidyApp.put("/upduser/:id",
             }
 
         } catch (e) {
+            req.auditSuccess = false;
             console.log(e)
             res.json({ serverMsg: "Update failed", flag: false })
+        }
+    })
+
+// Get Audit Logs
+subsidyApp.get("/getAuditLogs",
+    audit("GET_AUDIT", { type: "Audit", id: req => "all_audits" }),
+    async (req, res) => {
+        try {
+            const logs = await AuditModel.find().sort({ createdAt: -1 })
+
+            req.auditSuccess = true;
+            req.auditActor = "SYSTEM";
+            res.json({ serverMsg: "Audit logs fetched successfully!", data: logs, flag: true })
+        } catch (err) {
+            req.auditSuccess = false;
+            console.log(err)
         }
     })
 
