@@ -11,7 +11,7 @@ const auditLogSchema = new mongoose.Schema({
   result: { type: String, required: true }
 },
 {
-    createdAt: true,
+    timestamps: { createdAt: true, updatedAt: false },
     versionKey: false
 });
 
