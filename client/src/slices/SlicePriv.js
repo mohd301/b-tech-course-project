@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios"
 
 // Admin: Fetch all users
-export const fetchUsersThunk = createAsyncThunk("sliceUser/fetchUsersThunk", async () => {
+export const fetchUsersThunk = createAsyncThunk("privSlice/fetchUsersThunk", async () => {
     try {
         const response = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/getUser`)
         return (response.data)
@@ -13,9 +13,10 @@ export const fetchUsersThunk = createAsyncThunk("sliceUser/fetchUsersThunk", asy
 })
 
 // Admin: Delete user
-export const deleteUserThunk = createAsyncThunk("sliceUser/deleteUserThunk", async (_id) => {
+export const deleteUserThunk = createAsyncThunk("privSlice/deleteUserThunk", async (_id) => {
     try {
-        const response = await axios.delete(`http://localhost:${process.env.REACT_APP_PORT}/delUser/${_id}`)
+        const response = await axios.delete(`http://localhost:${process.env.REACT_APP_PORT}/delUser/${_id}`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } })
         return (response.data)
     } catch (err) {
         console.log(err)
@@ -24,7 +25,7 @@ export const deleteUserThunk = createAsyncThunk("sliceUser/deleteUserThunk", asy
 })
 
 // Admin: Update details
-export const updateUserThunk = createAsyncThunk("sliceUser/updateUserThunk", async (userData ) => {
+export const updateUserThunk = createAsyncThunk("privSlice/updateUserThunk", async (userData) => {
     try {
         const response = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/upduser/${userData._id}`, userData,
             { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }) // Include token in Authorization header for logging purposes
@@ -35,10 +36,23 @@ export const updateUserThunk = createAsyncThunk("sliceUser/updateUserThunk", asy
     }
 })
 
+// Admin: Get audit logs
+export const fetchAuditLogsThunk = createAsyncThunk("privSlice/fetchAuditLogsThunk", async () => {
+    try {
+        const response = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/getAuditLogs`)
+        return (response.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
 const initialState = {
     msg: null,
     userList: [],
+    auditLogs: [],
     loading: false,
+    flag: false,
 }
 
 const privSlice = createSlice(
@@ -56,11 +70,13 @@ const privSlice = createSlice(
             builder.addCase(fetchUsersThunk.fulfilled, (state, action) => {
                 state.userList = action.payload.data
                 state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
                 state.loading = false
             })
 
             builder.addCase(fetchUsersThunk.rejected, (state, action) => {
                 state.msg = action.error.message
+                state.flag = false
                 state.loading = false
             })
 
@@ -78,6 +94,7 @@ const privSlice = createSlice(
 
             builder.addCase(deleteUserThunk.rejected, (state, action) => {
                 state.msg = action.error.message
+                state.flag = false
                 state.loading = false
             })
 
@@ -95,6 +112,26 @@ const privSlice = createSlice(
 
             builder.addCase(updateUserThunk.rejected, (state, action) => {
                 state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Admin: Fetch audit logs
+            builder.addCase(fetchAuditLogsThunk.pending, (state, action) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchAuditLogsThunk.fulfilled, (state, action) => {
+                state.auditLogs = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchAuditLogsThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
                 state.loading = false
             })
         }
