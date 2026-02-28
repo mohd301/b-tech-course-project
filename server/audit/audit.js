@@ -1,19 +1,12 @@
-import jwt from "jsonwebtoken";
-
 import logAction from "./logAction.js";
 
 function audit(action, targetResolver) {
+  // This middleware will log the action after the response is sent
   return async (req, res, next) => {
     res.on("finish", async () => {
-      // if an action required authentication we should get a token
-      const token = req.headers?.authorization?.split(" ")[1];
-      let decodedToken = {};
-      if (token) {
-        decodedToken = jwt.verify(token.toString(), process.env.JWT_SECRET);
-      }
       const success = req.auditSuccess;
       await logAction({
-        actorId: decodedToken.id || req.auditActor || "anonymous",
+        actorId: req.user?.id || req.auditActor || "unknown",
         action,
         targetType: targetResolver?.type,
         targetId: targetResolver?.id(req) || undefined,
@@ -26,7 +19,7 @@ function audit(action, targetResolver) {
         result: success ? "success" : "failure"
       });
     });
-
+    // passes control to the next middleware or route handler
     next();
   };
 }
