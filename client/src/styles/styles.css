@@ -312,3 +312,16 @@ input:disabled {
 .user-table .btn:last-child {
   margin-right: 0;
 }
+
+/* prevent text from wrapping in table cells, useful for the audit log */
+.nowrap {
+  white-space: nowrap;
+  max-width: 400px;
+  overflow-x: auto;
+}
+
+.nowrap > div {
+  white-space: nowrap;       /* keep inner text on one line */
+  overflow-x: auto;          /* show horizontal scroll if content is wider */
+  width: 100%;               
+}
