@@ -8,14 +8,19 @@ import Header from "./comps/Header";
 import Register from "./comps/Register";
 import Home from "./comps/Home";
 import ForgotPwd from "./comps/ForgotPwd"
-import GovOf  from "./comps/GovOf";
+import GovOf from "./comps/GovOf";
 // Might be removed
 import ChangePwd from "./comps/ChangePwd";
 
 // Priviliged User
 import PrivLogin from "./compsPriv/LoginPriv";
+
+// Admin
 import HomeAdmin from "./compsAdmin/HomeAdmin";
 import ManageUsers from "./compsAdmin/ManageUsers";
+import AuditLog from "./compsAdmin/AuditLog";
+
+// Regulator
 import HomeRegulator from "./compsRegulator/HomeRegulator";
 
 import { useEffect, useState, useRef } from "react";
@@ -34,7 +39,7 @@ import { setToken } from "./slices/SliceAuth";
 import { useTheme } from "./compsMisc/ThemeContext";
 
 function App() {
-  const {toggleTheme, mode} = useTheme();
+  const { toggleTheme, mode } = useTheme();
 
   const alertedRef = useRef(false);
   const [authMsg, setAuthMsg] = useState("");
@@ -71,63 +76,69 @@ function App() {
     // If token exists but redux is empty then fill redux
     if (!token && localToken) {
       dispatch(setToken(localToken));
-    } else if ( token && !localToken) { // If no token but redux has value then reset redux
+    } else if (token && !localToken) { // If no token but redux has value then reset redux
       dispatch(logout());
     }
   }, [token, authMsg, dispatch]);
 
   return (
-      <BrowserRouter>
-        <div className="d-flex flex-column min-vh-100">
-          <Header />
-          <main className="flex-fill">
-            <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
-            <Routes>
-              <Route path='/' element={<Login />}></Route>
-              <Route path='/regUser' element={<Register />}></Route>
-              <Route path='/logPriv' element={<PrivLogin />}></Route>
-              <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
-              <Route path="/gov" element={<GovOf/>}></Route>
+    <BrowserRouter>
+      <div className="d-flex flex-column min-vh-100">
+        <Header />
+        <main className="flex-fill">
+          <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
+          <Routes>
+            <Route path='/' element={<Login />}></Route>
+            <Route path='/regUser' element={<Register />}></Route>
+            <Route path='/logPriv' element={<PrivLogin />}></Route>
+            <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
+            <Route path="/gov" element={<GovOf />}></Route>
 
-              <Route path='/changePwd' element={
-                <PrivateRoute allowedRoles={["User"]}>
-                  <ChangePwd />
-                </PrivateRoute>}>
-              </Route>
+            <Route path='/changePwd' element={
+              <PrivateRoute allowedRoles={["User"]}>
+                <ChangePwd />
+              </PrivateRoute>}>
+            </Route>
 
-              <Route path='/homeAdmin' element={
-                <PrivateRoute allowedRoles={["Admin"]}>
-                  <HomeAdmin />
-                </PrivateRoute>}>
-              </Route>
+            <Route path="/home" element={
+              <PrivateRoute allowedRoles={["User"]}>
+                <Home />
+              </PrivateRoute>}>
+            </Route>
 
-              <Route path='/manageUsers' element={
-                <PrivateRoute allowedRoles={["Admin"]}>
-                  <ManageUsers />
-                </PrivateRoute>}>
-              </Route>
+            <Route path='/homeAdmin' element={
+              <PrivateRoute allowedRoles={["Admin"]}>
+                <HomeAdmin />
+              </PrivateRoute>}>
+            </Route>
 
-              <Route path='/homeReg' element={
-                <PrivateRoute allowedRoles={["Regulator"]}>
-                  <HomeRegulator />
-                </PrivateRoute>}>
-              </Route>
+            <Route path='/manageUsers' element={
+              <PrivateRoute allowedRoles={["Admin"]}>
+                <ManageUsers />
+              </PrivateRoute>}>
+            </Route>
 
-              <Route path="/home" element={
-                <PrivateRoute allowedRoles={["User"]}>
-                  <Home />
-                </PrivateRoute>}>
-              </Route>
-            </Routes>
+            <Route path='/audit' element={
+              <PrivateRoute allowedRoles={["Admin"]}>
+                <AuditLog />
+              </PrivateRoute>}>
+            </Route>
 
-            <button className="themeButton" onClick={toggleTheme}>
-              {mode === "light" ? <FaMoon /> : <FaSun />}
-            </button>
-          </main>
+            <Route path='/homeReg' element={
+              <PrivateRoute allowedRoles={["Regulator"]}>
+                <HomeRegulator />
+              </PrivateRoute>}>
+            </Route>
+          </Routes>
 
-          <Footer />
-        </div>
-      </BrowserRouter>
+          <button className="themeButton" onClick={toggleTheme}>
+            {mode === "light" ? <FaMoon /> : <FaSun />}
+          </button>
+        </main>
+
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
 }
 
