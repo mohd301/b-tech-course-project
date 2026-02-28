@@ -32,7 +32,8 @@ export default function Navbar() {
                             <>
                                 <Link style={{ color: theme.textColor }} to="changePwd">Change Password</Link>
                                 <hr style={{ height: "0.2rem", border: "none", backgroundColor: "white" }} />
-                            </>}
+                            </>
+                        }
                         <Logout />
                     </div>
                 </div>
@@ -43,7 +44,9 @@ export default function Navbar() {
             {type === "Admin" &&
                 <>
                     <Link style={{ color: theme.textColor }} to="/manageUsers">Manage Users</Link>
-                </>}
+                    <Link style={{ color: theme.textColor }} to="/audit">Audit Log</Link>
+                </>
+            }
         </Container>
     )
 }
