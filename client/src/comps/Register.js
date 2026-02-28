@@ -17,7 +17,7 @@ import SchemaReg from "../validations/SchemaReg"
 
 import OtpModal from "./OtpModal"
 import PasswordInput from "../compsMisc/PasswordInput"
-import CenteredSpinner from "../compsMisc/CentredSpinner"
+import CenteredSpinner from "../compsMisc/CenteredSpinner"
 
 export default function Register() {
     const { theme } = useTheme();

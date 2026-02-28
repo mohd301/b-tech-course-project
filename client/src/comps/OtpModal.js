@@ -5,7 +5,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, Label, FormGroup, Button, C
 import { verifyOtpThunk } from "../slices/SliceUser";
 import { useTheme } from "../compsMisc/ThemeContext";
 
-import CenteredSpinner from "../compsMisc/CentredSpinner";
+import CenteredSpinner from "../compsMisc/CenteredSpinner";
 
 export default function OtpModal({ isOpen, toggle, Email }) {
     const { theme } = useTheme();

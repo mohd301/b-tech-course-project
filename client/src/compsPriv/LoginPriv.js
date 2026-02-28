@@ -11,7 +11,7 @@ import { getUserType } from "../functions/getUserType.js"
 import { useTheme } from "../compsMisc/ThemeContext.js"
 
 import PasswordInput from "../compsMisc/PasswordInput.js"
-import CenteredSpinner from "../compsMisc/CentredSpinner.js"
+import CenteredSpinner from "../compsMisc/CenteredSpinner.js"
 
 export default function LoginPriv() {
     const { theme } = useTheme();

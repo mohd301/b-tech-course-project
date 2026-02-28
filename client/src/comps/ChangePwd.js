@@ -11,7 +11,7 @@ import { useTheme } from "../compsMisc/ThemeContext"
 
 import SchemaChgPwd from "../validations/SchemaChgPwd"
 import PasswordInput from "../compsMisc/PasswordInput"
-import CenteredSpinner from "../compsMisc/CentredSpinner"
+import CenteredSpinner from "../compsMisc/CenteredSpinner"
 
 export default function ChangePwd() {
     const { theme } = useTheme();

@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useTheme } from "../compsMisc/ThemeContext";
 import { fetchUsersThunk, deleteUserThunk, updateUserThunk } from "../slices/SlicePriv";
 import { FaTrash, FaEdit } from "react-icons/fa";
-import CenteredSpinner from "../compsMisc/CentredSpinner";
+import CenteredSpinner from "../compsMisc/CenteredSpinner";
 
 export default function ManageUsers() {
     const { theme } = useTheme();
@@ -31,6 +31,10 @@ export default function ManageUsers() {
         }
     }, [selectedUser]);
 
+    useEffect(() => {
+        dispatch(fetchUsersThunk());
+    }, []);
+
     // Dynamically Handle form input changes
     const handleChange = (key, value) => {
         setFormData(prev => ({
@@ -38,10 +42,6 @@ export default function ManageUsers() {
             [key]: value // take the previous values and append the new value for the changed key
         }));
     };
-
-    useEffect(() => {
-        dispatch(fetchUsersThunk());
-    }, [dispatch]);
 
     const toggleDeleteModal = (user = null) => {
         setSelectedUser(user);
@@ -164,7 +164,7 @@ export default function ManageUsers() {
                             )}
                         </ModalBody>
                         <ModalFooter>
-                            <Button style={btnDeleteStyle} onClick={handleDelete}>
+                            <Button className="simpleButton" style={btnDeleteStyle} onClick={handleDelete}>
                                 Delete
                             </Button>
                             <Button color="secondary" onClick={() => toggleDeleteModal()}>
@@ -192,7 +192,7 @@ export default function ManageUsers() {
                                 ))}
                         </ModalBody>
                         <ModalFooter>
-                            <Button style={btnEditStyle} onClick={handleUpdate}>
+                            <Button className="simpleButton" style={btnEditStyle} onClick={handleUpdate}>
                                 Update
                             </Button>
                             <Button color="secondary" onClick={() => toggleEditModal()}>

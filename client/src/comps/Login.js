@@ -10,7 +10,7 @@ import { clearMsg } from "../slices/SliceAuth"
 import { checkAuth } from "../functions/checkAuth"
 import { useTheme } from "../compsMisc/ThemeContext"
 
-import CenteredSpinner from "../compsMisc/CentredSpinner"
+import CenteredSpinner from "../compsMisc/CenteredSpinner"
 import PasswordInput from "../compsMisc/PasswordInput"
 
 
