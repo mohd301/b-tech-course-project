@@ -33,7 +33,8 @@ export const verifyOtpThunk = createAsyncThunk("sliceUser/verifyOtpThunk", async
 
 export const userChgPwdThunk = createAsyncThunk("sliceUser/userChgPwdThunk", async (userData) => {
     try {
-        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/chgPassword`, userData)
+        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/chgPassword`, userData,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } })
         return (User.data)
     } catch (err) {
         console.log(err)
@@ -62,7 +63,6 @@ export const userUpdusrThunk = createAsyncThunk("sliceUser/upduser", async (user
 
 const initialState = {
     user: null,
-    userList: [],
     msg: null,
     token: null,
     flag: false,
@@ -73,7 +73,11 @@ const sliceUser = createSlice(
     {
         name: "sliceUser",
         initialState: initialState,
-        reducers: {},
+        reducers: {
+            clearUserMsg: (state) => {
+                state.msg = null
+            }
+        },
         extraReducers: (builder) => {
 
             // Register new user
@@ -175,5 +179,5 @@ const sliceUser = createSlice(
     }
 )
 
-//export const { } = sliceUser.actions
+export const { clearUserMsg } = sliceUser.actions
 export default sliceUser.reducer
