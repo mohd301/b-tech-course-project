@@ -14,10 +14,11 @@ import { sendOtpThunk } from "../slices/SliceUser"
 import { userForgotPwdThunk } from "../slices/SliceUser"
 import { checkAuth } from "../functions/checkAuth"
 import { useTheme } from "../compsMisc/ThemeContext"
+import { clearUserMsg } from "../slices/SliceUser"
 
 import PasswordInput from "../compsMisc/PasswordInput"
 import OtpModal from "./OtpModal"
-import CenteredSpinner from "../compsMisc/CentredSpinner"
+import CenteredSpinner from "../compsMisc/CenteredSpinner"
 
 export default function ForgotPwd() {
     const { theme } = useTheme();
@@ -45,6 +46,7 @@ export default function ForgotPwd() {
 
     useEffect(() => {
         checkAuth(alertedRef, navigate)
+        dispatch(clearUserMsg())
     }, [navigate]);
 
     const handleForgotPwd = async (data) => {
