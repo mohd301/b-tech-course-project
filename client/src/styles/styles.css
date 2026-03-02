@@ -196,7 +196,7 @@ input:disabled {
   bottom: 10vh;
   /* distance from bottom */
   left: 20px;
-  /* distance from right */
+  /* distance from left */
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -216,6 +216,31 @@ input:disabled {
 }
 
 .themeButton:hover {
+  transform: scale(1.05);
+  filter: brightness(85%);
+}
+
+.downloadButton {
+  position: fixed;
+  bottom: 10vh;
+  right: 20px;
+  height: 40px;
+  border-radius: 10%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--primaryColor);
+  color: var(--textColor);
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.downloadButton:hover {
   transform: scale(1.05);
   filter: brightness(85%);
 }
@@ -313,6 +338,13 @@ input:disabled {
   margin-right: 0;
 }
 
+.table-wrapper-audit {
+  border-radius: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 4px 4px 4px var(--shadowColor);
+}
+
 /* prevent text from wrapping in table cells, useful for the audit log */
 .nowrap {
   white-space: nowrap;
@@ -320,8 +352,11 @@ input:disabled {
   overflow-x: auto;
 }
 
-.nowrap > div {
-  white-space: nowrap;       /* keep inner text on one line */
-  overflow-x: auto;          /* show horizontal scroll if content is wider */
-  width: 100%;               
+.nowrap>div {
+  white-space: nowrap;
+  /* keep inner text on one line */
+  overflow-x: auto;
+  /* show horizontal scroll if content is wider */
+  scrollbar-width: thin;
+  width: 100%;
 }

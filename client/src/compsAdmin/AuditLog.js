@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { fetchAuditLogsThunk } from "../slices/SlicePriv"
 import { useTheme } from "../compsMisc/ThemeContext"
 
+import downloadCSV from "../functions/downloadCSV.js"
 import CenteredSpinner from "../compsMisc/CenteredSpinner"
 
 export default function AuditLog() {
@@ -28,8 +29,8 @@ export default function AuditLog() {
                     {loading ? (
                         <CenteredSpinner color={theme.primaryColor} />
                     ) : (
-                        <div className="table-wrapper">
-                            <Table className="user-table" responsive>
+                        <div className="table-wrapper-audit">
+                            <Table className="user-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -83,9 +84,10 @@ export default function AuditLog() {
                                 </tbody>
                             </Table>
                         </div>
-                    )
-
-                    }
+                    )}
+                    <button className="downloadButton" onClick={() => downloadCSV(logs, "audit-logs.csv")}>
+                        Download CSV
+                    </button>
                 </Container>
             </Container>
         </Container>
