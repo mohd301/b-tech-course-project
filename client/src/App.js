@@ -105,7 +105,7 @@ function App() {
             <Route path="/home" element={
               <PrivateRoute allowedRoles={["User"]}>
                 <Home />
-                <Route path="/apply"element={<Apply/>}></Route>
+                
               </PrivateRoute>}>
             </Route>
 
@@ -138,8 +138,12 @@ function App() {
                 <HomeRegulator />
               </PrivateRoute>}>
             </Route>
+            <Route path="/apply"element={
+              <PrivateRoute allowedRoles={"User"}>
+                <Apply/>
+                </PrivateRoute>}></Route>
           </Routes>
-
+            
           <button className="themeButton" onClick={toggleTheme}>
             {mode === "light" ? <FaMoon /> : <FaSun />}
           </button>
