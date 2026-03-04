@@ -47,10 +47,105 @@ export const fetchAuditLogsThunk = createAsyncThunk("privSlice/fetchAuditLogsThu
     }
 })
 
+// ==================== DATASET THUNKS ====================
+
+// Upload dataset (Regulator)
+export const uploadDatasetThunk = createAsyncThunk("privSlice/uploadDatasetThunk", async (formData) => {
+    try {
+        const response = await axios.post(
+            `http://localhost:${process.env.REACT_APP_PORT}/uploadDataset`,
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                    "Content-Type": "multipart/form-data"
+                }
+            }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err.response?.data?.serverMsg || "Failed to upload dataset"
+    }
+})
+
+// Fetch all datasets
+export const fetchDatasetsThunk = createAsyncThunk("privSlice/fetchDatasetsThunk", async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/getDatasets`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
+// Fetch single dataset (with content)
+export const fetchDatasetThunk = createAsyncThunk("privSlice/fetchDatasetThunk", async (id) => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/getDataset/${id}`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
+// Delete dataset
+export const deleteDatasetThunk = createAsyncThunk("privSlice/deleteDatasetThunk", async (id) => {
+    try {
+        const response = await axios.delete(
+            `http://localhost:${process.env.REACT_APP_PORT}/deleteDataset/${id}`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
+// Update dataset
+export const updateDatasetThunk = createAsyncThunk("privSlice/updateDatasetThunk", async (data) => {
+    try {
+        const response = await axios.put(
+            `http://localhost:${process.env.REACT_APP_PORT}/updateDataset/${data._id}`,
+            { description: data.description },
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
+// Fetch dataset statistics
+export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetStatsThunk", async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/getDatasetStats`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
 const initialState = {
     msg: null,
     userList: [],
     auditLogs: [],
+    datasetList: [],
+    datasetStats: null,
     loading: false,
     flag: false,
 }
@@ -130,6 +225,100 @@ const privSlice = createSlice(
             })
 
             builder.addCase(fetchAuditLogsThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // ==================== DATASET REDUCERS ====================
+
+            // Upload dataset
+            builder.addCase(uploadDatasetThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(uploadDatasetThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(uploadDatasetThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Fetch datasets
+            builder.addCase(fetchDatasetsThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchDatasetsThunk.fulfilled, (state, action) => {
+                state.datasetList = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchDatasetsThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Delete dataset
+            builder.addCase(deleteDatasetThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(deleteDatasetThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(deleteDatasetThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Update dataset
+            builder.addCase(updateDatasetThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(updateDatasetThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(updateDatasetThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Fetch dataset stats
+            builder.addCase(fetchDatasetStatsThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchDatasetStatsThunk.fulfilled, (state, action) => {
+                state.datasetStats = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchDatasetStatsThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.flag = false
                 state.loading = false
