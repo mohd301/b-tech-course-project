@@ -1,29 +1,23 @@
 import Maps from "../compsMisc/Map"
-import { Card, CardBody, CardTitle, Container, Label } from "reactstrap"
+import { Card, CardBody, CardTitle, Container } from "reactstrap"
 import { useTheme } from "../compsMisc/ThemeContext"
 
 export default function GovOf() {
-    const {theme }= useTheme()
+    const { theme } = useTheme()
     return (
-        <>
-            <Container fluid>
-                <div style={{  minHeight: "82.1vh" }}>
-                    <div className="d-flex justify-content-center align-items-center">
-                        <Card style={{background:theme.primaryBackground,borderColor: theme.secondaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
-                        className="d-flex justify-content-center border-3 mt-4 mb-4">
-                            
-                            <CardTitle className="p-4 d-flex container-fuild">
-                            <Label className="text-center" style={{color:theme.textColorAlt}}>Map of govermemt offices</Label>
-                            </CardTitle>
-                            <CardBody className="d-flex justify-content-center mt-4 mb-4" style={{display:"flex",alignItems:"center"}}>
-                              
-                            <Maps />
-                            
-                            </CardBody>
-                        </Card>
-                    </div>
-                </div>
+        <Container fluid className="py-4" style={{ minHeight: "80vh" }}>
+            <Container>
+                <h2 style={{ color: theme.textColorAlt }} >Map of Government Offices</h2>
             </Container>
-        </>
+            <Container className="d-flex justify-content-center align-items-center mt-4" style={{ height: "100%" }}>
+                <Card style={{ background: theme.secondaryColor, borderColor: theme.secondaryColor, height: "50vh", width: "50vw", borderRadius: "4vh" }}
+                    className="d-flex justify-content-center align-items-center border-3">
+
+                    <Maps borderRadius="4vh" />
+
+                </Card>
+            </Container>
+        </Container>
+
     )
 }
