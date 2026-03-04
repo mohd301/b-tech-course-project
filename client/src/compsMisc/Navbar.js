@@ -41,6 +41,12 @@ export default function Navbar() {
 
             <Link style={{ color: theme.textColor }} to={route}>Home</Link>
 
+            {type === "User" &&
+                <>
+                    <Link style={{ color: theme.textColor }} to="/userMap">Map</Link>
+                </>
+            }
+
             {type === "Admin" &&
                 <>
                     <Link style={{ color: theme.textColor }} to="/manageUsers">Manage Users</Link>

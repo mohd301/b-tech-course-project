@@ -9,6 +9,7 @@ import Register from "./comps/Register";
 import Home from "./comps/Home";
 import ForgotPwd from "./comps/ForgotPwd"
 import GovOf from "./comps/GovOf";
+import Apply from "./comps/Apply";
 // Might be removed
 import ChangePwd from "./comps/ChangePwd";
 
@@ -96,6 +97,7 @@ function App() {
             <Route path='/logPriv' element={<PrivLogin />}></Route>
             <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
             <Route path="/gov" element={<GovOf />}></Route>
+            
 
             <Route path='/changePwd' element={
               <PrivateRoute allowedRoles={["User"]}>
@@ -106,6 +108,13 @@ function App() {
             <Route path="/home" element={
               <PrivateRoute allowedRoles={["User"]}>
                 <Home />
+                
+              </PrivateRoute>}>
+            </Route>
+
+            <Route path="/userMap" element={
+              <PrivateRoute allowedRoles={["User"]}>
+                <GovOf />
               </PrivateRoute>}>
             </Route>
 
@@ -144,6 +153,10 @@ function App() {
                 <HomeRegulator />
               </PrivateRoute>}>
             </Route>
+            <Route path="/apply"element={
+              <PrivateRoute allowedRoles={"User"}>
+                <Apply/>
+                </PrivateRoute>}></Route>
 
             <Route path='/uploadDataset' element={
               <PrivateRoute allowedRoles={["Regulator"]}>
@@ -151,7 +164,7 @@ function App() {
               </PrivateRoute>}>
             </Route>
           </Routes>
-
+            
           <button className="themeButton" onClick={toggleTheme}>
             {mode === "light" ? <FaMoon /> : <FaSun />}
           </button>
