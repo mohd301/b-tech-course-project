@@ -137,7 +137,7 @@ function App() {
             </Route>
 
             <Route path='/manageDatasets' element={
-              <PrivateRoute allowedRoles={["Admin"]}>
+              <PrivateRoute allowedRoles={["Admin", "Regulator"]}>
                 <ManageDatasets />
               </PrivateRoute>}>
             </Route>
