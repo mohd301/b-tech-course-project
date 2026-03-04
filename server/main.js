@@ -4,12 +4,14 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import multer from "multer"
 
 import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
 import otpModel from "./models/OtpModel.js"
 import MLmodel from "./models/MlModel.js"
 import AuditModel from "./models/AuditModel.js"
+import DatasetModel from "./models/DatasetModel.js"
 
 import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
@@ -19,6 +21,21 @@ import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
 const subsidyApp = new express()
 subsidyApp.use(express.json())
 subsidyApp.use(cors())
+
+// Configure multer for memory storage (files stored in MongoDB)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === "text/csv" || file.originalname.endsWith(".csv")) {
+            cb(null, true)
+        } else {
+            cb(new Error("Only CSV files are allowed"), false)
+        }
+    },
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit
+    }
+})
 
 dotenv.config()
 
@@ -485,3 +502,184 @@ subsidyApp.get("/findmoreinfo", async (req, res) => {
         console.log(e)
     }
 })
+
+// ==================== DATASET MANAGEMENT ROUTES ====================
+
+// Helper function to parse CSV content
+function parseCSV(content) {
+    const lines = content.split("\n").filter(line => line.trim() !== "")
+    if (lines.length === 0) return { rowCount: 0, columnCount: 0, columns: [] }
+
+    const columns = lines[0].split(",").map(col => col.trim())
+    const rowCount = lines.length - 1
+    const columnCount = columns.length
+
+    return { rowCount, columnCount, columns }
+}
+
+// Upload dataset (Regulator only)
+subsidyApp.post("/uploadDataset",
+    authAudit,
+    audit("UPLOAD_DATASET", { type: "Dataset", id: req => req.user.id }),
+    upload.single("dataset"),
+    async (req, res) => {
+        try {
+            if (!req.file) {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "No file uploaded", flag: false })
+            }
+
+            const uploader = await PrivUserModel.findById(req.user.id)
+            if (!uploader || uploader.Type !== "Regulator") {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "Only regulators can upload datasets", flag: false })
+            }
+
+            const content = req.file.buffer.toString("utf-8")
+            const { rowCount, columnCount, columns } = parseCSV(content)
+
+            const newDataset = {
+                originalName: req.file.originalname,
+                fileSize: req.file.size,
+                uploadedBy: uploader.Email,
+                uploaderId: req.user.id,
+                rowCount,
+                columnCount,
+                columns,
+                content,
+                description: req.body.description || ""
+            }
+
+            await DatasetModel.create(newDataset)
+
+            req.auditSuccess = true
+            res.json({ serverMsg: "Dataset uploaded successfully", flag: true, data: { rowCount, columnCount, columns } })
+        } catch (err) {
+            req.auditSuccess = false
+            console.log(err)
+            res.json({ serverMsg: "Error uploading dataset", flag: false })
+        }
+    }
+)
+
+// Get all datasets (Admin and Regulator)
+subsidyApp.get("/getDatasets",
+    authAudit,
+    audit("GET_DATASETS", { type: "Dataset", id: req => "all_datasets" }),
+    async (req, res) => {
+        try {
+            const datasets = await DatasetModel.find({}, { content: 0 }).sort({ createdAt: -1 })
+            req.auditSuccess = true
+            res.json({ serverMsg: "Datasets fetched", data: datasets, flag: true })
+        } catch (err) {
+            req.auditSuccess = false
+            console.log(err)
+            res.json({ serverMsg: "Error fetching datasets", flag: false })
+        }
+    }
+)
+
+// Get single dataset (Admin and Regulator)
+subsidyApp.get("/getDataset/:id",
+    authAudit,
+    audit("GET_DATASET", { type: "Dataset", id: req => req.params.id }),
+    async (req, res) => {
+        try {
+            const dataset = await DatasetModel.findById(req.params.id)
+            if (!dataset) {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "Dataset not found", flag: false })
+            }
+            req.auditSuccess = true
+            res.json({ serverMsg: "Dataset fetched", data: dataset, flag: true })
+        } catch (err) {
+            req.auditSuccess = false
+            console.log(err)
+            res.json({ serverMsg: "Error fetching dataset", flag: false })
+        }
+    }
+)
+
+// Delete dataset (Regulator only)
+subsidyApp.delete("/deleteDataset/:id",
+    authAudit,
+    audit("DELETE_DATASET", { type: "Dataset", id: req => req.params.id }),
+    async (req, res) => {
+        try {
+            const requester = await PrivUserModel.findById(req.user.id)
+            if (!requester || requester.Type !== "Regulator") {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "Only regulators can delete datasets", flag: false })
+            }
+
+            const dataset = await DatasetModel.findById(req.params.id)
+            if (!dataset) {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "Dataset not found", flag: false })
+            }
+            await DatasetModel.deleteOne({ _id: req.params.id })
+            req.auditSuccess = true
+            res.json({ serverMsg: "Dataset deleted", flag: true })
+        } catch (err) {
+            req.auditSuccess = false
+            console.log(err)
+            res.json({ serverMsg: "Error deleting dataset", flag: false })
+        }
+    }
+)
+
+// Update dataset description (Regulator only)
+subsidyApp.put("/updateDataset/:id",
+    authAudit,
+    audit("UPDATE_DATASET", { type: "Dataset", id: req => req.params.id }),
+    async (req, res) => {
+        try {
+            const requester = await PrivUserModel.findById(req.user.id)
+            if (!requester || requester.Type !== "Regulator") {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "Only regulators can update datasets", flag: false })
+            }
+
+            const dataset = await DatasetModel.findById(req.params.id)
+            if (!dataset) {
+                req.auditSuccess = false
+                return res.json({ serverMsg: "Dataset not found", flag: false })
+            }
+            await DatasetModel.updateOne({ _id: req.params.id }, { $set: { description: req.body.description } })
+            req.auditSuccess = true
+            res.json({ serverMsg: "Dataset updated", flag: true })
+        } catch (err) {
+            req.auditSuccess = false
+            console.log(err)
+            res.json({ serverMsg: "Error updating dataset", flag: false })
+        }
+    }
+)
+
+// Get dataset statistics (Admin only)
+subsidyApp.get("/getDatasetStats",
+    authAudit,
+    audit("GET_DATASET_STATS", { type: "Dataset", id: req => "dataset_stats" }),
+    async (req, res) => {
+        try {
+            const totalDatasets = await DatasetModel.countDocuments()
+            const totalSize = await DatasetModel.aggregate([{ $group: { _id: null, totalSize: { $sum: "$fileSize" } } }])
+            const totalRows = await DatasetModel.aggregate([{ $group: { _id: null, totalRows: { $sum: "$rowCount" } } }])
+
+            req.auditSuccess = true
+            res.json({
+                serverMsg: "Statistics fetched",
+                data: {
+                    totalDatasets,
+                    totalSize: totalSize[0]?.totalSize || 0,
+                    totalRows: totalRows[0]?.totalRows || 0
+                },
+                flag: true
+            })
+        } catch (err) {
+            req.auditSuccess = false
+            console.log(err)
+            res.json({ serverMsg: "Error fetching statistics", flag: false })
+        }
+    }
+)
