@@ -19,9 +19,12 @@ import PrivLogin from "./compsPriv/LoginPriv";
 import HomeAdmin from "./compsAdmin/HomeAdmin";
 import ManageUsers from "./compsAdmin/ManageUsers";
 import AuditLog from "./compsAdmin/AuditLog";
+import ManageDatasets from "./compsAdmin/ManageDatasets";
+import GenerateReport from "./compsAdmin/GenerateReport";
 
 // Regulator
 import HomeRegulator from "./compsRegulator/HomeRegulator";
+import UploadDataset from "./compsRegulator/UploadDataset";
 
 import { useEffect, useState, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -124,9 +127,27 @@ function App() {
               </PrivateRoute>}>
             </Route>
 
+            <Route path='/manageDatasets' element={
+              <PrivateRoute allowedRoles={["Admin"]}>
+                <ManageDatasets />
+              </PrivateRoute>}>
+            </Route>
+
+            <Route path='/generateReport' element={
+              <PrivateRoute allowedRoles={["Admin"]}>
+                <GenerateReport />
+              </PrivateRoute>}>
+            </Route>
+
             <Route path='/homeReg' element={
               <PrivateRoute allowedRoles={["Regulator"]}>
                 <HomeRegulator />
+              </PrivateRoute>}>
+            </Route>
+
+            <Route path='/uploadDataset' element={
+              <PrivateRoute allowedRoles={["Regulator"]}>
+                <UploadDataset />
               </PrivateRoute>}>
             </Route>
           </Routes>
