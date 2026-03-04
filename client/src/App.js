@@ -106,6 +106,12 @@ function App() {
               </PrivateRoute>}>
             </Route>
 
+            <Route path="/userMap" element={
+              <PrivateRoute allowedRoles={["User"]}>
+                <GovOf />
+              </PrivateRoute>}>
+            </Route>
+
             <Route path='/homeAdmin' element={
               <PrivateRoute allowedRoles={["Admin"]}>
                 <HomeAdmin />
