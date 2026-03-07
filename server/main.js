@@ -685,15 +685,17 @@ subsidyApp.get("/getDatasetStats",
 )
 
 // For fraud flaging
-subsidyApp.put("/fruad/:id", async(req,res)=>{
+subsidyApp.put("/fruad:id", async(req,res)=>{
     try{
-        const userExist = await UserModel.findOne({Email:req.params.email})
+        console.log(req.body.Fraud)
+        const userExist = await UserModel.findOne({_id:req.params.id})
         if(!userExist){
             req.auditSuccess=false
             res.json({serverMsg:"User not found",flag: false})
         }else{
+            console.log(12)
             req.auditSuccess=true
-            await UserModel.updateOne({Email:req.params.Email},{Fruad:req.body.Fraud})
+            await UserModel.findOneAndUpdate({_id:req.params.id},{$set:{Fruad:req.body.Fraud}})
         }
     }catch(e){
         console.log(e)

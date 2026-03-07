@@ -3,14 +3,16 @@ import { useState ,useEffect} from "react"
 import { Button, Input, Card, Form, Label, CardBody } from "reactstrap"
 import { useTheme } from "../compsMisc/ThemeContext"
 import { useSelector } from "react-redux"
+import { decryptToken } from "../functions/decryptToken"
 export default function Apply() {
-    const user = localStorage.getItem("authToken")
+    const token = localStorage.getItem("authToken")
+    const user =decryptToken(token)
     console.log(user)
     const { theme } = useTheme()
     const [Data, Setdata]=useState()
     async function getdata(ID) {
         try{
-        const res= await axios.get("http://127.0.0.1:5000/EEml/" + ID +"/"+ user._id)
+        const res= await axios.get("http://127.0.0.1:5000/EEml/" + ID +"/"+ user.id)
 
         console.log(res.data)
         Setdata(res.data)
@@ -22,7 +24,7 @@ export default function Apply() {
     const handleid=(e)=>{
         SetId(e.target.value)
     }
-    
+    console.log(Data?.Eligibity)
     const [ID, SetId] = useState()
     
     const onsubmit = () => {
