@@ -2,13 +2,15 @@ import axios from "axios"
 import { useState ,useEffect} from "react"
 import { Button, Input, Card, Form, Label, CardBody } from "reactstrap"
 import { useTheme } from "../compsMisc/ThemeContext"
+import { useSelector } from "react-redux"
 export default function Apply() {
-    
+    const user = localStorage.getItem("authToken")
+    console.log(user)
     const { theme } = useTheme()
     const [Data, Setdata]=useState()
     async function getdata(ID) {
         try{
-        const res= await axios.get("http://127.0.0.1:5000/EEml/" + ID)
+        const res= await axios.get("http://127.0.0.1:5000/EEml/" + ID +"/"+ user._id)
 
         console.log(res.data)
         Setdata(res.data)

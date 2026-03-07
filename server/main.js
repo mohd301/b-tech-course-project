@@ -685,7 +685,7 @@ subsidyApp.get("/getDatasetStats",
 )
 
 // For fraud flaging
-subsidyApp.put("/fruad", async(req,res)=>{
+subsidyApp.put("/fruad/:id", async(req,res)=>{
     try{
         const userExist = await UserModel.findOne({Email:req.params.email})
         if(!userExist){
