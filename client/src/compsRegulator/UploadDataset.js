@@ -6,7 +6,6 @@ import { useTheme } from "../compsMisc/ThemeContext";
 import { uploadDatasetThunk } from "../slices/SlicePriv";
 import { FaUpload, FaFileCsv } from "react-icons/fa";
 import CenteredSpinner from "../compsMisc/CenteredSpinner";
-import Logout from "../compsMisc/Logout";
 
 export default function UploadDataset() {
     const { theme } = useTheme();
@@ -119,7 +118,6 @@ export default function UploadDataset() {
         <Container className="py-4" style={{ minHeight: "80vh" }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 style={{ color: theme.textColorAlt }}>Upload Dataset</h2>
-                <Logout />
             </div>
 
             <Container className="d-flex justify-content-center">
