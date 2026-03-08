@@ -15,12 +15,12 @@ import ChangePwd from "./comps/ChangePwd";
 
 // Priviliged User
 import PrivLogin from "./compsPriv/LoginPriv";
+import ManageDatasets from "./compsPriv/ManageDatasets";
 
 // Admin
 import HomeAdmin from "./compsAdmin/HomeAdmin";
 import ManageUsers from "./compsAdmin/ManageUsers";
 import AuditLog from "./compsAdmin/AuditLog";
-import ManageDatasets from "./compsAdmin/ManageDatasets";
 import GenerateReport from "./compsAdmin/GenerateReport";
 
 // Regulator

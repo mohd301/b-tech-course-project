@@ -264,7 +264,7 @@ export default function ManageDatasets() {
                         </ModalHeader>
                         <ModalBody>
                             <div style={{
-                                backgroundColor: "#f5f5f5",
+                                backgroundColor: theme.primaryBackground,
                                 padding: "15px",
                                 borderRadius: "8px",
                                 maxHeight: "400px",
