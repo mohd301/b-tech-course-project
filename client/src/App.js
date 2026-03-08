@@ -28,7 +28,7 @@ import HomeRegulator from "./compsRegulator/HomeRegulator";
 import UploadDataset from "./compsRegulator/UploadDataset";
 
 import { useEffect, useState, useRef } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer } from "react-toastify"
 import { FaMoon } from "react-icons/fa6";
@@ -39,6 +39,7 @@ import { determineRoute } from "./functions/determineRoute";
 
 import { logout } from "./slices/SliceAuth";
 import { setToken } from "./slices/SliceAuth";
+import { decryptToken } from "./functions/decryptToken";
 
 import { useTheme } from "./compsMisc/ThemeContext";
 
@@ -47,6 +48,8 @@ function App() {
 
   const alertedRef = useRef(false);
   const [authMsg, setAuthMsg] = useState("");
+
+  const navigate = useNavigate();
 
   // Protect routes to prevent unauthorised access
   function PrivateRoute({ children, allowedRoles }) {
@@ -65,6 +68,27 @@ function App() {
 
   const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
+
+  // This useEffect sets up a timer to automatically log out the user when the JWT token expires. 
+  // It calculates the remaining time until expiration and logs out the user
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+
+    const decoded = decryptToken(token);
+    const expiryTime = decoded.exp * 1000;
+    const timeout = expiryTime - Date.now();
+
+    if (timeout > 0) {
+      const timer = setTimeout(() => {
+        dispatch(logout());
+        alert("Session expired. Please log in again.");
+        navigate("/",{ replace: true });
+      }, timeout);
+
+      return () => clearTimeout(timer);
+    }
+  }, [dispatch, navigate]);
 
   useEffect(() => {
     const localToken = localStorage.getItem("authToken");
@@ -86,93 +110,91 @@ function App() {
   }, [token, authMsg, dispatch]);
 
   return (
-    <BrowserRouter>
-      <div className="d-flex flex-column min-vh-100">
-        <Header />
-        <main className="flex-fill">
-          <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
-          <Routes>
-            <Route path='/' element={<Login />}></Route>
-            <Route path='/regUser' element={<Register />}></Route>
-            <Route path='/logPriv' element={<PrivLogin />}></Route>
-            <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
-            <Route path="/gov" element={<GovOf />}></Route>
-            
+    <div className="d-flex flex-column min-vh-100">
+      <Header />
+      <main className="flex-fill">
+        <ToastContainer position="top-right" autoClose={3000}></ToastContainer>
+        <Routes>
+          <Route path='/' element={<Login />}></Route>
+          <Route path='/regUser' element={<Register />}></Route>
+          <Route path='/logPriv' element={<PrivLogin />}></Route>
+          <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
+          <Route path="/gov" element={<GovOf />}></Route>
 
-            <Route path='/changePwd' element={
-              <PrivateRoute allowedRoles={["User"]}>
-                <ChangePwd />
-              </PrivateRoute>}>
-            </Route>
 
-            <Route path="/home" element={
-              <PrivateRoute allowedRoles={["User"]}>
-                <Home />
-                
-              </PrivateRoute>}>
-            </Route>
+          <Route path='/changePwd' element={
+            <PrivateRoute allowedRoles={["User"]}>
+              <ChangePwd />
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path="/userMap" element={
-              <PrivateRoute allowedRoles={["User"]}>
-                <GovOf />
-              </PrivateRoute>}>
-            </Route>
+          <Route path="/home" element={
+            <PrivateRoute allowedRoles={["User"]}>
+              <Home />
 
-            <Route path='/homeAdmin' element={
-              <PrivateRoute allowedRoles={["Admin"]}>
-                <HomeAdmin />
-              </PrivateRoute>}>
-            </Route>
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path='/manageUsers' element={
-              <PrivateRoute allowedRoles={["Admin"]}>
-                <ManageUsers />
-              </PrivateRoute>}>
-            </Route>
+          <Route path="/userMap" element={
+            <PrivateRoute allowedRoles={["User"]}>
+              <GovOf />
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path='/audit' element={
-              <PrivateRoute allowedRoles={["Admin"]}>
-                <AuditLog />
-              </PrivateRoute>}>
-            </Route>
+          <Route path='/homeAdmin' element={
+            <PrivateRoute allowedRoles={["Admin"]}>
+              <HomeAdmin />
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path='/manageDatasets' element={
-              <PrivateRoute allowedRoles={["Admin", "Regulator"]}>
-                <ManageDatasets />
-              </PrivateRoute>}>
-            </Route>
+          <Route path='/manageUsers' element={
+            <PrivateRoute allowedRoles={["Admin"]}>
+              <ManageUsers />
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path='/generateReport' element={
-              <PrivateRoute allowedRoles={["Admin"]}>
-                <GenerateReport />
-              </PrivateRoute>}>
-            </Route>
+          <Route path='/audit' element={
+            <PrivateRoute allowedRoles={["Admin"]}>
+              <AuditLog />
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path='/homeReg' element={
-              <PrivateRoute allowedRoles={["Regulator"]}>
-                <HomeRegulator />
-              </PrivateRoute>}>
-            </Route>
-            <Route path="/apply"element={
-              <PrivateRoute allowedRoles={"User"}>
-                <Apply/>
-                </PrivateRoute>}></Route>
+          <Route path='/manageDatasets' element={
+            <PrivateRoute allowedRoles={["Admin", "Regulator"]}>
+              <ManageDatasets />
+            </PrivateRoute>}>
+          </Route>
 
-            <Route path='/uploadDataset' element={
-              <PrivateRoute allowedRoles={["Regulator"]}>
-                <UploadDataset />
-              </PrivateRoute>}>
-            </Route>
-          </Routes>
-            
-          <button className="themeButton" onClick={toggleTheme}>
-            {mode === "light" ? <FaMoon /> : <FaSun />}
-          </button>
-        </main>
+          <Route path='/generateReport' element={
+            <PrivateRoute allowedRoles={["Admin"]}>
+              <GenerateReport />
+            </PrivateRoute>}>
+          </Route>
 
-        <Footer />
-      </div>
-    </BrowserRouter>
+          <Route path='/homeReg' element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <HomeRegulator />
+            </PrivateRoute>}>
+          </Route>
+          <Route path="/apply" element={
+            <PrivateRoute allowedRoles={"User"}>
+              <Apply />
+            </PrivateRoute>}></Route>
+
+          <Route path='/uploadDataset' element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <UploadDataset />
+            </PrivateRoute>}>
+          </Route>
+        </Routes>
+
+        <button className="themeButton" onClick={toggleTheme}>
+          {mode === "light" ? <FaMoon /> : <FaSun />}
+        </button>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
