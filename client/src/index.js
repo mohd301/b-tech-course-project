@@ -5,6 +5,7 @@ import App from './App';
 
 import Store from "./store/Store";
 
+import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
 import { ThemeProvider } from "./compsMisc/ThemeContext";
@@ -13,12 +14,14 @@ import { ThemeSync } from "./compsMisc/ThemeSync.js";
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={Store}>
-      <ThemeProvider>
-        <ThemeSync />
-        <App />
-      </ThemeProvider>
-    </Provider>
+    <BrowserRouter>
+      <Provider store={Store}>
+        <ThemeProvider>
+          <ThemeSync />
+          <App />
+        </ThemeProvider>
+      </Provider>
+    </BrowserRouter>
   </React.StrictMode>
 );
 
