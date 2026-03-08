@@ -74,7 +74,6 @@ export const fetchDatasetsThunk = createAsyncThunk("privSlice/fetchDatasetsThunk
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/getDatasets`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         return response.data
     } catch (err) {
@@ -131,7 +130,6 @@ export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetSt
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/getDatasetStats`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         return response.data
     } catch (err) {

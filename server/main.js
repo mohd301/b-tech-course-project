@@ -15,6 +15,7 @@ import DatasetModel from "./models/DatasetModel.js"
 
 import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
+import parseCSV from "./functions/parseCSV.js"
 
 import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
 
@@ -404,10 +405,10 @@ subsidyApp.get("/getAuditLogs",
     audit("GET_AUDIT", { type: "Audit", id: req => "all_audits" }),
     async (req, res) => {
         try {
-            const logs = await AuditModel.find().sort({ createdAt: -1 })
-
-            req.auditSuccess = true;
             req.auditActor = "SYSTEM";
+
+            const logs = await AuditModel.find().sort({ createdAt: -1 })
+            req.auditSuccess = true;
             res.json({ serverMsg: "Audit logs fetched successfully!", data: logs, flag: true })
         } catch (err) {
             req.auditSuccess = false;
@@ -505,18 +506,6 @@ subsidyApp.get("/findmoreinfo", async (req, res) => {
 
 // ==================== DATASET MANAGEMENT ROUTES ====================
 
-// Helper function to parse CSV content
-function parseCSV(content) {
-    const lines = content.split("\n").filter(line => line.trim() !== "")
-    if (lines.length === 0) return { rowCount: 0, columnCount: 0, columns: [] }
-
-    const columns = lines[0].split(",").map(col => col.trim())
-    const rowCount = lines.length - 1
-    const columnCount = columns.length
-
-    return { rowCount, columnCount, columns }
-}
-
 // Upload dataset (Regulator only)
 subsidyApp.post("/uploadDataset",
     authAudit,
@@ -564,10 +553,10 @@ subsidyApp.post("/uploadDataset",
 
 // Get all datasets (Admin and Regulator)
 subsidyApp.get("/getDatasets",
-    authAudit,
     audit("GET_DATASETS", { type: "Dataset", id: req => "all_datasets" }),
     async (req, res) => {
         try {
+            req.auditActor = "SYSTEM";
             const datasets = await DatasetModel.find({}, { content: 0 }).sort({ createdAt: -1 })
             req.auditSuccess = true
             res.json({ serverMsg: "Datasets fetched", data: datasets, flag: true })
@@ -658,10 +647,10 @@ subsidyApp.put("/updateDataset/:id",
 
 // Get dataset statistics (Admin only)
 subsidyApp.get("/getDatasetStats",
-    authAudit,
     audit("GET_DATASET_STATS", { type: "Dataset", id: req => "dataset_stats" }),
     async (req, res) => {
         try {
+            req.auditActor = "SYSTEM";
             const totalDatasets = await DatasetModel.countDocuments()
             const totalSize = await DatasetModel.aggregate([{ $group: { _id: null, totalSize: { $sum: "$fileSize" } } }])
             const totalRows = await DatasetModel.aggregate([{ $group: { _id: null, totalRows: { $sum: "$rowCount" } } }])
@@ -685,7 +674,9 @@ subsidyApp.get("/getDatasetStats",
 )
 
 // For fraud flaging
-subsidyApp.put("/fruad:id", async(req,res)=>{
+subsidyApp.put("/fruad:id", 
+    audit("FLAG_FRAUD", { type: "User", id: req => req.params.id }),
+    async(req,res)=>{
     try{
         console.log(req.body.Fraud)
         const userExist = await UserModel.findOne({_id:req.params.id})
