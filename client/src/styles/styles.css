@@ -136,14 +136,6 @@ input:disabled {
   cursor: not-allowed;
 }
 
-/* Creates a circular container, could be useful in the future */
-.CircleContainer {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #fff;
-}
-
 .showPwd:hover {
   filter: brightness(85%);
   transform: scale(1.1);
@@ -285,17 +277,36 @@ input:disabled {
   margin-top: auto;
 }
 
-/* Admin Dashboard Card Styles */
-.admin-card:hover {
+/* Dashboard Card Styles */
+.dash-card {
+  background-color: var(--altBackground);
+  border: 1px solid var(--textColorBlack);
+  border-radius: 12px;
+  box-shadow: 4px 4px 8px var(--shadowColor);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  height: 100%;
+}
+
+.dash-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 24px var(--shadowColor);
+}
+
+.iconContainer {
+  border-radius: 50%;
+  background-color: var(--primaryColor);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* User Management Table Styles */
 .table-wrapper {
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 4px 4px 4px var(--shadowColor);
+  box-shadow: 0 4px 16px var(--shadowColor);
 }
 
 .user-table {
@@ -342,13 +353,13 @@ input:disabled {
   border-radius: 12px;
   max-height: 70vh;
   overflow-y: auto;
-  box-shadow: 4px 4px 4px var(--shadowColor);
+  box-shadow: 0 4px 16px var(--shadowColor);
 }
 
 /* prevent text from wrapping in table cells, useful for the audit log */
 .nowrap {
   white-space: nowrap;
-  max-width: 400px;
+  max-width: 300px;
   overflow-x: auto;
 }
 
