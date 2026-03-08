@@ -9,7 +9,6 @@ export default function Logout() {
 
     const handleLogout = () => {
         const type = getUserType()
-        localStorage.removeItem("authToken");
         if (type) {
             logoutDispatch(logout());
         } 
