@@ -1,46 +1,29 @@
 import { Container, Row, Col, Card, CardBody, CardTitle, CardText } from "reactstrap";
 import { Link } from "react-router-dom";
 import { FaUsers, FaDatabase, FaFilePdf, FaClipboardList } from "react-icons/fa";
-import Logout from "../compsMisc/Logout";
 import { useTheme } from "../compsMisc/ThemeContext.js";
 
 export default function HomeAdmin() {
     const { theme } = useTheme();
-
-    const cardStyle = {
-        backgroundColor: theme.altBackground,
-        border: `1px solid ${theme.tertiaryColor}`,
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-        cursor: "pointer",
-        textDecoration: "none"
-    };
-
-    const iconContainerStyle = {
-        width: "60px",
-        height: "60px",
-        borderRadius: "50%",
-        backgroundColor: theme.primaryColor,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: "16px"
-    };
+    
+    const iconsSize = "50px"
+    const iconStyle = {
+        height: iconsSize,
+        width: iconsSize,
+    }
 
     return (
         <Container className="py-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 style={{ color: theme.textColorAlt }}>Admin Dashboard</h2>
-                <Logout />
             </div>
 
             <Row className="g-4">
                 <Col md="6" lg="3">
                     <Link to="/manageUsers" style={{ textDecoration: "none" }}>
-                        <Card style={cardStyle} className="h-100 admin-card">
+                        <Card className="h-100 dash-card">
                             <CardBody className="text-center d-flex flex-column align-items-center justify-content-center py-5">
-                                <div style={iconContainerStyle}>
+                                <div style={iconStyle} className="iconContainer mb-2">
                                     <FaUsers size={28} color={theme.textColorAlt} />
                                 </div>
                                 <CardTitle tag="h5" style={{ color: theme.textColorAlt, fontWeight: "600" }}>
@@ -56,9 +39,9 @@ export default function HomeAdmin() {
 
                 <Col md="6" lg="3">
                     <Link to="/manageDatasets" style={{ textDecoration: "none" }}>
-                        <Card style={cardStyle} className="h-100 admin-card">
+                        <Card className="h-100 dash-card">
                             <CardBody className="text-center d-flex flex-column align-items-center justify-content-center py-5">
-                                <div style={iconContainerStyle}>
+                                <div  style={iconStyle} className="iconContainer mb-2">
                                     <FaDatabase size={28} color={theme.textColorAlt} />
                                 </div>
                                 <CardTitle tag="h5" style={{ color: theme.textColorAlt, fontWeight: "600" }}>
@@ -74,9 +57,9 @@ export default function HomeAdmin() {
 
                 <Col md="6" lg="3">
                     <Link to="/generateReport" style={{ textDecoration: "none" }}>
-                        <Card style={cardStyle} className="h-100 admin-card">
+                        <Card className="h-100 dash-card">
                             <CardBody className="text-center d-flex flex-column align-items-center justify-content-center py-5">
-                                <div style={iconContainerStyle}>
+                                <div  style={iconStyle} className="iconContainer mb-2">
                                     <FaFilePdf size={28} color={theme.textColorAlt} />
                                 </div>
                                 <CardTitle tag="h5" style={{ color: theme.textColorAlt, fontWeight: "600" }}>
@@ -92,9 +75,9 @@ export default function HomeAdmin() {
 
                 <Col md="6" lg="3">
                     <Link to="/audit" style={{ textDecoration: "none" }}>
-                        <Card style={cardStyle} className="h-100 admin-card">
+                        <Card className="h-100 dash-card">
                             <CardBody className="text-center d-flex flex-column align-items-center justify-content-center py-5">
-                                <div style={iconContainerStyle}>
+                                <div  style={iconStyle} className="iconContainer mb-2">
                                     <FaClipboardList size={28} color={theme.textColorAlt} />
                                 </div>
                                 <CardTitle tag="h5" style={{ color: theme.textColorAlt, fontWeight: "600" }}>
