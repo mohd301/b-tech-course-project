@@ -43,6 +43,7 @@ export default function Navbar() {
 
             {type === "User" &&
                 <>
+                    <Link style={{ color: theme.textColor }} to="/apply">Apply for Subsidy</Link>
                     <Link style={{ color: theme.textColor }} to="/userMap">Map</Link>
                 </>
             }
@@ -50,7 +51,16 @@ export default function Navbar() {
             {type === "Admin" &&
                 <>
                     <Link style={{ color: theme.textColor }} to="/manageUsers">Manage Users</Link>
+                    <Link style={{ color: theme.textColor }} to="/manageDatasets">View Datasets</Link>
+                    <Link style={{ color: theme.textColor }} to="/generateReport">Generate Report</Link>
                     <Link style={{ color: theme.textColor }} to="/audit">Audit Log</Link>
+                </>
+            }
+
+            {type === "Regulator" &&
+                <>
+                    <Link style={{ color: theme.textColor }} to="/uploadDataset">Upload Dataset</Link>
+                    <Link style={{ color: theme.textColor }} to="/manageDatasets">Manage Datasets</Link>
                 </>
             }
         </Container>
