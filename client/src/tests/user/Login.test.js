@@ -8,6 +8,29 @@ import axios from "axios";
 // Mock axios
 jest.mock("axios");
 
+// Mock toast
+const mockToastSuccess = jest.fn();
+const mockToastError = jest.fn();
+
+jest.mock("react-toastify", () => ({
+    toast: {
+        success: (...args) => mockToastSuccess(...args),
+        error: (...args) => mockToastError(...args),
+    },
+}));
+
+// Mock ThemeContext
+jest.mock("../../compsMisc/ThemeContext", () => ({
+    useTheme: () => ({
+        theme: {
+            primaryBackground: "#fff",
+            tertiaryColor: "#fff",
+            textColorAlt: "#000",
+            primaryColor: "#000",
+        },
+    }),
+}));
+
 // Mock useNavigate
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
@@ -45,7 +68,7 @@ beforeEach(() => {
             return { data: { serverMsg: "Incorrect Password!", flag: false } };
         }
         // Successful login
-        return { data: { serverMsg: "Welcome", flag: true, user: user.Email, token: fakeToken } };
+        return { data: { serverMsg: "Welcome", flag: true, token: fakeToken } };
     });
     // Render Login component
     render(
@@ -57,11 +80,16 @@ beforeEach(() => {
     );
     // Clear Redux store before each test
     act(() => {
-        store.dispatch({ type: 'sliceUser/logoutUser' });
+        store.dispatch({ type: 'sliceAuth/logout' });
     });
     // Clear mocks before each test
     axios.post.mockClear();
     mockNavigate.mockClear();
+
+    // Clear toast mocks
+    mockToastSuccess.mockClear();
+    mockToastError.mockClear();
+
     // Clear localStorage before tests
     localStorage.clear();
 });
@@ -85,11 +113,13 @@ test("Login success sets token and navigates", async () => {
         expect(localStorage.getItem("authToken")).toBe(fakeToken);
 
         // Check Redux state
-        const state = store.getState().user;
+        const state = store.getState().auth;
         expect(state.token).toBe(fakeToken);
-        expect(state.user).toBe("test1@example.com");
         // Check navigation
         expect(mockNavigate).toHaveBeenCalledWith("/home", { replace: true });
+
+        // Check toast success
+        expect(mockToastSuccess).toHaveBeenCalledWith("Welcome");
     });
 });
 
@@ -105,8 +135,9 @@ test("Wrong email gives user not found", async () => {
         fireEvent.click(loginButton);
     });
 
-    const errorMsg = await screen.findByText("User not found !");
-    expect(errorMsg).toBeInTheDocument();
+    await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith("User not found !");
+    });
 });
 
 test("Wrong password gives incorrect password message", async () => {
@@ -121,6 +152,7 @@ test("Wrong password gives incorrect password message", async () => {
         fireEvent.click(loginButton);
     });
 
-    const errorMsg = await screen.findByText("Incorrect Password!");
-    expect(errorMsg).toBeInTheDocument();
+    await waitFor(() => {
+        expect(mockToastError).toHaveBeenCalledWith("Incorrect Password!");
+    });
 });
