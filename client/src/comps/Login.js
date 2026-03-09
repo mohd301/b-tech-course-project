@@ -59,27 +59,27 @@ export default function Login() {
                 <div className="d-flex justify-content-center align-items-center">
 
                     <Card style={{ background: theme.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
-                        className="d-flex justify-content-center mt-4 mb-4">
+                        className="d-flex justify-content-center mt-4 mb-4 logRegCard">
 
                         {!loading ? (
                             <CardBody className="p-4">
                                 <div className="mb-5">
-                                    <h1 className="text-center" style={{ color: "white" }}>Login</h1>
+                                    <h1 className="text-center" style={{ color: theme.textColorAlt }}>Login</h1>
                                 </div>
 
-                                <Label tag="h5" style={{ color: "white" }}>Email:</Label>
+                                <Label tag="h5" style={{ color: theme.textColorAlt }}>Email:</Label>
                                 <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
                                     value={loginId} onChange={(e) => setLoginId(e.target.value)} />
                                 <br />
 
-                                <Label tag="h5" style={{ color: "white" }}>Password:</Label>
+                                <Label tag="h5" style={{ color: theme.textColorAlt }}>Password:</Label>
                                 <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
                                 <br />
 
-                                <div className="d-flex flex-column gap-4" style={{width:"50%"}}>
-                                    <Link to="forgotPwd">Forgot Password</Link>
-                                    <Link to="regUser">Register</Link>
-                                    <Link to="logPriv">Admin / Regulator</Link>
+                                <div className="d-flex flex-column gap-4" style={{ width: "50%" }}>
+                                    <Link style={{ color: theme.textColorAlt }} to="forgotPwd">Forgot Password</Link>
+                                    <Link style={{ color: theme.textColorAlt }} to="regUser">Register</Link>
+                                    <Link style={{ color: theme.textColorAlt }} to="logPriv">Admin / Regulator</Link>
                                 </div>
 
                                 <div className="d-flex align-items-end justify-content-end mt-5">
@@ -88,13 +88,13 @@ export default function Login() {
 
                             </CardBody>
                         ) : (
-                            <CenteredSpinner />
+                            <CenteredSpinner color={theme.primaryColor} />
                         )}
 
                     </Card>
                 </div>
-            </Form>
-            
-        </div>
+            </Form >
+
+        </div >
     )
 }

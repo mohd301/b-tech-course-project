@@ -47,34 +47,34 @@ export default function ChangePwd() {
                 <div className="d-flex justify-content-center align-items-center">
 
                     <Card style={{ background: theme.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
-                        className="d-flex justify-content-center mt-4 mb-4">
+                        className="d-flex justify-content-center mt-4 mb-4 logRegCard">
 
                         {!loading ? (
                             <CardBody className="p-4">
                                 <div className="mb-5">
-                                    <h1 className="text-center" style={{ color: "white" }}>Change Password</h1>
+                                    <h1 className="text-center" style={{ color: theme.textColorAlt }}>Change Password</h1>
                                 </div>
 
-                                <Label tag="h5" style={{ color: "white" }}>Old Password:</Label>
+                                <Label tag="h5" style={{ color: theme.textColorAlt }}>Old Password:</Label>
                                 <PasswordInput register={register} name={"oldPassword"} />
                                 <div style={{ minHeight: "2rem", color: theme.secondaryColor, fontSize: "0.85rem" }}>
                                     <u>{errors.oldPassword?.message}</u>
                                 </div>
 
-                                <Label tag="h5" style={{ color: "white" }}>New Password:</Label>
+                                <Label tag="h5" style={{ color: theme.textColorAlt }}>New Password:</Label>
                                 <PasswordInput register={register} name={"newPassword"} />
                                 <div style={{ minHeight: "2rem", color: theme.secondaryColor, fontSize: "0.85rem" }}>
                                     <u>{errors.newPassword?.message}</u>
                                 </div>
 
-                                <Label tag="h5" style={{ color: "white" }}>Confirm New Password:</Label>
+                                <Label tag="h5" style={{ color: theme.textColorAlt }}>Confirm New Password:</Label>
                                 <PasswordInput register={register} name={"confpwd"} />
                                 <div style={{ minHeight: "2rem", color: theme.secondaryColor, fontSize: "0.85rem" }}>
                                     <u>{errors.confpwd?.message}</u>
                                 </div>
 
                                 <div className="d-flex flex-column" style={{ width: "50%" }}>
-                                    <Link className="form-group" to="/home">Home</Link>
+                                    <Link style={{ color: theme.textColorAlt }} className="form-group" to="/home">Home</Link>
                                 </div>
 
                                 <div className="d-flex align-items-end justify-content-end mt-5">
@@ -83,7 +83,7 @@ export default function ChangePwd() {
 
                             </CardBody>
                         ) : (
-                            <CenteredSpinner />
+                            <CenteredSpinner color={theme.primaryColor} />
                         )
                         }
 

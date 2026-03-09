@@ -86,15 +86,15 @@ export default function ForgotPwd() {
                 <div className="d-flex justify-content-center align-items-center">
 
                     <Card style={{ background: theme.tertiaryColor, minHeight: "68vh", width: "50vw", borderRadius: "6vh" }}
-                        className="d-flex justify-content-center mt-4 mb-4">
+                        className="d-flex justify-content-center mt-4 mb-4 logRegCard">
 
                         {!loading ? (
                             <CardBody className="p-4">
                                 <div className="mb-5">
-                                    <h1 className="text-center" style={{ color: "white" }}>Forgot Password</h1>
+                                    <h1 className="text-center" style={{ color: theme.textColorAlt }}>Forgot Password</h1>
                                 </div>
 
-                                <Label tag="h5" style={{ color: "white" }}>Email:</Label>
+                                <Label tag="h5" style={{ color: theme.textColorAlt }}>Email:</Label>
                                 <input className="form-control" style={{ width: "45%" }} placeholder="eg@email.com" disabled={msg === "OTP verified!"}
                                     {...register('Email')} />
                                 <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
@@ -104,13 +104,13 @@ export default function ForgotPwd() {
                                 {
                                     msg === "OTP verified!" && (
                                         <>
-                                            <Label tag="h5" style={{ color: "white" }}>New Password:</Label>
+                                            <Label tag="h5" style={{ color: theme.textColorAlt }}>New Password:</Label>
                                             <PasswordInput register={register} name={"newPassword"} />
                                             <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
                                                 <u>{errors.newPassword?.message}</u>
                                             </div>
 
-                                            <Label tag="h5" style={{ color: "white" }}>Confirm New Password:</Label>
+                                            <Label tag="h5" style={{ color: theme.textColorAlt }}>Confirm New Password:</Label>
                                             <PasswordInput register={register} name={"confpwd"} />
                                             <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
                                                 <u>{errors.confpwd?.message}</u>
@@ -119,7 +119,7 @@ export default function ForgotPwd() {
                                 }
 
                                 <div className="d-flex flex-column" style={{width:"50%"}}>
-                                    <Link className="form-group" to="/">Login</Link>
+                                    <Link style={{ color: theme.textColorAlt }} className="form-group" to="/">Login</Link>
                                 </div>
 
                                 <div className="d-flex align-items-end justify-content-end mt-5">
@@ -128,7 +128,7 @@ export default function ForgotPwd() {
 
                             </CardBody>
                         ) : (
-                            <CenteredSpinner />
+                            <CenteredSpinner color={theme.primaryColor} />
                         )
                         }
 

@@ -64,28 +64,28 @@ export default function LoginPriv() {
                 <div className="d-flex justify-content-center align-items-center">
 
                     <Card style={{ background: theme.tertiaryColor, height: "68vh", width: "50vw", borderRadius: "6vh" }}
-                        className="d-flex justify-content-center mt-4 mb-4">
+                        className="d-flex justify-content-center mt-4 mb-4 logRegCard">
 
                         {!loading ? (
                             <CardBody className="p-4">
                                 <div className="mb-5">
-                                    <h1 className="text-center" style={{ color: "white" }}>Admin / Regulator Login</h1>
+                                    <h1 className="text-center" style={{ color: theme.textColorAlt }}>Admin / Regulator Login</h1>
                                 </div>
 
                                 <FormGroup>
-                                    <Label tag="h5" style={{ color: "white" }}>Email:</Label>
+                                    <Label tag="h5" style={{ color: theme.textColorAlt }}>Email:</Label>
                                     <Input style={{ width: "45%" }} name="UserName" placeholder="eg@email.com"
                                         value={loginId} onChange={(e) => setLoginId(e.target.value)} />
                                 </FormGroup>
 
 
                                 <FormGroup>
-                                    <Label tag="h5" style={{ color: "white" }}>Password:</Label>
+                                    <Label tag="h5" style={{ color: theme.textColorAlt }}>Password:</Label>
                                     <PasswordInput value={loginPwd} onChange={(e) => setLoginPwd(e.target.value)} />
                                 </FormGroup>
 
                                 <div className="d-flex flex-column" style={{ width: "50%" }}>
-                                    <Link className="form-group" to="/">User Login</Link>
+                                    <Link style={{ color: theme.textColorAlt }} className="form-group" to="/">User Login</Link>
                                 </div>
 
                                 <div className="d-flex align-items-end justify-content-end mt-5">
@@ -94,7 +94,7 @@ export default function LoginPriv() {
 
                             </CardBody>
                         ) : (
-                            <CenteredSpinner />
+                            <CenteredSpinner color={theme.primaryColor} />
                         )
                         }
                     </Card>

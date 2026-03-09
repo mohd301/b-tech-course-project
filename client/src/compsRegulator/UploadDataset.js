@@ -98,7 +98,7 @@ export default function UploadDataset() {
     };
 
     const dropZoneStyle = {
-        border: `2px dashed ${dragActive ? theme.primaryColor : theme.tertiaryColor}`,
+        border: `2px dashed ${dragActive ? theme.primaryColor : theme.textColorAlt}`,
         borderRadius: "12px",
         padding: "40px",
         textAlign: "center",
@@ -177,7 +177,7 @@ export default function UploadDataset() {
                                         style={{
                                             backgroundColor: theme.altBackground,
                                             color: theme.textColorAlt,
-                                            border: `1px solid ${theme.tertiaryColor}`
+                                            border: `1px solid ${theme.textColorAlt}`
                                         }}
                                     />
                                 </FormGroup>

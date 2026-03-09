@@ -30,8 +30,8 @@ export default function Navbar() {
                     <div >
                         {type === "User" &&
                             <>
-                                <Link style={{ color: theme.textColor }} to="changePwd">Change Password</Link>
-                                <hr style={{ height: "0.2rem", border: "none", backgroundColor: "white" }} />
+                                <Link style={{ color: theme.textColorAlt }} to="changePwd">Change Password</Link>
+                                <hr style={{ height: "0.15rem", border: "none", backgroundColor: theme.textColorAlt }} />
                             </>
                         }
                         <Logout />

@@ -5,12 +5,12 @@ body {
 
 input::placeholder {
   color: #7D7D7D;
-  opacity: 0.5;
+  opacity: 0.8;
 }
 
 .form-control::placeholder {
   color: #7D7D7D;
-  opacity: 0.5;
+  opacity: 0.8;
 }
 
 /* Button Styles */
@@ -98,14 +98,14 @@ a:hover {
 
 .txtBtn {
   font-size: 1rem;
-  color: white;
+  color: var(--textColorAlt);
   font-weight: 300;
   text-underline-offset: 5px;
   transform-origin: center center;
 }
 
 .txtBtn:hover {
-  color: white;
+  color: var(--textColorAlt);
   transition: transform 0.2s ease, color 0.2s ease;
   transform: scale(1.05);
   cursor: pointer;
@@ -256,6 +256,21 @@ input:disabled {
 
 .modal-footer {
   border-top: 1px solid var(--textColorAlt);
+}
+
+/* ## Card Styles ## */
+
+.logRegCard{
+  box-shadow: 0px 4px 16px var(--shadowColor);
+  border: 2px solid var(--shadowColor);
+}
+
+.logRegCard input{
+  border: 2px solid var(--shadowColor);
+}
+
+.logRegCard .form-control{
+  border: 2px solid var(--shadowColor);
 }
 
 /* User Management Card Styles */
