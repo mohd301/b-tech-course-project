@@ -674,7 +674,7 @@ subsidyApp.get("/getDatasetStats",
 )
 
 // For fraud flaging
-subsidyApp.put("/fruad:id", 
+subsidyApp.put("/fruad/:id", 
     audit("FLAG_FRAUD", { type: "User", id: req => req.params.id }),
     async(req,res)=>{
     try{
@@ -687,6 +687,8 @@ subsidyApp.put("/fruad:id",
             console.log(12)
             req.auditSuccess=true
             await UserModel.findOneAndUpdate({_id:req.params.id},{$set:{Fruad:req.body.Fraud}})
+            console.log(2)
+            return res.status(200).json({ serverMsg: "Update Successful", flag: true });
         }
     }catch(e){
         console.log(e)
