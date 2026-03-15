@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt"
 dotenv.config();
 
+// ## OTP Functions ##
+
 // Create email transporter
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -58,3 +60,17 @@ export const verifyOtp = async (otpModel, Email, OTP) => {
 
     return "success";
 };
+
+// ## Other Email Functions ##
+
+export const sendFraudEmail = async(regModel, id)=>{
+    const regs = await regModel.find()
+    for(let reg of regs){
+        transporter.sendMail({
+            from: process.env.EMAIL,
+            to: reg.Email,
+            subject: "Fraud Alert",
+            text: `A potential fraud case has been detected for user with ID: ${id}`
+        });
+    }
+}
