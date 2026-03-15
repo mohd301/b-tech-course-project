@@ -686,7 +686,7 @@ subsidyApp.put("/fruad/:id",
             } else {
                 req.auditSuccess = true
                 sendFraudEmail(PrivUserModel, req.params.id)
-                await UserModel.findOneAndUpdate({ _id: req.params.id }, { $set: { Fruad: req.body.Fraud } })
+                await UserModel.findOneAndUpdate({ _id: req.params.id }, { $set: { Fraud: req.body.Fraud } })
                 return res.json({ serverMsg: "Update Successful!", flag: true });
             }
         } catch (e) {
