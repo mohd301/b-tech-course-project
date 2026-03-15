@@ -17,7 +17,7 @@ import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
 import parseCSV from "./functions/parseCSV.js"
 
-import { generateOtp, sendOtpEmail, saveOtp, verifyOtp } from "./otp.js"
+import { generateOtp, sendOtpEmail, saveOtp, verifyOtp, sendFraudEmail } from "./email.js"
 
 const subsidyApp = new express()
 subsidyApp.use(express.json())
@@ -674,23 +674,23 @@ subsidyApp.get("/getDatasetStats",
 )
 
 // For fraud flaging
-subsidyApp.put("/fruad/:id", 
+subsidyApp.put("/fruad/:id",
     audit("FLAG_FRAUD", { type: "User", id: req => req.params.id }),
-    async(req,res)=>{
-    try{
-        console.log(req.body.Fraud)
-        const userExist = await UserModel.findOne({_id:req.params.id})
-        if(!userExist){
-            req.auditSuccess=false
-            res.json({serverMsg:"User not found",flag: false})
-        }else{
-            console.log(12)
-            req.auditSuccess=true
-            await UserModel.findOneAndUpdate({_id:req.params.id},{$set:{Fruad:req.body.Fraud}})
-            console.log(2)
-            return res.status(200).json({ serverMsg: "Update Successful", flag: true });
+    async (req, res) => {
+        try {
+            req.auditActor = "SYSTEM"
+            const userExist = await UserModel.findOne({ _id: req.params.id })
+            if (!userExist) {
+                req.auditSuccess = false
+                res.json({ serverMsg: "User not found!", flag: false })
+            } else {
+                req.auditSuccess = true
+                sendFraudEmail(PrivUserModel, req.params.id)
+                await UserModel.findOneAndUpdate({ _id: req.params.id }, { $set: { Fruad: req.body.Fraud } })
+                return res.json({ serverMsg: "Update Successful!", flag: true });
+            }
+        } catch (e) {
+            req.auditSuccess = false
+            console.log(e)
         }
-    }catch(e){
-        console.log(e)
-    }
-})
+    })
