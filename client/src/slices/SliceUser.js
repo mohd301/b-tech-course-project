@@ -63,7 +63,7 @@ export const userUpdusrThunk = createAsyncThunk("sliceUser/upduser", async (user
 })
 export const userApplyThunk = createAsyncThunk("sliceUser/Apply",async (userData,)=>{
     try{
-        const El = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}//Eligibility/${userData.ID}/${userData._id}`, userData)
+        const El = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/Eligibility/${userData.ID}/${userData._id}`, userData)
         return (El.data)
     }catch(err){
         console.log(err)
