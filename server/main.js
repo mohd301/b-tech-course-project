@@ -750,3 +750,12 @@ subsidyApp.get("/Eligibility/:ID/:_id",
         }
     }
 )
+subsidyApp.get("/veiwELlink",async(req,res)=>{
+    try{
+        const elist= await ELinkModel.find()
+        res.json({serverMsg:"success",data:elist})
+        
+    }catch(e){
+        console.log(e)
+    }
+})
