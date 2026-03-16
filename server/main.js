@@ -750,9 +750,11 @@ subsidyApp.get("/Eligibility/:ID/:_id",
         }
     }
 )
-subsidyApp.get("/veiwELlink",async(req,res)=>{
+subsidyApp.get("/veiwELlink",audit("Viewing ELink",{type:"USER",id:req=>"all info"}),async(req,res)=>{
     try{
         const elist= await ELinkModel.find()
+        req.auditSuccess = true;
+            req.auditActor = "SYSTEM";
         res.json({serverMsg:"success",data:elist})
         
     }catch(e){
