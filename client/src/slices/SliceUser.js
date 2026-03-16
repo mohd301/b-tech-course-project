@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios"
+import { act } from "react";
 
 export const addUserThunk = createAsyncThunk("sliceUser/addUserThunk", async (userData) => {
     try {
@@ -60,13 +61,23 @@ export const userUpdusrThunk = createAsyncThunk("sliceUser/upduser", async (user
         throw (err)
     }
 })
+export const userApplyThunk = createAsyncThunk("sliceUser/Apply",async (userData,)=>{
+    try{
+        const El = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}//Eligibility/${userData.ID}/${userData._id}`, userData)
+        return (El.data)
+    }catch(err){
+        console.log(err)
+        throw(err)
+    }
+})
 
 const initialState = {
     user: null,
     msg: null,
     token: null,
     flag: false,
-    loading: false
+    loading: false,
+    data:null,
 }
 
 const sliceUser = createSlice(
@@ -175,7 +186,24 @@ const sliceUser = createSlice(
                 state.flag = action.payload.flag
                 state.loading = false
             })
+            builder.addCase(userApplyThunk.fulfilled,(state,action)=>{
+                state.msg=action.payload.serverMsg
+                state.flag=action.payload.flag
+                state.data=action.payload.Data
+                state.loading=false
+            })
+            builder.addCase(userApplyThunk.pending,(state,action)=>{
+                state.msg=""
+                state.flag=false
+                
+            state.loading=true
+            })
+            builder.addCase(userApplyThunk.rejected,(state,action)=>{
+                state.msg = action.error.message
+                state.loading = false
+            })
         }
+
     }
 )
 

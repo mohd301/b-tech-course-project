@@ -12,6 +12,7 @@ import otpModel from "./models/OtpModel.js"
 import MLmodel from "./models/MlModel.js"
 import AuditModel from "./models/AuditModel.js"
 import DatasetModel from "./models/DatasetModel.js"
+import ELinkModel from "./models/ELink.js"
 
 import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
@@ -694,3 +695,36 @@ subsidyApp.put("/fruad/:id",
             console.log(e)
         }
     })
+    subsidyApp.get("/Eligibility/:ID/:_id",
+        audit("Eligibility_flag",{type:"User",ID:req=>req.params.ID,_id:req=>req.params._id}),
+        async(req,res)=>{
+            try{
+                req.auditActor
+                const userExist = await UserModel.findOne({_id:req.params._id})
+                 if(!userExist){
+                     req.auditSuccess=false
+                     res.json({serverMsg:"UserNotFound!",flag: false })   
+                    }else{
+                        req.auditSuccess=true
+                        const mml= await fetch(`127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
+                        const data = await mml.json()
+                        
+
+                        const newdata={
+                            UserID:req.params._id,
+                            NationalID:req.params.ID,
+                            Email:req.params.Email,
+                            Fraud:data.Fraud,
+                            Eligibility:data.Eligibity
+
+                        }
+                        await ELinkModel.create(newdata)
+                        res.json({serverMsg:"Success!",flag:true,Data:data})
+                    }
+            }
+            catch(e){
+                req.auditSuccess=false
+                console.log(e)
+            }
+        }
+    )
