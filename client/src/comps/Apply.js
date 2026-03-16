@@ -2,7 +2,7 @@ import axios from "axios"
 import { useState, useEffect } from "react"
 import { Button, Input, Card, Form, Label, CardBody, CardImg, CardHeader, CardFooter } from "reactstrap"
 import { useTheme } from "../compsMisc/ThemeContext"
-import { useSelector } from "react-redux"
+import { useSelector,useDispatch } from "react-redux"
 import { decryptToken } from "../functions/decryptToken"
 import { FiXCircle } from "react-icons/fi";
 import { FiCheckCircle } from "react-icons/fi";
@@ -13,28 +13,43 @@ export default function Apply() {
     const { theme } = useTheme()
     const [Data, Setdata] = useState()
     const [res,Setres]=useState("")
-    async function getdata(ID) {
-        try {
-            console.log(ID)
-            const res = await axios.get("http://127.0.0.1:5000/EEml/" + ID + "/" + user.id)
+    const dispatch = useDispatch()
+    const data = useSelector((state)=>state.user.data)
+    async function getdata(data) {
+        // try {
+        //     console.log(ID)
+        //     const res = await axios.get("http://127.0.0.1:5000/EEml/" + ID + "/" + user.id)
 
-            console.log(res.data)
-            Setdata(res.data)
-            Setres("!")
+        //     console.log(res.data)
+        //     Setdata(res.data)
+        //     Setres("!")
 
-        } catch (e) {
+        // } catch (e) {
+        //     console.log(e)
+        // }
+        try{
+            const res = await dispatch(userApplyThunk).unwrap()
+            return res
+        }catch(e){
             console.log(e)
         }
     }
     const handleid = (e) => {
         SetId(e.target.value)
     }
-    console.log(Data?.Eligibity)
-    console.log(Data?.reson)
+    console.log(res.data?.Eligibity)
+    console.log(res.data?.reson)
     const [ID, SetId] = useState()
+    const userdata={
+        ID,
+        _id:user.id,
+        Email:user.Email,
+
+
+    }
 
     const onsubmit = () => {
-        getdata(ID)
+        getdata(userdata)
     }
     return (
         <>
@@ -50,7 +65,7 @@ export default function Apply() {
                                 <Label style={{ color: theme.textColorAlt }}>Enter your ID</Label>
                                 <Input type="text" name="ID" style={{ width: "45%" }} value={ID} onChange={handleid} placeholder="ID"></Input>
                                 {res==="!"?(
-                                Data?.Eligibity === 1 ? (
+                                res.data?.Eligibity === 1 ? (
                                     <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }} 
                                     className="d-flex justify-content-center mt-4 mb-4 logRegCard">
                                         <CardHeader className="d-flex justify-content-center">
@@ -70,7 +85,7 @@ export default function Apply() {
                                          <CardFooter>
                                     <p style={{ color: theme.textColorAlt }} className="text-center">Not Eligible</p>
                                     
-                                    <p style={{ color: theme.textColorAlt }} className="text-center">{Data?.reson} is too high</p>
+                                    <p style={{ color: theme.textColorAlt }} className="text-center">{res.data?.reson} is too high</p>
                                     </CardFooter>
                                     </Card>
                                 ))
