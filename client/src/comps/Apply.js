@@ -31,7 +31,10 @@ export default function Apply() {
         // }
         try {
             const res = await dispatch(userApplyThunk(data)).unwrap()
-            return res
+            Setdata(res.Data)
+            console.log(res)
+            Setres("!")
+            
         } catch (e) {
             console.log(e)
         }
@@ -39,8 +42,8 @@ export default function Apply() {
     const handleid = (e) => {
         SetId(e.target.value)
     }
-    console.log(res.data?.Eligibity)
-    console.log(res.data?.reson)
+    console.log(Data)
+    console.log(Data?.reson)
     const [ID, SetId] = useState("")
     const userdata = {
         ID,
@@ -65,7 +68,7 @@ export default function Apply() {
                                 <Label style={{ color: theme.textColorAlt }}>Enter your ID</Label>
                                 <Input type="text" name="ID" style={{ width: "45%" }} value={ID} onChange={handleid} placeholder="ID"></Input>
                                 {res === "!" ? (
-                                    res.data?.Eligibity === 1 ? (
+                                    Data?.Eligibity === 1 ? (
                                         <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }}
                                             className="d-flex justify-content-center mt-4 mb-4 logRegCard">
                                             <CardHeader className="d-flex justify-content-center">
@@ -85,7 +88,7 @@ export default function Apply() {
                                             <CardFooter>
                                                 <p style={{ color: theme.textColorAlt }} className="text-center">Not Eligible</p>
 
-                                                <p style={{ color: theme.textColorAlt }} className="text-center">{res.data?.reson} is too high</p>
+                                                <p style={{ color: theme.textColorAlt }} className="text-center">{Data.reson} is too high</p>
                                             </CardFooter>
                                         </Card>
                                     ))

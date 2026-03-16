@@ -705,20 +705,43 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                 req.auditSuccess = false
                 res.json({ serverMsg: "UserNotFound!", flag: false })
             } else {
-                req.auditSuccess = true
-                const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`) // was missing http://
-                const data = await mml.json()
+                const docexist = await ELinkModel.findOne({ UserID: req.params._id })
 
-                const newdata = {
-                    UserID: req.params._id,
-                    NationalID: req.params.ID,
-                    Email: userExist.Email, // Fixed to use found user email
-                    Fraud: data.Fraud,
-                    Eligibility: data.Eligibity
+                if (docexist) {
+                     req.auditSuccess = true
+                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`) // was missing http://
+                    const data = await mml.json()
+                    console.log("A")
+                    console.log(data)
 
+                    await ELinkModel.findOneAndUpdate({ UserID: req.params._id }, {
+                        $set: {
+                            NationalID: req.params.ID,
+                            Email: userExist.Email, // Fixed to use found user email
+                            Fraud: data.Fraud,
+                            Eligibility: data.Eligibity
+                        }
+                    })
+                    console.log("b")
+                    res.json({ serverMsg: "Success!", flag: true, Data: data })
+                    console.log(data)
+
+                } else {
+                    req.auditSuccess = true
+                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`) // was missing http://
+                    const data = await mml.json()
+
+                    const newdata = {
+                        UserID: req.params._id,
+                        NationalID: req.params.ID,
+                        Email: userExist.Email, // Fixed to use found user email
+                        Fraud: data.Fraud,
+                        Eligibility: data.Eligibity
+
+                    }
+                    await ELinkModel.create(newdata)
+                    res.json({ serverMsg: "Success!", flag: true, Data: data })
                 }
-                await ELinkModel.create(newdata)
-                res.json({ serverMsg: "Success!", flag: true, Data: data })
             }
         }
         catch (e) {
