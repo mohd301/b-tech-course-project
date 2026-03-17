@@ -126,7 +126,7 @@ subsidyApp.post("/loginPriv",
 // Register a new user with encrypted password
 subsidyApp.post("/addUser",
     audit("REGISTRATION", {
-        type: "User",
+        type: "Applicant",
         id: req => req.body.Email
     }),
     async (req, res) => {
@@ -210,7 +210,7 @@ subsidyApp.post("/verifyOtp",
 //Login verification
 subsidyApp.post(
     "/loginUser",
-    audit("LOGIN", {
+    audit("LOGIN_APPLICANT", {
         type: "Auth",
         id: req => req.body.Email // temporary identifier
     }),
@@ -252,16 +252,27 @@ subsidyApp.post(
     }
 );
 
-// Change Password for User
+// Change Password
 subsidyApp.put("/chgPassword",
     authAudit, // This will decode user authenticatication and attach user info to req.user
-    audit("CHANGE_PASSWORD_USER", {
+    audit("CHANGE_PASSWORD", {
         type: "User",
         id: req => req.user.id // use authenticated user's ID for logging
     }),
     async (req, res) => {
         try {
-            const user = await UserModel.findById(req.user.id)
+            let modelToUse
+            switch (req.user.type) {
+                case "User":
+                    modelToUse = UserModel; break;
+                case "Admin":
+                    modelToUse = PrivUserModel; break;
+                case "Regulator":
+                    modelToUse = PrivUserModel; break;
+                default:
+                    throw new Error("Invalid user type");
+            };
+            const user = await modelToUse.findById(req.user.id);
             if (!user) {
                 req.auditSuccess = false;
                 return res.json({ serverMsg: "User not found !", flag: false })
@@ -273,7 +284,7 @@ subsidyApp.put("/chgPassword",
                 res.json({ serverMsg: "Incorrect Password!", flag: false })
             } else {
                 const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
-                await UserModel.findByIdAndUpdate(req.user.id, { Password: encryptedPassword })
+                await modelToUse.findByIdAndUpdate(req.user.id, { Password: encryptedPassword })
 
                 req.auditSuccess = true;
                 res.json({ serverMsg: "Password changed successfully!", flag: true })
@@ -285,10 +296,10 @@ subsidyApp.put("/chgPassword",
         }
     })
 
-// Forgot Password for User
+// Forgot Password for Applicant
 subsidyApp.put("/forgotPassword",
-    audit("FORGOT_PASSWORD_USER", {
-        type: "User",
+    audit("FORGOT_PASSWORD_APPLICANT", {
+        type: "Applicant",
         id: req => req.body.Email
     }),
     async (req, res) => {
@@ -320,7 +331,7 @@ subsidyApp.put("/forgotPassword",
 // Get Users
 subsidyApp.get("/getUser",
     audit("GET_USERS", {
-        type: "User",
+        type: "Applicant",
         id: req => "all_users"
     }),
     async (req, res) => {
@@ -347,11 +358,11 @@ subsidyApp.get("/getPrivUser", async (req, res) => {
 
 })
 
-// Delete User
+// Delete Applicant
 subsidyApp.delete("/delUser/:id",
     authAudit,
-    audit("DELETE_USER", {
-        type: "User",
+    audit("DELETE_APPLICANT", {
+        type: "Applicant",
         id: req => req.user.id
     }), async (req, res) => {
         try {
@@ -365,10 +376,10 @@ subsidyApp.delete("/delUser/:id",
         }
     })
 
-// Update user Admin
+// Update applicant Admin
 subsidyApp.put("/upduser/:id",
     authAudit,
-    audit("UPDATE_USER", { type: "User", id: req => req.params.id }),
+    audit("UPDATE_APPLICANT", { type: "Applicant", id: req => req.params.id }),
     async (req, res) => {
         try {
             const userExist = await UserModel.findOne({ _id: req.params.id })
@@ -676,7 +687,7 @@ subsidyApp.get("/getDatasetStats",
 
 // For fraud flaging
 subsidyApp.put("/fruad/:id",
-    audit("FLAG_FRAUD", { type: "User", id: req => req.params.id }),
+    audit("FLAG_FRAUD", { type: "Applicant", id: req => req.params.id }),
     async (req, res) => {
         try {
             req.auditActor = "SYSTEM"
@@ -696,7 +707,7 @@ subsidyApp.put("/fruad/:id",
         }
     })
 subsidyApp.get("/Eligibility/:ID/:_id",
-    audit("Eligibility_flag", { type: "User", id: req => req.params.ID }), // fixed to correct parameter
+    audit("ELIGIBILITY_FLAG", { type: "Applicant", id: req => req.params.ID }),
     async (req, res) => {
         try {
             req.auditActor = req.params._id; // log by mongodb user ID
@@ -708,8 +719,8 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                 const docexist = await ELinkModel.findOne({ UserID: req.params._id })
 
                 if (docexist) {
-                     req.auditSuccess = true
-                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`) // was missing http://
+                    req.auditSuccess = true
+                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
                     const data = await mml.json()
                     console.log("A")
                     console.log(data)
@@ -717,7 +728,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                     await ELinkModel.findOneAndUpdate({ UserID: req.params._id }, {
                         $set: {
                             NationalID: req.params.ID,
-                            Email: userExist.Email, // Fixed to use found user email
+                            Email: userExist.Email,
                             Fraud: data.Fraud,
                             Eligibility: data.Eligibity
                         }
@@ -728,13 +739,13 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 
                 } else {
                     req.auditSuccess = true
-                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`) // was missing http://
+                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
                     const data = await mml.json()
 
                     const newdata = {
                         UserID: req.params._id,
                         NationalID: req.params.ID,
-                        Email: userExist.Email, // Fixed to use found user email
+                        Email: userExist.Email,
                         Fraud: data.Fraud,
                         Eligibility: data.Eligibity
 
@@ -750,14 +761,14 @@ subsidyApp.get("/Eligibility/:ID/:_id",
         }
     }
 )
-subsidyApp.get("/veiwELlink",audit("Viewing ELink",{type:"USER",id:req=>"all info"}),async(req,res)=>{
-    try{
-        const elist= await ELinkModel.find()
+subsidyApp.get("/veiwELlink", audit("Viewing ELink", { type: "USER", id: req => "all info" }), async (req, res) => {
+    try {
+        const elist = await ELinkModel.find()
         req.auditSuccess = true;
-            req.auditActor = "SYSTEM";
-        res.json({serverMsg:"success",data:elist})
-        
-    }catch(e){
+        req.auditActor = "SYSTEM";
+        res.json({ serverMsg: "success", data: elist })
+
+    } catch (e) {
         console.log(e)
     }
 })
