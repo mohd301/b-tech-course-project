@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { FaUser } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { FaBell } from "react-icons/fa6";
 
 import { getUserType } from "../functions/getUserType.js";
 import { useTheme } from "./ThemeContext.js";
@@ -19,7 +20,7 @@ export default function Navbar() {
     const route = determineRoute(type);
 
     return (
-        <Container fluid style={{ background: theme.secondaryColor, minHeight: '5vh' }} className="d-flex gap-5 position-relative align-items-center justify-content-center">
+        <Container fluid style={{ background: theme.secondaryColor, minHeight: '5.5vh' }} className="d-flex gap-5 position-relative align-items-center justify-content-center">
 
             <div className="profileMenu" style={{ position: 'absolute', left: '1rem', fontSize: '1.5rem' }}>
                 <div className="iconButton d-flex align-items-center justify-content-center">
@@ -28,12 +29,8 @@ export default function Navbar() {
 
                 <div className="dropdownMenu">
                     <div >
-                        {type === "User" &&
-                            <>
-                                <Link style={{ color: theme.textColorAlt }} to="changePwd">Change Password</Link>
-                                <hr style={{ height: "0.15rem", border: "none", backgroundColor: theme.textColorAlt }} />
-                            </>
-                        }
+                        <Link style={{ color: theme.textColorAlt }} to="changePwd">Change Password</Link>
+                        <hr style={{ height: "0.15rem", border: "none", backgroundColor: theme.textColorAlt }} />
                         <Logout />
                     </div>
                 </div>
