@@ -1,6 +1,6 @@
 import { Button, Container, Form, Label, Card, CardBody } from "reactstrap"
 import { Link } from "react-router-dom"
-import { userChgPwdThunk } from "../slices/SliceUser"
+import { ChgPwdThunk } from "../slices/SliceAuth"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { useForm } from 'react-hook-form';
@@ -8,6 +8,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "react-toastify"
 
 import { useTheme } from "../compsMisc/ThemeContext"
+import { determineRoute } from "../functions/determineRoute"
+import { getUserType } from "../functions/getUserType"
 
 import SchemaChgPwd from "../validations/SchemaChgPwd"
 import PasswordInput from "../compsMisc/PasswordInput"
@@ -16,9 +18,8 @@ import CenteredSpinner from "../compsMisc/CenteredSpinner"
 export default function ChangePwd() {
     const { theme } = useTheme();
 
-    const user = useSelector(state => state.user.user)
-    const msg = useSelector((state) => state.user.msg)
-    const loading = useSelector((state) => state.user.loading)
+    const msg = useSelector((state) => state.auth.msg)
+    const loading = useSelector((state) => state.auth.loading)
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
@@ -28,12 +29,12 @@ export default function ChangePwd() {
 
     const handleChgPwd = async (data) => {
         try {
-            data.Email = user
-            const res = await dispatch(userChgPwdThunk(data)).unwrap()
+            const res = await dispatch(ChgPwdThunk(data)).unwrap()
             const serverMsg = res.serverMsg
             if (serverMsg === "Password changed successfully!") {
                 toast.success(serverMsg)
-                navigate("/home", { replace: true });
+                const route = determineRoute(getUserType())
+                navigate(route, { replace: true });
             } else {
                 toast.error(serverMsg)
             }
