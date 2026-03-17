@@ -18,7 +18,7 @@ import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
 import parseCSV from "./functions/parseCSV.js"
 
-import { generateOtp, sendOtpEmail, saveOtp, verifyOtp, sendFraudEmail } from "./email.js"
+import { generateOtp, sendOtpEmail, saveOtp, verifyOtp, sendFraudEmail, sendEligibilityEmail } from "./email.js"
 
 const subsidyApp = new express()
 subsidyApp.use(express.json())
@@ -686,6 +686,7 @@ subsidyApp.get("/getDatasetStats",
 )
 
 // For fraud flaging
+// !! Is this not redudant now? handled by Eligibility Route !!
 subsidyApp.put("/fruad/:id",
     audit("FLAG_FRAUD", { type: "Applicant", id: req => req.params.id }),
     async (req, res) => {
@@ -697,7 +698,6 @@ subsidyApp.put("/fruad/:id",
                 res.json({ serverMsg: "User not found!", flag: false })
             } else {
                 req.auditSuccess = true
-                sendFraudEmail(PrivUserModel, req.params.id)
                 await UserModel.findOneAndUpdate({ _id: req.params.id }, { $set: { Fraud: req.body.Fraud } })
                 return res.json({ serverMsg: "Update Successful!", flag: true });
             }
@@ -717,30 +717,32 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                 res.json({ serverMsg: "UserNotFound!", flag: false })
             } else {
                 const docexist = await ELinkModel.findOne({ UserID: req.params._id })
+                const civilIdInUse = await ELinkModel.findOne({ NationalID: req.params.ID })
 
-                if (docexist) {
+                // No need to recheck elibility for user who already got result
+                // Also check if civil ID is already used by another user to prevent fraud (one user cannot link with multiple civil IDs and one civil ID cannot link with multiple users)
+                if (docexist || civilIdInUse) {
                     req.auditSuccess = true
-                    const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
-                    const data = await mml.json()
-                    console.log("A")
-                    console.log(data)
 
-                    await ELinkModel.findOneAndUpdate({ UserID: req.params._id }, {
-                        $set: {
-                            NationalID: req.params.ID,
-                            Email: userExist.Email,
-                            Fraud: data.Fraud,
-                            Eligibility: data.Eligibity
-                        }
-                    })
-                    console.log("b")
-                    res.json({ serverMsg: "Success!", flag: true, Data: data })
-                    console.log(data)
+                    res.json({ serverMsg: "Eligibility result already recieved or civil ID already in use.", flag: true })
 
                 } else {
                     req.auditSuccess = true
                     const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
                     const data = await mml.json()
+
+                    switch (data.Eligibity) {
+                        case 1:
+                            if (data.Fraud === 1) {
+                                sendFraudEmail(PrivUserModel, req.params.ID)
+                                sendEligibilityEmail(userExist.Email, "Your case requires further review due to potential issues with your information.")
+                            } else {
+                                sendEligibilityEmail(userExist.Email, "Congratulations! You are eligible for the subsidy.");
+                            }
+                            break;
+                        case 0:
+                            sendEligibilityEmail(userExist.Email, "We regret to inform you that you are not eligible for the subsidy."); break;
+                    }
 
                     const newdata = {
                         UserID: req.params._id,
@@ -761,14 +763,14 @@ subsidyApp.get("/Eligibility/:ID/:_id",
         }
     }
 )
-subsidyApp.get("/veiwELlink", audit("Viewing ELink", { type: "USER", id: req => "all info" }), async (req, res) => {
+subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
         const elist = await ELinkModel.find()
         req.auditSuccess = true;
         req.auditActor = "SYSTEM";
         res.json({ serverMsg: "success", data: elist })
-
     } catch (e) {
+        req.auditSuccess = false
         console.log(e)
     }
 })
