@@ -63,9 +63,9 @@ export const verifyOtp = async (otpModel, Email, OTP) => {
 
 // ## Other Email Functions ##
 
-export const sendFraudEmail = async(regModel, id)=>{
+export const sendFraudEmail = async (regModel, id) => {
     const regs = await regModel.find()
-    for(let reg of regs){
+    for (let reg of regs) {
         transporter.sendMail({
             from: process.env.EMAIL,
             to: reg.Email,
@@ -73,4 +73,13 @@ export const sendFraudEmail = async(regModel, id)=>{
             text: `A potential fraud case has been detected for user with ID: ${id}`
         });
     }
+}
+
+export const sendEligibilityEmail = async (applicantEmail, msg) => {
+    transporter.sendMail({
+        from: process.env.EMAIL,
+        to: applicantEmail,
+        subject: "Eligibility Status",
+        text: msg
+    });
 }
