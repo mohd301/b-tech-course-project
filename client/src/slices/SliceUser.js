@@ -32,17 +32,6 @@ export const verifyOtpThunk = createAsyncThunk("sliceUser/verifyOtpThunk", async
     }
 })
 
-export const userChgPwdThunk = createAsyncThunk("sliceUser/userChgPwdThunk", async (userData) => {
-    try {
-        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/chgPassword`, userData,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } })
-        return (User.data)
-    } catch (err) {
-        console.log(err)
-        throw (err)
-    }
-})
-
 export const userForgotPwdThunk = createAsyncThunk("sliceUser/userForgotPwdThunk", async (userData) => {
     try {
         const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/forgotPassword`, userData)
@@ -142,24 +131,6 @@ const sliceUser = createSlice(
             })
 
             builder.addCase(verifyOtpThunk.rejected, (state, action) => {
-                state.msg = action.error.message
-                state.loading = false
-            })
-
-            // Change Password
-            builder.addCase(userChgPwdThunk.pending, (state, action) => {
-                state.loading = true
-                state.flag = false
-                state.msg = ""
-            })
-
-            builder.addCase(userChgPwdThunk.fulfilled, (state, action) => {
-                state.msg = action.payload.serverMsg
-                state.flag = action.payload.flag
-                state.loading = false
-            })
-
-            builder.addCase(userChgPwdThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.loading = false
             })

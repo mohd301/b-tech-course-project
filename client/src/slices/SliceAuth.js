@@ -21,6 +21,17 @@ export const userLoginThunk = createAsyncThunk("sliceAuth/userLoginThunk", async
     }
 })
 
+export const ChgPwdThunk = createAsyncThunk("sliceAuth/ChgPwdThunk", async (userData) => {
+    try {
+        const User = await axios.put(`http://localhost:${process.env.REACT_APP_PORT}/chgPassword`, userData,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } })
+        return (User.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
 const initialState = {
     msg: null,
     token: null,
@@ -91,6 +102,24 @@ const sliceAuth = createSlice(
                 state.msg = action.error.message
                 state.loading = false
                 state.flag = false
+            })
+
+            // Change Password
+            builder.addCase(ChgPwdThunk.pending, (state, action) => {
+                state.loading = true
+                state.flag = false
+                state.msg = ""
+            })
+
+            builder.addCase(ChgPwdThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(ChgPwdThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.loading = false
             })
         }
     }
