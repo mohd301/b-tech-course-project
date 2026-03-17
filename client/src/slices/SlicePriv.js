@@ -138,12 +138,26 @@ export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetSt
     }
 })
 
+// Fetch Eligibility info
+export const fetchELInfoThunk = createAsyncThunk("privSlice/fetchELInfoThunk", async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/viewELlink`,
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
 const initialState = {
     msg: null,
     userList: [],
     auditLogs: [],
     datasetList: [],
     datasetStats: null,
+    elInfo: [],
     loading: false,
     flag: false,
 }
@@ -317,6 +331,25 @@ const privSlice = createSlice(
             })
 
             builder.addCase(fetchDatasetStatsThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Fetch eligibility info
+            builder.addCase(fetchELInfoThunk.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchELInfoThunk.fulfilled, (state, action) => {
+                state.elInfo = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchELInfoThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.flag = false
                 state.loading = false

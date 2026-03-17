@@ -8,16 +8,26 @@ import { FaBell } from "react-icons/fa6";
 import { getUserType } from "../functions/getUserType.js";
 import { useTheme } from "./ThemeContext.js";
 import { determineRoute } from "../functions/determineRoute.js";
+import { fetchELInfoThunk } from "../slices/SlicePriv.js";
 
 import Logout from "./Logout.js";
 
 
 export default function Navbar() {
     const { theme } = useTheme();
-    const token = useSelector((state) => state.auth.token)
 
-    const type = getUserType(token);
+    const type = getUserType();
     const route = determineRoute(type);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (type === "Regulator") {
+            dispatch(fetchELInfoThunk())
+        }
+    }, [dispatch, type]);
+
+    const elInfo = useSelector((state) => state.priv.elInfo)
+    const frauds = elInfo.filter(el => el.Fraud === 1)
 
     return (
         <Container fluid style={{ background: theme.secondaryColor, minHeight: '5.5vh' }} className="d-flex gap-5 position-relative align-items-center justify-content-center">
@@ -35,6 +45,20 @@ export default function Navbar() {
                     </div>
                 </div>
             </div>
+
+            {type === "Regulator" && frauds.length > 0 &&  // Notification bell
+                <div className="profileMenu" style={{ position: 'absolute', right: '1rem', fontSize: '0.9rem' }}>
+                    <div className="iconButton d-flex align-items-center justify-content-center">
+                        <FaBell />
+                    </div>
+
+                    <div className="dropdownMenu p-2" style={{ position: 'absolute', right: '0.5rem' }}>
+                        <div >
+                            <p style={{ color: theme.textColorAlt }}>There are {frauds.length} Suspected Fraud Case(s)</p>
+                        </div>
+                    </div>
+                </div>
+            }
 
             <Link style={{ color: theme.textColor }} to={route}>Home</Link>
 
