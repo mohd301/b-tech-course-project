@@ -4,7 +4,7 @@ import { Button, Input, Card, Form, Label, CardBody, CardImg, CardHeader, CardFo
 import { useSelector, useDispatch } from "react-redux"
 import { FiXCircle } from "react-icons/fi";
 import { FiCheckCircle } from "react-icons/fi";
-
+import { MdRateReview } from "react-icons/md";
 import { useTheme } from "../compsMisc/ThemeContext"
 import { decryptToken } from "../functions/decryptToken"
 import { userApplyThunk } from "../slices/SliceUser"
@@ -34,7 +34,7 @@ export default function Apply() {
             Setdata(res.Data)
             console.log(res)
             Setres("!")
-            
+
         } catch (e) {
             console.log(e)
         }
@@ -68,30 +68,41 @@ export default function Apply() {
                                 <Label style={{ color: theme.textColorAlt }}>Enter your ID</Label>
                                 <Input type="text" name="ID" style={{ width: "45%" }} value={ID} onChange={handleid} placeholder="ID"></Input>
                                 {res === "!" ? (
-                                    Data?.Eligibity === 1 ? (
-                                        <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }}
-                                            className="d-flex justify-content-center mt-4 mb-4 logRegCard">
-                                            <CardHeader className="d-flex justify-content-center">
-                                                <FiCheckCircle style={{ color: theme.primaryColor }} className="justify-content-center"
-                                                    size={"3em"} />
-                                            </CardHeader>
-                                            <CardFooter>
-                                                <p style={{ color: theme.textColorAlt }} className="text-center">Eligible</p>
-                                            </CardFooter>
-                                        </Card>
-                                    ) : (
-                                        <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "16vw", borderRadius: "6vh" }}
-                                            className="d-flex justify-content-center mt-4 mb-4 logRegCard">
-                                            <CardHeader className="d-flex justify-content-center"
-                                            ><FiXCircle style={{ color: theme.secondaryColor }} className="justify-content-center"
-                                                size={"3em"} /></CardHeader>
-                                            <CardFooter>
-                                                <p style={{ color: theme.textColorAlt }} className="text-center">Not Eligible</p>
+                                    Data?.Fraud === 1 ? (<Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }}
+                                        className="d-flex justify-content-center mt-4 mb-4 logRegCard">
+                                        <CardHeader className="d-flex justify-content-center">
+                                            <MdRateReview style={{ color: theme.sus }} className="justify-content-center"
+                                                size={"3em"} />
+                                        </CardHeader>
+                                        <CardFooter>
+                                            <p style={{ color: theme.textColorAlt }} className="text-center">Under Reivew</p>
+                                        </CardFooter>
+                                    </Card>) :
+                                        Data?.Eligibity === 1 ? (
 
-                                                <p style={{ color: theme.textColorAlt }} className="text-center">{Data.reson} is too high</p>
-                                            </CardFooter>
-                                        </Card>
-                                    ))
+                                            <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }}
+                                                className="d-flex justify-content-center mt-4 mb-4 logRegCard">
+                                                <CardHeader className="d-flex justify-content-center">
+                                                    <FiCheckCircle style={{ color: theme.primaryColor }} className="justify-content-center"
+                                                        size={"3em"} />
+                                                </CardHeader>
+                                                <CardFooter>
+                                                    <p style={{ color: theme.textColorAlt }} className="text-center">Eligible</p>
+                                                </CardFooter>
+                                            </Card>
+                                        ) : (
+                                            <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "16vw", borderRadius: "6vh" }}
+                                                className="d-flex justify-content-center mt-4 mb-4 logRegCard">
+                                                <CardHeader className="d-flex justify-content-center"
+                                                ><FiXCircle style={{ color: theme.secondaryColor }} className="justify-content-center"
+                                                    size={"3em"} /></CardHeader>
+                                                <CardFooter>
+                                                    <p style={{ color: theme.textColorAlt }} className="text-center">Not Eligible</p>
+
+                                                    <p style={{ color: theme.textColorAlt }} className="text-center">{Data.reson} is too high</p>
+                                                </CardFooter>
+                                            </Card>
+                                        ))
                                     : (
                                         <></>
                                     )}
