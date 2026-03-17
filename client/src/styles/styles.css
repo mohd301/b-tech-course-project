@@ -118,6 +118,11 @@ a:hover {
   /* change success progress bar color to avoid green on green */
 }
 
+.Toastify__progress-bar--error {
+  background: #ffa600;
+  /* change error progress bar color to avoid red on red */
+}
+
 .Toastify__toast {
   background: var(--altBackground);
   color: var(--textColorAlt);
