@@ -50,13 +50,13 @@ export const userUpdusrThunk = createAsyncThunk("sliceUser/upduser", async (user
         throw (err)
     }
 })
-export const userApplyThunk = createAsyncThunk("sliceUser/Apply",async (userData,)=>{
-    try{
+export const userApplyThunk = createAsyncThunk("sliceUser/Apply", async (userData,) => {
+    try {
         const El = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/Eligibility/${userData.ID}/${userData._id}`, userData)
         return (El.data)
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        throw(err)
+        throw (err)
     }
 })
 
@@ -66,7 +66,7 @@ const initialState = {
     token: null,
     flag: false,
     loading: false,
-    data:null,
+    data: null,
 }
 
 const sliceUser = createSlice(
@@ -157,21 +157,23 @@ const sliceUser = createSlice(
                 state.flag = action.payload.flag
                 state.loading = false
             })
-            builder.addCase(userApplyThunk.fulfilled,(state,action)=>{
-                state.msg=action.payload.serverMsg
-                state.flag=action.payload.flag
-                state.data=action.payload.Data
-                state.loading=false
+
+            // User Apply for Eligibility
+            builder.addCase(userApplyThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.data = action.payload.Data
+                state.loading = false
             })
-            builder.addCase(userApplyThunk.pending,(state,action)=>{
-                state.msg=""
-                state.flag=false
-                
-            state.loading=true
+            builder.addCase(userApplyThunk.pending, (state, action) => {
+                state.msg = ""
+                state.flag = false
+                state.loading = true
             })
-            builder.addCase(userApplyThunk.rejected,(state,action)=>{
+            builder.addCase(userApplyThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.loading = false
+                state.flag = false
             })
         }
 
