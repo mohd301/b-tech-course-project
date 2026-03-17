@@ -108,7 +108,7 @@ export default function Apply() {
                                     )}
                                 <div className="d-flex align-items-end justify-content-end mt-5">
 
-                                    <Button style={{ background: theme.primaryColor }} onClick={onsubmit}>Sumbit</Button>
+                                    <Button style={{ background: theme.primaryColor }} onClick={onsubmit}>Submit</Button>
                                 </div>
 
 
