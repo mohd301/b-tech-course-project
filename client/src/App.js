@@ -79,11 +79,19 @@ function App() {
     const expiryTime = decoded.exp * 1000;
     const timeout = expiryTime - Date.now();
 
+    // handle when token already expired
+    if (timeout <= 0) {
+      dispatch(logout());
+      alert("Session expired. Please log in again.");
+      navigate("/", { replace: true });
+      return;
+    }
+
     if (timeout > 0) {
       const timer = setTimeout(() => {
         dispatch(logout());
         alert("Session expired. Please log in again.");
-        navigate("/",{ replace: true });
+        navigate("/", { replace: true });
       }, timeout);
 
       return () => clearTimeout(timer);
@@ -123,7 +131,7 @@ function App() {
 
 
           <Route path='/changePwd' element={
-            <PrivateRoute allowedRoles={["User"]}>
+            <PrivateRoute allowedRoles={["User", "Admin", "Regulator"]}>
               <ChangePwd />
             </PrivateRoute>}>
           </Route>
