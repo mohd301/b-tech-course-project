@@ -765,7 +765,20 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 )
 subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
+        console.log("A")
         const elist = await ELinkModel.find()
+        req.auditSuccess = true;
+        req.auditActor = "SYSTEM";
+        res.json({ serverMsg: "success", data: elist })
+    } catch (e) {
+        req.auditSuccess = false
+        console.log(e)
+    }
+})
+subsidyApp.delete("/deleteELINK/:Email",audit("REMOVE_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
+    try {
+        const elist = await ELinkModel.deleteOne({Email:req.params.Email})
+        res.deletedCount
         req.auditSuccess = true;
         req.auditActor = "SYSTEM";
         res.json({ serverMsg: "success", data: elist })
