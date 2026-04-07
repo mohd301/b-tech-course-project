@@ -730,7 +730,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                     req.auditSuccess = true
                     const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
                     const data = await mml.json()
-
+                    console.log(data.Fraud)
                     // Error handling for when ID not found
                     if (data.Eligibity === undefined) {
                         req.auditSuccess = false;
@@ -745,13 +745,20 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                             if (data.Fraud === 1) {
                                 sendFraudEmail(PrivUserModel, req.params.ID)
                                 sendEligibilityEmail(userExist.Email, "Your case requires further review due to potential issues with your information.")
+                                console.log('a1')
                             } else {
                                 sendEligibilityEmail(userExist.Email, "Congratulations! You are eligible for the subsidy.");
                             }
                             break;
                         case 0:
+                            console.log('a2')
+                            if (data.Fraud === 1) {
+                                sendFraudEmail(PrivUserModel, req.params.ID)
+                                sendEligibilityEmail(userExist.Email, "Your case requires further review due to potential issues with your information.")
+                                console.log('a1')
+                            } else {
                             sendEligibilityEmail(userExist.Email, "We regret to inform you that you are not eligible for the subsidy."); break;
-                    }
+                    }}
 
                     const newdata = {
                         UserID: req.params._id,
