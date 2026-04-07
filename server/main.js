@@ -731,6 +731,15 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                     const mml = await fetch(`http://127.0.0.1:5000/EEml/${req.params.ID}/${req.params._id}`)
                     const data = await mml.json()
 
+                    // Error handling for when ID not found
+                    if (data.Eligibity === undefined) {
+                        req.auditSuccess = false;
+                        return res.json({
+                            serverMsg: "An Error has occured",
+                            flag: false
+                        });
+                    }
+
                     switch (data.Eligibity) {
                         case 1:
                             if (data.Fraud === 1) {
@@ -775,9 +784,9 @@ subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req =
         console.log(e)
     }
 })
-subsidyApp.delete("/deleteELINK/:Email",audit("REMOVE_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
+subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
-        const elist = await ELinkModel.deleteOne({Email:req.params.Email})
+        const elist = await ELinkModel.deleteOne({ Email: req.params.Email })
         res.deletedCount
         req.auditSuccess = true;
         req.auditActor = "SYSTEM";
