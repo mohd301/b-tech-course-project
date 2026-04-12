@@ -58,19 +58,19 @@ export default function ChangePwd() {
 
                                 <Label tag="h5" style={{ color: theme.textColorAlt }}>Old Password:</Label>
                                 <PasswordInput register={register} name={"oldPassword"} />
-                                <div style={{ minHeight: "2rem", color: theme.secondaryColor, fontSize: "0.85rem" }}>
+                                <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.85rem" }}>
                                     <u>{errors.oldPassword?.message}</u>
                                 </div>
 
                                 <Label tag="h5" style={{ color: theme.textColorAlt }}>New Password:</Label>
                                 <PasswordInput register={register} name={"newPassword"} />
-                                <div style={{ minHeight: "2rem", color: theme.secondaryColor, fontSize: "0.85rem" }}>
+                                <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.85rem" }}>
                                     <u>{errors.newPassword?.message}</u>
                                 </div>
 
                                 <Label tag="h5" style={{ color: theme.textColorAlt }}>Confirm New Password:</Label>
                                 <PasswordInput register={register} name={"confpwd"} />
-                                <div style={{ minHeight: "2rem", color: theme.secondaryColor, fontSize: "0.85rem" }}>
+                                <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.85rem" }}>
                                     <u>{errors.confpwd?.message}</u>
                                 </div>
 
