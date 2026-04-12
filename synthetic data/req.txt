@@ -6,5 +6,5 @@ matplotlib
 flask
 flask_cors
 pymongo
-xgboots
+xgboost
 requests
