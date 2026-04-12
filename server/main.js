@@ -217,6 +217,7 @@ subsidyApp.post(
     async (req, res) => {
         try {
             const userEmail = req.body.Email;
+            console.log('a')
             const userExist = await UserModel.findOne({ Email: userEmail });
 
             if (!userExist) {
@@ -798,7 +799,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 )
 subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
-        console.log("A")
+        
         const elist = await ELinkModel.find()
         req.auditSuccess = true;
         req.auditActor = "SYSTEM";

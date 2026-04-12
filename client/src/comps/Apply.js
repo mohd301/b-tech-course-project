@@ -28,22 +28,12 @@ export default function Apply() {
     })
 
     async function getdata(data) {
-        // try {
-        //     console.log(ID)
-        //     const res = await axios.get("http://127.0.0.1:5000/EEml/" + ID + "/" + user.id)
-
-        //     console.log(res.data)
-        //     Setdata(res.data)
-        //     Setres("!")
-
-        // } catch (e) {
-        //     console.log(e)
-        // }
-        try {
+       
+     try {
             const user = decryptToken() // Function will automatically get token from local storage
-            console.log(data)
+            
             data._id = user.id
-            console.log(data)
+            
             const res = await dispatch(userApplyThunk(data)).unwrap()
             Setdata(res.Data)
             Setres("!")
