@@ -298,28 +298,48 @@ subsidyApp.put("/chgPassword",
 
 // Forgot Password for Applicant
 subsidyApp.put("/forgotPassword",
-    audit("FORGOT_PASSWORD_APPLICANT", {
-        type: "Applicant",
+    audit("FORGOT_PASSWORD", {
+        type: "User",
         id: req => req.body.Email
     }),
     async (req, res) => {
         try {
             const userEmail = req.body.Email
+            let models = []
             const userExist = await UserModel.findOne({ Email: userEmail })
-            if (!userExist) {
+            if (userExist) {
+                models.push(UserModel)
+            }
+            const privUserExist = await PrivUserModel.findOne({ Email: userEmail })
+            if (privUserExist) {
+                models.push(PrivUserModel)
+            }
+            if (!models) {
                 req.auditSuccess = false;
                 req.auditActor = "unknown";
 
                 res.json({ serverMsg: "User not found !", flag: false })
             } else {
                 const encryptedPassword = await bcrypt.hash(req.body.newPassword, 10)
-                await UserModel.updateOne(
-                    { Email: userEmail },
-                    { Password: encryptedPassword }
-                )
+                for (const model of models) {
+                    await model.updateOne(
+                        { Email: userEmail },
+                        { Password: encryptedPassword }
+                    )
+                }
 
                 req.auditSuccess = true;
-                req.auditActor = userExist._id.toString();
+
+                if(!models.length>1){
+                    if(models[0] === UserModel){
+                        req.auditActor = userExist._id.toString();
+                    } else {
+                        req.auditActor = privUserExist._id.toString();
+                    }
+                } else {
+                    req.auditActor = req.body.Email; // if user exists in both collections, use email as identifier
+                }
+
                 res.json({ serverMsg: "Password changed successfully!", flag: true })
             }
         } catch (err) {
@@ -753,8 +773,9 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                                 sendFraudEmail(PrivUserModel, req.params.ID)
                                 sendEligibilityEmail(userExist.Email, "Your case requires further review due to potential issues with your information.")
                             } else {
-                            sendEligibilityEmail(userExist.Email, "We regret to inform you that you are not eligible for the subsidy."); break;
-                    }}
+                                sendEligibilityEmail(userExist.Email, "We regret to inform you that you are not eligible for the subsidy."); break;
+                            }
+                    }
 
                     const newdata = {
                         UserID: req.params._id,
