@@ -30,7 +30,7 @@ export default function Navbar() {
     const frauds = elInfo.filter(el => el.Fraud === 1)
 
     return (
-        <Container fluid style={{ background: theme.secondaryColor, minHeight: '5.5vh' }} className="d-flex gap-5 position-relative align-items-center justify-content-center">
+        <Container fluid style={{ background: theme.secondaryColor, minHeight: '5.75vh' }} className="d-flex gap-5 position-relative align-items-center justify-content-center">
 
             <div className="profileMenu" style={{ position: 'absolute', left: '1rem', fontSize: '1.5rem' }}>
                 <div className="iconButton d-flex align-items-center justify-content-center">
