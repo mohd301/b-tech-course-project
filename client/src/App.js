@@ -127,8 +127,6 @@ function App() {
           <Route path='/regUser' element={<Register />}></Route>
           <Route path='/logPriv' element={<PrivLogin />}></Route>
           <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
-          <Route path="/gov" element={<GovOf />}></Route>
-
 
           <Route path='/changePwd' element={
             <PrivateRoute allowedRoles={["User", "Admin", "Regulator"]}>
