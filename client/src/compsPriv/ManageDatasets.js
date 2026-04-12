@@ -112,7 +112,7 @@ export default function ManageDatasets() {
     };
 
     const btnViewStyle = {
-        backgroundColor: theme.tertiaryColor,
+        backgroundColor: theme.textColorBlack,
         border: "none",
         borderRadius: "4px",
         color: "#fff"
