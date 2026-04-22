@@ -42,6 +42,7 @@ import { setToken } from "./slices/SliceAuth";
 import { decryptToken } from "./functions/decryptToken";
 
 import { useTheme } from "./compsMisc/ThemeContext";
+import LLm from "./compsMisc/LLm";
 
 function App() {
   const { toggleTheme, mode } = useTheme();
@@ -127,6 +128,7 @@ function App() {
           <Route path='/regUser' element={<Register />}></Route>
           <Route path='/logPriv' element={<PrivLogin />}></Route>
           <Route path='/forgotPwd' element={<ForgotPwd />}></Route>
+          <Route path='/llm' element={<LLm />}></Route>
 
           <Route path='/changePwd' element={
             <PrivateRoute allowedRoles={["User", "Admin", "Regulator"]}>
