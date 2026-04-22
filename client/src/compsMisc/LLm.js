@@ -1,11 +1,11 @@
 import { Button, Card, CardBody, CardFooter } from "reactstrap"
 import { useState } from "react"
-
+import { useTheme } from "../compsMisc/ThemeContext"
 export default function LLm() {
     const [umessage, Setusermessage] = useState('');
     const [response, setResponse] = useState('');
     const [loading, setIsLoading] = useState(false);
-
+    const theme = useTheme()
     async function LLmCall() {
         if (!umessage) return;
         setResponse("");
@@ -45,7 +45,7 @@ export default function LLm() {
     }
 
     return (
-        <Card>
+        <Card style={{background:theme.primaryBackground}}>
             <CardBody>
                 {response
                     ? <div>{response}</div>
@@ -58,7 +58,7 @@ export default function LLm() {
                     onChange={(e) => Setusermessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && LLmCall()}
                 />
-                <Button onClick={LLmCall} disabled={loading}>
+                <Button style={{color:theme.primaryColor}} onClick={LLmCall} disabled={loading}>
                     {loading ? "Thinking..." : "Send"}
                 </Button>
             </CardFooter>
