@@ -130,6 +130,7 @@ export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetSt
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/getDatasetStats`,
+        
         )
         return response.data
     } catch (err) {
@@ -143,6 +144,20 @@ export const fetchELInfoThunk = createAsyncThunk("privSlice/fetchELInfoThunk", a
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/viewELlink`,
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
+export const createDataThunk=createAsyncThunk('privSlice/createDataThunk',async(data)=>{
+    try{
+        const response = await axios.post(
+            `http://localhost:${process.env.REACT_APP_PORT}/createData`,
+            {dname:data},
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         return response.data
     } catch (err) {
@@ -354,6 +369,7 @@ const privSlice = createSlice(
                 state.flag = false
                 state.loading = false
             })
+            
         }
     }
 )

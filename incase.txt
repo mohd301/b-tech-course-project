@@ -1,0 +1,409 @@
+case "Age":
+                    if type(j) is dict:
+                        df['Age']=np.clip(np.random.normal(loc=j["Center"], scale=j['Scale'], size=n_total).round(), j["minAge"], j['maxAge'])
+                    else:
+                        df['Age'] = np.clip(np.random.normal(35, 12, size=n_total).round(), 18, 70)
+                case 'Gender':
+                    if type(j) is dict:
+                        df['Gender'] = choice(['Male', 'Female'], size=n_total, p=j["pValue"])
+                    else:
+                        df['Gender'] = choice(['Male', 'Female'], size=n_total, p=[0.55, 0.45])
+                case 'Marital_Status':
+                    if type(j) is dict:
+                        marital_base = choice(['Single', 'Married', 'Divorced', 'Widowed'],
+                                        size=n_total, p=j["pValue"])
+                        df['Marital_Status'] = marital_base
+                        df.loc[df['Age'] < 25, 'Marital_Status'] = choice(
+                                ['Single', 'Married'],
+                                size=(df['Age'] < 25).sum(),
+                                p=[0.8, 0.2]
+                        )
+                    else:
+                        marital_base = choice(['Single', 'Married', 'Divorced', 'Widowed'],
+                                            size=n_total, p=[0.4, 0.5, 0.07, 0.03])
+                        df['Marital_Status'] = marital_base
+
+
+                        df.loc[df['Age'] < 25, 'Marital_Status'] = choice(
+                              ['Single', 'Married'],
+                               size=(df['Age'] < 25).sum(),
+                                p=[0.8, 0.2]
+                                )
+
+                case 'Household_Size':
+                    if type(j) is dict:
+                        df['Household_Sizee']=np.clip(np.random.poisson(j['lam'],size=n_total),j['MinHsize'],j['MaxHsize'])
+                    else:
+                        df['Household_Size'] = np.clip(np.random.poisson(4, size=n_total), 1, 9)
+
+                case 'Governorate':
+                    if type(j) is dict:
+                        df['Governorate'] = choice(j["City"],
+                           size=n_total, p=j["PvalueSize"])
+                    else:
+                        df['Governorate'] = choice(['Muscat', 'Dhofar', 'Sohar', 'Nizwa', 'Sur'],
+                           size=n_total, p=[0.35, 0.15, 0.2, 0.15, 0.15])
+                case 'Salary':
+                    if type(j) is dict:
+                        eligible_idx = np.arange(n_eligible)
+                        ineligible_idx = np.arange(n_eligible, n_total)
+                        salary = np.zeros(n_total)
+                        salary[eligible_idx] = np.random.normal(j['eloc'], scale=j["escale"], size=n_eligible)
+                        salary[ineligible_idx] = np.random.normal(j['inloc'], scale=j['inscale'], size=n_ineligible)
+                        df['Salary'] = np.clip(salary, j['minSalary'], None).round(2)
+                    else:
+                        eligible_idx = np.arange(n_eligible)
+                        ineligible_idx = np.arange(n_eligible, n_total)
+                        salary = np.zeros(n_total)
+                        salary[eligible_idx] = np.random.normal(90, 45, size=n_eligible)
+                        salary[ineligible_idx] = np.random.normal(1100, 300, size=n_ineligible)
+                        df['Salary'] = np.clip(salary, 80, None).round(2)
+                case 'Degree_Level':
+                    if type(j) is dict:
+                        df['Degree_Level'] = choice(['None', 'HighSchool', 'Diploma', 'Bachelor', 'Master'],
+                            size=n_total, p=j["pvalue"])
+                    else:
+                        df['Degree_Level'] = choice(['None', 'HighSchool', 'Diploma', 'Bachelor', 'Master'],
+                            size=n_total, p=[0.1, 0.35, 0.2, 0.3, 0.05])
+                case 'Employment_Status':
+                    if type(j) is dict:
+                        df['Employment_Status'] = choice(['Employed', 'Unemployed', 'Student', 'Retired'],
+                            size=n_total, p=j["pvalue"])
+                    else:
+                        df['Employment_Status'] = choice(['Employed', 'Unemployed', 'Student', 'Retired'],
+                                 size=n_total, p=[0.6, 0.15, 0.15, 0.1])
+                    young_mask = df['Age'].between(18, 24)
+                    df.loc[young_mask, 'Employment_Status'] = choice(
+                    ['Student', 'Unemployed', 'Employed'],
+                    size=young_mask.sum(),
+                    p=[0.6, 0.25, 0.15])
+                case 'Primary_Income_Source':
+                    if type(j) is dict:
+                        df['Primary_Income_Source'] = choice(['Government', 'Private', 'SelfEmployed', 'None'],
+                                     size=n_total, p=[0.45, 0.3, 0.2, 0.05])
+                    else:
+                        df['Primary_Income_Source'] = choice(['Government', 'Private', 'SelfEmployed', 'None'],
+                                     size=n_total, p=[0.45, 0.3, 0.2, 0.05])
+
+                case 'Has_Other_Social_Benefits':
+                    if type(j) is dict:
+                        df['Has_Other_Social_Benefits'] = np.random.choice([0, 1], size=n_total, p=[0.7, 0.3])
+                    else:
+                        df['Has_Other_Social_Benefits'] = np.random.choice([0, 1], size=n_total, p=[0.7, 0.3])
+                case 'Assets_Value':
+                    if type(j) is dict:
+                        assets = np.zeros(n_total)
+                        assets[eligible_idx] = np.random.lognormal(mean=np.log(3000), sigma=0.5, size=n_eligible)
+                        assets[ineligible_idx] = np.random.lognormal(mean=np.log(12000), sigma=0.6, size=n_ineligible)
+                        df['Assets_Value'] = assets.round(2)
+                    else:
+                        assets = np.zeros(n_total)
+                        assets[eligible_idx] = np.random.lognormal(mean=np.log(3000), sigma=0.5, size=n_eligible)
+                        assets[ineligible_idx] = np.random.lognormal(mean=np.log(12000), sigma=0.6, size=n_ineligible)
+                        df['Assets_Value'] = assets.round(2)
+                case 'Liabilities_Value':
+                    if type(j) is dict:
+                        liabilities = np.random.lognormal(mean=np.log(2000), sigma=0.7, size=n_total)
+                        df['Liabilities_Value'] = liabilities.round(2)
+                    else:
+                        liabilities = np.random.lognormal(mean=np.log(2000), sigma=0.7, size=n_total)
+                        df['Liabilities_Value'] = liabilities.round(2)
+                case 'Number_of_Children':
+                    if type(j) is dict:
+                        children = np.clip(np.random.poisson(2, size=n_total), 0, 7)
+                        children[df['Marital_Status'] == 'Single'] = 0
+                        df['Number_of_Children'] = children
+                    else:
+                        children = np.clip(np.random.poisson(2, size=n_total), 0, 7)
+                        children[df['Marital_Status'] == 'Single'] = 0
+                        df['Number_of_Children'] = children
+                case 'Total_Spouse_Income':
+                    if type(j) is dict:
+                        spouse_income = np.zeros(n_total)
+                        married_mask = df['Marital_Status'] == 'Married'
+                        mean_log = np.log(250)
+                        sigma_log = 0.45
+                        spouse_income[married_mask] = np.random.lognormal(
+                        mean=mean_log,
+                        sigma=sigma_log,
+                        size=married_mask.sum()
+                        )
+                        spouse_income = np.clip(spouse_income, 0, 2000)
+                        df['Total_Spouse_Income'] = spouse_income.round(2)
+                    else:
+                        spouse_income = np.zeros(n_total)
+                        married_mask = df['Marital_Status'] == 'Married'
+                        mean_log = np.log(250)
+                        sigma_log = 0.45
+                        spouse_income[married_mask] = np.random.lognormal(
+                        mean=mean_log,
+                        sigma=sigma_log,
+                        size=married_mask.sum()
+                        )
+                        spouse_income = np.clip(spouse_income, 0, 2000)
+                        df['Total_Spouse_Income'] = spouse_income.round(2)
+                case 'Working_Children_Count':
+                    if type(j) is dict:
+                        base_p_work = 0.10 + 0.01 * (df['Age'] - 35)
+                        p_work = np.zeros(len(df), dtype=float)
+                        age = df['Age']
+                        p_work[age < 30] = 0.00
+                        mask = (age >= 30) & (age < 35)
+                        p_work[mask] = 0.02
+                        mask = (age >= 35) & (age < 45)
+                        p_work[mask] = np.clip(base_p_work[mask], 0.05, 0.20)
+                        mask = (age >= 45) & (age < 55)
+                        p_work[mask] = np.clip(base_p_work[mask], 0.20, 0.40)
+                        mask = (age >= 55)
+                        p_work[mask] = np.clip(base_p_work[mask], 0.40, 0.60)
+                        working_children = []
+                        for i, row in df[['Number_of_Children', 'Age']].iterrows():
+                            k = int(row['Number_of_Children'])
+                            if k == 0:
+                                working_children.append(0)
+                            else:
+                                pw = p_work[i]
+                                wc = np.random.binomial(n=k, p=pw)
+                                working_children.append(wc)
+                        df['Working_Children_Count'] = working_children    
+                    else:
+                        base_p_work = 0.10 + 0.01 * (df['Age'] - 35)
+                        p_work = np.zeros(len(df), dtype=float)
+                        age = df['Age']
+                        p_work[age < 30] = 0.00
+                        mask = (age >= 30) & (age < 35)
+                        p_work[mask] = 0.02
+                        mask = (age >= 35) & (age < 45)
+                        p_work[mask] = np.clip(base_p_work[mask], 0.05, 0.20)
+                        mask = (age >= 45) & (age < 55)
+                        p_work[mask] = np.clip(base_p_work[mask], 0.20, 0.40)
+                        mask = (age >= 55)
+                        p_work[mask] = np.clip(base_p_work[mask], 0.40, 0.60)
+                        working_children = []
+                        for i, row in df[['Number_of_Children', 'Age']].iterrows():
+                            k = int(row['Number_of_Children'])
+                            if k == 0:
+                                working_children.append(0)
+                            else:
+                                pw = p_work[i]
+                                wc = np.random.binomial(n=k, p=pw)
+                                working_children.append(wc)
+                        df['Working_Children_Count'] = working_children  
+                case 'Total_Children_Income':
+                    if type(j) is dict:
+                        child_income_per_worker = np.random.lognormal(
+                            mean=np.log(90),
+                            sigma=0.5,
+                            size=n_total
+                        )
+                        df['Total_Children_Income'] = (
+                            df['Working_Children_Count'] * child_income_per_worker
+                        ).round(2)
+                    else:
+                        child_income_per_worker = np.random.lognormal(
+                            mean=np.log(90),
+                            sigma=0.5,
+                            size=n_total
+                        )
+                        df['Total_Children_Income'] = (
+                            df['Working_Children_Count'] * child_income_per_worker
+                        ).round(2)
+                case 'Total_Household_Income':
+                    if type(j) is dict:
+                        df['Total_Household_Income'] = (
+                        df['Salary'] + df['Total_Spouse_Income'] + df['Total_Children_Income']
+                        ).round(2)
+                    else:
+                        df['Total_Household_Income'] = (
+                        df['Salary'] + df['Total_Spouse_Income'] + df['Total_Children_Income']
+                        ).round(2)
+                case 'Vehicle_Ownership':
+                    if type(j) is dict:
+                        veh_own = np.zeros(n_total, dtype=int)
+                        veh_own[eligible_idx] = 1
+                        veh_own[ineligible_idx] = np.random.choice([0, 1], size=n_ineligible, p=[0.4, 0.6])
+                        df['Vehicle_Ownership'] = veh_own
+                    else:
+                        veh_own = np.zeros(n_total, dtype=int)
+                        veh_own[eligible_idx] = 1
+                        veh_own[ineligible_idx] = np.random.choice([0, 1], size=n_ineligible, p=[0.4, 0.6])
+                        df['Vehicle_Ownership'] = veh_own
+                case 'Vehicle_Count':
+                    if type(j) is dict:
+                        veh_count = np.zeros(n_total, dtype=int)
+                        veh_count[veh_own == 1] = np.random.choice(
+                            [1, 2, 3],
+                            size=(veh_own == 1).sum(),
+                            p=[0.7, 0.25, 0.05]
+                        )
+                        df['Vehicle_Count'] = veh_count
+                    else:
+                        veh_count = np.zeros(n_total, dtype=int)
+                        veh_count[veh_own == 1] = np.random.choice(
+                            [1, 2, 3],
+                            size=(veh_own == 1).sum(),
+                            p=[0.7, 0.25, 0.05]
+                        )
+                        df['Vehicle_Count'] = veh_count
+                case 'Cylinder_Count':
+                    if type(j) is dict:
+                        cylinders = np.zeros(n_total, dtype=int)
+                        owner_mask = df['Vehicle_Ownership'] == 1
+                        cylinders[owner_mask] = np.random.choice(
+                            [4, 6, 8],
+                            size=owner_mask.sum(),
+                            p=[0.6, 0.3, 0.1]
+                        )
+                        df['Cylinder_Count'] = cylinders
+                    else:
+                        cylinders = np.zeros(n_total, dtype=int)
+                        owner_mask = df['Vehicle_Ownership'] == 1
+                        cylinders[owner_mask] = np.random.choice(
+                            [4, 6, 8],
+                            size=owner_mask.sum(),
+                            p=[0.6, 0.3, 0.1]
+                        )
+                        df['Cylinder_Count'] = cylinders
+                case 'Vehicle_Age_Years':
+                    if type(j) is dict:
+                        veh_age = np.zeros(n_total, dtype=int)
+                        veh_age[owner_mask] = np.clip(
+                            np.random.normal(8, 4, size=owner_mask.sum()).round(),
+                            1, 20
+                        )
+                        df['Vehicle_Age_Years'] = veh_age
+                    else:
+                        veh_age = np.zeros(n_total, dtype=int)
+                        veh_age[owner_mask] = np.clip(
+                            np.random.normal(8, 4, size=owner_mask.sum()).round(),
+                            1, 20
+                        )
+                        df['Vehicle_Age_Years'] = veh_age
+                case 'Fuel_Type':
+                    if type(j) is dict:
+                        df['Fuel_Type'] = np.where(
+                            df['Vehicle_Ownership'] == 0,
+                            'None',
+                            np.random.choice(['Petrol', 'Diesel'], size=n_total, p=[0.7, 0.3])
+                            )
+                    else:
+                        df['Fuel_Type'] = np.where(
+                            df['Vehicle_Ownership'] == 0,
+                            'None',
+                            np.random.choice(['Petrol', 'Diesel'], size=n_total, p=[0.7, 0.3])
+                        )
+                case 'Expected_Fuel_Consumption_L':
+                    if type(j) is dict:
+                        base_map = {
+                            0: 10,     
+                            4: 120,    
+                            6: 180,   
+                            8: 250     
+                        }
+                        base_expected = np.array([base_map[c] for c in df['Cylinder_Count']])
+                        age_factor = 1.0 + 0.01 * (df['Vehicle_Age_Years'] - 5)
+                        age_factor = np.clip(age_factor, 0.9, 1.3)
+                        df['Expected_Fuel_Consumption_L'] = (base_expected * age_factor).round(2)
+                    else:
+                        base_map = {
+                            0: 10,     
+                            4: 120,    
+                            6: 180,   
+                            8: 250     
+                        }
+                        base_expected = np.array([base_map[c] for c in df['Cylinder_Count']])
+                        age_factor = 1.0 + 0.01 * (df['Vehicle_Age_Years'] - 5)
+                        age_factor = np.clip(age_factor, 0.9, 1.3)
+                        df['Expected_Fuel_Consumption_L'] = (base_expected * age_factor).round(2)
+                case 'Average_Fuel_Consumption_L':
+                    if type(j) is dict:
+                        fuel = df['Expected_Fuel_Consumption_L'].values.astype(float)
+                        fuel[eligible_idx] *= np.random.normal(1.0, 0.10, size=n_eligible)
+                        fuel[ineligible_idx] *= np.random.normal(1.05, 0.15, size=n_ineligible)
+                        df['Average_Fuel_Consumption_L'] = np.clip(fuel, 0, None).round(2)
+                    else:
+                        fuel = df['Expected_Fuel_Consumption_L'].values.astype(float)
+                        fuel[eligible_idx] *= np.random.normal(1.0, 0.10, size=n_eligible)
+                        fuel[ineligible_idx] *= np.random.normal(1.05, 0.15, size=n_ineligible)
+                        df['Average_Fuel_Consumption_L'] = np.clip(fuel, 0, None).round(2)
+                case 'Fuel_Deviation_L':
+                    if type(j) is dict:
+                        df['Fuel_Deviation_L'] = (
+                            df['Average_Fuel_Consumption_L'] - df['Expected_Fuel_Consumption_L']
+                        ).round(2)
+                        safe_expected = df['Expected_Fuel_Consumption_L'].replace(0, 1)
+                        df['Fuel_Deviation_Ratio'] = (
+                            df['Average_Fuel_Consumption_L'] / safe_expected
+                        ).round(3)
+                    else:
+                        df['Fuel_Deviation_L'] = (
+                            df['Average_Fuel_Consumption_L'] - df['Expected_Fuel_Consumption_L']
+                        ).round(2)
+                        safe_expected = df['Expected_Fuel_Consumption_L'].replace(0, 1)
+                        df['Fuel_Deviation_Ratio'] = (
+                            df['Average_Fuel_Consumption_L'] / safe_expected
+                        ).round(3)
+                case 'Previous_Subsidy_Received':
+                    if type(j) is dict:
+                        df['Previous_Subsidy_Received'] = np.random.choice([0, 1], size=n_total, p=[0.3, 0.7])
+                        prev_amount = np.zeros(n_total)
+                        mask_prev = df['Previous_Subsidy_Received'] == 1
+
+                        prev_amount[mask_prev] = np.random.normal(25, 8, size=mask_prev.sum())
+                        df['Previous_Subsidy_Amount'] = np.clip(prev_amount, 5, 60).round(2)
+                    else:
+                        df['Previous_Subsidy_Received'] = np.random.choice([0, 1], size=n_total, p=[0.3, 0.7])
+                        prev_amount = np.zeros(n_total)
+                        mask_prev = df['Previous_Subsidy_Received'] == 1
+
+                        prev_amount[mask_prev] = np.random.normal(25, 8, size=mask_prev.sum())
+                        df['Previous_Subsidy_Amount'] = np.clip(prev_amount, 5, 60).round(2)
+                case 'Late_or_Missed_Renewals':
+                    if type(j) is dict:
+                        df['Late_or_Missed_Renewals'] = np.random.poisson(0.3, size=n_total)
+                    else:
+                        df['Late_or_Missed_Renewals'] = np.random.poisson(0.3, size=n_total)
+                case 'Applications_Last_12_Months':
+                    if type(j) is dict:
+                        df['Applications_Last_12_Months'] = np.random.poisson(1.0, size=n_total)
+                    else:
+                        df['Applications_Last_12_Months'] = np.random.poisson(1.0, size=n_total)
+                case 'fruadmulti':
+                    if type(j) is dict:
+                        n_fraud = max(1, int(fraud_fraction * n_total))
+                        fraud_idx = np.random.choice(df.index, size=n_fraud, replace=False)
+
+                        # Fraud: abnormal high fuel usage + suspicious behaviour
+                        df.loc[fraud_idx, 'Average_Fuel_Consumption_L'] *= 2.5
+                        df.loc[fraud_idx, 'Applications_Last_12_Months'] += 3
+                        df.loc[fraud_idx, 'Late_or_Missed_Renewals'] += 2
+
+                        # Recompute deviations only for fraud rows
+                        df.loc[fraud_idx, 'Fuel_Deviation_L'] = (
+                            df.loc[fraud_idx, 'Average_Fuel_Consumption_L'] -
+                            df.loc[fraud_idx, 'Expected_Fuel_Consumption_L']
+                        ).round(2)
+
+                        safe_expected_fraud = df.loc[fraud_idx, 'Expected_Fuel_Consumption_L'].replace(0, 1)
+                        df.loc[fraud_idx, 'Fuel_Deviation_Ratio'] = (
+                            df.loc[fraud_idx, 'Average_Fuel_Consumption_L'] / safe_expected_fraud
+                        ).round(3)
+                    else:
+                        n_fraud = max(1, int(fraud_fraction * n_total))
+                        fraud_idx = np.random.choice(df.index, size=n_fraud, replace=False)
+
+                        # Fraud: abnormal high fuel usage + suspicious behaviour
+                        df.loc[fraud_idx, 'Average_Fuel_Consumption_L'] *= 2.5
+                        df.loc[fraud_idx, 'Applications_Last_12_Months'] += 3
+                        df.loc[fraud_idx, 'Late_or_Missed_Renewals'] += 2
+
+                        # Recompute deviations only for fraud rows
+                        df.loc[fraud_idx, 'Fuel_Deviation_L'] = (
+                            df.loc[fraud_idx, 'Average_Fuel_Consumption_L'] -
+                            df.loc[fraud_idx, 'Expected_Fuel_Consumption_L']
+                        ).round(2)
+
+                        safe_expected_fraud = df.loc[fraud_idx, 'Expected_Fuel_Consumption_L'].replace(0, 1)
+                        df.loc[fraud_idx, 'Fuel_Deviation_Ratio'] = (
+                            df.loc[fraud_idx, 'Average_Fuel_Consumption_L'] / safe_expected_fraud
+                        ).round(3)

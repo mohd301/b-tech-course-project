@@ -821,3 +821,33 @@ subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "US
         console.log(e)
     }
 })
+subsidyApp.post('/createData',audit("create_synthetic",{type:'REGULATOR',id:req.params._id}),async(req,res)=>{
+    try {
+        const data=req.params
+        resul=await fetch(`http://127.0.0.1:5000/synthic`+data)
+        req.auditSuccess=true;
+        res.json({serverMsg:'success',data:resul.json()})
+    }
+    catch (e) {
+        req.auditSuccess = false
+        console.log(e)
+    }
+})
+subsidyApp.get('/retrainEmodel',async(req,res)=>{
+    try{
+        const results=fetch(`http://127.0.0.1:5000/trainE`)
+        res.json({serverMsg:'success',data:results.json})
+
+    }catch(e){
+         console.log(e)
+    }
+})
+subsidyApp.get('/retrainImodel',async(req,res)=>{
+    try{
+        const results=fetch(`http://127.0.0.1:5000/trainI`)
+        res.json({serverMsg:'success',data:results.json})
+
+    }catch(e){
+         console.log(e)
+    }
+})
