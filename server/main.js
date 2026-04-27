@@ -47,7 +47,7 @@ const JWT_EXPIRES = "1h"
 
 //Connection to MongoDB
 try {
-    const subsidyApp_ConnectionString = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.vndparp.mongodb.net/${process.env.DB_NAME}`;
+    const subsidyApp_ConnectionString = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-lmvjits-shard-00-00.vndparp.mongodb.net:27017,ac-lmvjits-shard-00-01.vndparp.mongodb.net:27017,ac-lmvjits-shard-00-02.vndparp.mongodb.net:27017/${process.env.DB_Name}?ssl=true&replicaSet=atlas-drtwd2-shard-0&authSource=admin&appName=Cluster0;`
     await mongoose.connect(subsidyApp_ConnectionString);
     console.log("Connected to MongoDB");
 } catch (error) {
@@ -821,7 +821,7 @@ subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "US
         console.log(e)
     }
 })
-subsidyApp.post('/createData',audit("create_synthetic",{type:'REGULATOR',id:req.params._id}),async(req,res)=>{
+subsidyApp.post('/createData',audit("create_synthetic",async(req,res)=>{
     try {
         const data=req.params
         resul=await fetch(`http://127.0.0.1:5000/synthic`+data)
@@ -832,7 +832,7 @@ subsidyApp.post('/createData',audit("create_synthetic",{type:'REGULATOR',id:req.
         req.auditSuccess = false
         console.log(e)
     }
-})
+}))
 subsidyApp.get('/retrainEmodel',async(req,res)=>{
     try{
         const results=fetch(`http://127.0.0.1:5000/trainE`)
