@@ -1,6 +1,7 @@
 import "bootstrap/dist/css/bootstrap.css";
 import "./styles/styles.css";
-
+import { Button,Offcanvas } from "reactstrap";
+import { HiOutlineChat } from "react-icons/hi";
 // User
 import Login from "./comps/Login";
 import Footer from "./comps/Footer";
@@ -199,6 +200,25 @@ function App() {
         <button className="themeButton" onClick={toggleTheme}>
           {mode === "light" ? <FaMoon /> : <FaSun />}
         </button>
+        
+  <Button
+  
+    onClick={function noRefCheck(){}}
+    className="position-fixed"
+    style={{ 
+    bottom: '20px', 
+    right: '20px', 
+     // Ensures it stays above other content
+    borderRadius: '100%', // Optional: makes it a circular floating action button
+    padding: '15px' 
+  }}
+  >
+    <HiOutlineChat />
+  </Button>
+  <Offcanvas toggle={function noRefCheck(){}}>
+    <LLm/>
+  </Offcanvas>
+
       </main>
 
       <Footer />
