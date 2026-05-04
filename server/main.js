@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import multer from "multer"
+import { GoogleGenAI } from "@google/genai"
 
 import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
@@ -44,6 +45,39 @@ dotenv.config()
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES = "1h"
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite"
+const LLM_SYSTEM_PROMPT = `You are the official assistant for the Online Fuel Subsidy Eligibility System.
+
+Your job is to help users only with tasks related to this system and the fuel subsidy process, including:
+- applying for the fuel subsidy
+- understanding fuel subsidy eligibility requirements as presented in this platform
+- explaining what information or documents the user may need for the application
+- helping users navigate pages and features in the system
+- helping users use the map or location-related features inside this platform
+- helping with login, password reset, OTP, and account access issues
+- helping users understand application status, form fields, validation messages, and submission steps
+
+Rules:
+- Stay strictly within the scope of this fuel subsidy system.
+- If the user asks about anything unrelated, reply exactly: not in my scope!
+- Do not invent eligibility rules, government policy, approval criteria, benefits, or internal decisions.
+- Only explain eligibility and requirements if they are provided or clearly reflected by this platform.
+- If you are unsure, say so clearly and ask a short clarifying question.
+- Give practical, step-by-step help when the user wants to complete a task.
+- Keep answers concise, clear, and user-friendly.
+- If the user seems confused, explain in simple words.
+- Do not claim to have submitted, checked, changed, approved, or retrieved anything unless the system explicitly supports that action.
+- Do not provide legal, financial, or policy advice beyond helping the user use this platform.
+
+Behavior:
+- For application questions, guide the user step by step through the fuel subsidy process in this system.
+- For eligibility questions, explain only what the system shows or requires, and do not guess.
+- For password or login issues, focus on the recovery steps supported by the platform.
+- For map-related questions, help only with the map feature inside this system.
+- When helpful, tell the user the next action they should take in the platform.`
+const geminiClient = process.env.GEMINI_API_KEY
+    ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    : null
 
 //Connection to MongoDB
 try {
@@ -60,6 +94,55 @@ subsidyApp.listen(PORT, () => {
         console.log(`Online Subsidy Eligibility System Server running at port ${PORT} ...!`)
     } catch (err) {
         console.log(err)
+    }
+})
+
+subsidyApp.post("/llm/chat", async (req, res) => {
+    if (!geminiClient) {
+        return res.status(500).json({ serverMsg: "Gemini API key is missing on the server." })
+    }
+
+    const rawMessages = Array.isArray(req.body?.messages) ? req.body.messages : []
+    const contents = rawMessages
+        .filter((message) => typeof message?.content === "string" && message.content.trim())
+        .map((message) => ({
+            role: message.role === "assistant" ? "model" : "user",
+            parts: [{ text: message.content.trim() }],
+        }))
+
+    if (!contents.length) {
+        return res.status(400).json({ serverMsg: "At least one message is required." })
+    }
+
+    try {
+        res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
+        res.setHeader("Cache-Control", "no-cache")
+        res.setHeader("Connection", "keep-alive")
+        res.flushHeaders?.()
+
+        const stream = await geminiClient.models.generateContentStream({
+            model: GEMINI_MODEL,
+            contents,
+            config: {
+                systemInstruction: LLM_SYSTEM_PROMPT,
+            },
+        })
+
+        for await (const chunk of stream) {
+            if (!chunk.text) continue
+            res.write(`${JSON.stringify({ message: { content: chunk.text } })}\n`)
+        }
+
+        res.end()
+    } catch (error) {
+        console.error("Gemini chat error:", error)
+
+        if (!res.headersSent) {
+            return res.status(500).json({ serverMsg: "Gemini request failed." })
+        }
+
+        res.write(`${JSON.stringify({ message: { content: "Error: Gemini request failed. Check the server API key and billing setup." } })}\n`)
+        res.end()
     }
 })
 
@@ -821,33 +904,134 @@ subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "US
         console.log(e)
     }
 })
-subsidyApp.post('/createData',audit("create_synthetic",async(req,res)=>{
-    try {
-        const data=req.params
-        resul=await fetch(`http://127.0.0.1:5000/synthic`+data)
-        req.auditSuccess=true;
-        res.json({serverMsg:'success',data:resul.json()})
-    }
-    catch (e) {
-        req.auditSuccess = false
-        console.log(e)
-    }
-}))
-subsidyApp.get('/retrainEmodel',async(req,res)=>{
-    try{
-        const results=fetch(`http://127.0.0.1:5000/trainE`)
-        res.json({serverMsg:'success',data:results.json})
+subsidyApp.post("/createData",
+    authAudit,
+    audit("CREATE_SYNTHETIC_DATA", { type: "Dataset", id: req => req.user.id }),
+    async (req, res) => {
+        try {
+            req.auditActor = req.user.id;
 
-    }catch(e){
-         console.log(e)
-    }
-})
-subsidyApp.get('/retrainImodel',async(req,res)=>{
-    try{
-        const results=fetch(`http://127.0.0.1:5000/trainI`)
-        res.json({serverMsg:'success',data:results.json})
+            if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+                req.auditSuccess = false;
+                return res.status(400).json({ serverMsg: "Invalid synthetic data payload", flag: false });
+            }
 
-    }catch(e){
-         console.log(e)
+            const flaskPayload = {
+                ...req.body,
+                fruad_fraction: req.body.fraud_fraction,
+                ...(req.body.fraudmulti ? { fruadmulti: req.body.fraudmulti } : {})
+            };
+
+            const response = await fetch("http://127.0.0.1:5000/synthic", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(flaskPayload)
+            });
+
+            const rawText = await response.text();
+            let responseData;
+
+            try {
+                responseData = JSON.parse(rawText);
+            } catch {
+                responseData = { raw: rawText };
+            }
+
+            if (!response.ok) {
+                req.auditSuccess = false;
+                return res.status(response.status).json({
+                    serverMsg: responseData.error || "Synthetic data generation failed",
+                    flag: false,
+                    data: responseData
+                });
+            }
+
+            req.auditSuccess = true;
+            return res.json({
+                serverMsg: "Synthetic data generated successfully",
+                flag: true,
+                data: responseData
+            });
+        }
+        catch (e) {
+            req.auditSuccess = false
+            console.log(e)
+            return res.status(500).json({
+                serverMsg: "Unable to contact the synthetic data service at http://127.0.0.1:5000/synthic. Start it with: python \"synthetic data/mlserver.py\"",
+                flag: false
+            })
+        }
+    })
+subsidyApp.post('/retrainEmodel',
+    authAudit,
+    audit("RETRAIN_ELIGIBILITY_MODEL", { type: "Model", id: req => req.user.id }),
+    async (req, res) => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/trainE", {
+                method: "POST"
+            });
+
+            const rawText = await response.text();
+            let responseData;
+            try {
+                responseData = rawText ? JSON.parse(rawText) : {};
+            } catch (parseError) {
+                responseData = { raw: rawText };
+            }
+
+            req.auditSuccess = response.ok;
+            return res.status(response.ok ? 200 : response.status).json({
+                serverMsg: response.ok
+                    ? "Eligibility model retrained successfully"
+                    : responseData.error || "Eligibility model retraining failed",
+                flag: response.ok,
+                data: responseData
+            });
+        } catch (e) {
+            req.auditSuccess = false;
+            console.log(e);
+            return res.status(500).json({
+                serverMsg: "Unable to contact the synthetic data service at http://127.0.0.1:5000/trainE. Start it with: python \"synthetic data/mlserver.py\"",
+                flag: false
+            });
+        }
     }
-})
+)
+
+subsidyApp.post('/retrainImodel',
+    authAudit,
+    audit("RETRAIN_FRAUD_MODEL", { type: "Model", id: req => req.user.id }),
+    async (req, res) => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/trainI", {
+                method: "POST"
+            });
+
+            const rawText = await response.text();
+            let responseData;
+            try {
+                responseData = rawText ? JSON.parse(rawText) : {};
+            } catch (parseError) {
+                responseData = { raw: rawText };
+            }
+
+            req.auditSuccess = response.ok;
+            return res.status(response.ok ? 200 : response.status).json({
+                serverMsg: response.ok
+                    ? "Fraud model retrained successfully"
+                    : responseData.error || "Fraud model retraining failed",
+                flag: response.ok,
+                data: responseData
+            });
+        } catch (e) {
+            req.auditSuccess = false;
+            console.log(e);
+            return res.status(500).json({
+                serverMsg: "Unable to contact the synthetic data service at http://127.0.0.1:5000/trainI. Start it with: python \"synthetic data/mlserver.py\"",
+                flag: false
+            });
+        }
+    }
+)
