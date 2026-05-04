@@ -1,12 +1,12 @@
-
 import { useState, useRef, useEffect } from "react"
-import {Card, CardBody, CardFooter} from 'reactstrap'
+import { Card, CardBody, CardFooter } from "reactstrap"
 import { useTheme } from "../compsMisc/ThemeContext"
-import { IoIosSend } from "react-icons/io";
-const SYSTEM_PROMPT = "You are a helpful assistant that will help the user of this website to apply for a subsidy or the map or to change their password. If any unrelated message is given say: not in my scope!"
+import { IoIosSend } from "react-icons/io"
 
-export default function LLm() {
-    const {theme}=useTheme()
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || `http://localhost:${process.env.REACT_APP_PORT || "7500"}`
+
+export default function LLm({ onClose }) {
+  const { theme } = useTheme()
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Hello! I can help you apply for a subsidy, find something on the map, or change your password. What would you like to do?" }
   ])
@@ -19,31 +19,37 @@ export default function LLm() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  useEffect(() => {
+    if (!textareaRef.current) return
+
+    textareaRef.current.style.height = "0px"
+    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+  }, [input])
+
   const send = async () => {
-    if (!input.trim() || loading) return
-    const userMsg = { role: "user", content: input.trim() }
+    const trimmedInput = input.trim()
+    if (!trimmedInput || loading) return
+
+    const userMsg = { role: "user", content: trimmedInput }
     const updatedHistory = [...messages, userMsg]
 
-    setMessages(updatedHistory)
+    setMessages([...updatedHistory, { role: "assistant", content: "" }])
     setInput("")
     setLoading(true)
 
-    // Add empty assistant bubble to stream into
-    setMessages(prev => [...prev, { role: "assistant", content: "" }])
-
     try {
-      const res = await fetch('http://127.0.0.1:11434/api/chat', {
+      const res = await fetch(`${API_BASE_URL}/llm/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "qwen3.5:4b",
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            ...updatedHistory
-          ],
-          stream: true,
+          messages: updatedHistory,
         }),
       })
+
+      if (!res.ok || !res.body) {
+        const serverMessage = await res.text()
+        throw new Error(serverMessage || "LLM request failed")
+      }
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
@@ -51,9 +57,11 @@ export default function LLm() {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
+
         const lines = decoder.decode(value, { stream: true }).split("\n")
         for (const line of lines) {
           if (!line.trim()) continue
+
           try {
             const json = JSON.parse(line)
             if (json.message?.content) {
@@ -66,13 +74,18 @@ export default function LLm() {
                 return updated
               })
             }
-          } catch {}
+          } catch {
+            // Ignore partial streaming chunks that are not valid JSON yet.
+          }
         }
       }
-    } catch {
+    } catch (error) {
       setMessages(prev => {
         const updated = [...prev]
-        updated[updated.length - 1] = { role: "assistant", content: "Error: make sure Ollama is running with CORS enabled." }
+        updated[updated.length - 1] = {
+          role: "assistant",
+          content: error.message || "Error: Gemini request failed."
+        }
         return updated
       })
     } finally {
@@ -81,54 +94,97 @@ export default function LLm() {
   }
 
   return (
-    <div>
-        <Card style={{width:"18rem"}}>
-      
-
-      {/* Messages */}
-      <CardBody style={{height:"26rem",background:theme.primaryBackground, overflowY: "auto"}}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-            <div style={{
-              maxWidth: "75%", padding: "8px 12px",
-              borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-              background: msg.role === "user" ? theme.primaryColor : theme.secondaryColor,
-              color: msg.role === "user" ? theme.textColorAlt : theme.textColorBlack,
-              fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word",
-              
-            }}>
-              {msg.content || (loading && i === messages.length - 1 ? "?" : "")}
-            </div>
-          </div>
-        ))}
-        {loading && messages[messages.length - 1]?.role !== "assistant" && (
-          <div style={{ display: "flex" }}>
-            <div style={{ padding: "8px 14px", background: "#ff0000", borderRadius: "14px 14px 14px 4px", fontSize: 18, letterSpacing: 2 }}>···</div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </CardBody>
-
-      {/* Input */}
-      <CardFooter style={{ padding: 12, display: "flex", gap: 8, }}>
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }}
-          placeholder="Type a message…"
-          style={{ flex: 1, resize: "none", padding: "8px 12px", borderRadius: 20, border: "1px solid #ddd", fontSize: 14, lineHeight: 1.5, maxHeight: 120, overflowY: "auto", outline: "none", fontFamily: "inherit" }}
-        />
-        <button
-          onClick={send}
-          disabled={loading || !input.trim()}
-   
-          style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: theme.altBackground, color: theme.primaryColor, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: loading || !input.trim() ? 0.4 : 1 }}
+    <div className="llmChatShell">
+      <Card className="llmChatCard">
+        <div
+          className="llmChatHeader"
+          style={{
+            background: theme.altBackground,
+            color: theme.textColorAlt,
+            borderBottomColor: theme.shadowColor,
+          }}
         >
-          <IoIosSend/>
-        </button>
-      </CardFooter>
+          <div>
+            <h2 className="llmChatTitle">Chat assistant</h2>
+            <p className="llmChatSubtitle">Ask about subsidies, the map, or your password.</p>
+          </div>
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="llmChatClose"
+              aria-label="Hide chat assistant"
+              style={{
+                color: theme.textColorAlt,
+                borderColor: theme.shadowColor,
+                background: theme.primaryBackground,
+              }}
+            >
+              Hide
+            </button>
+          ) : null}
+        </div>
+
+        <CardBody
+          className="llmChatMessages"
+          style={{ background: theme.primaryBackground }}
+        >
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`llmMessageRow ${msg.role === "user" ? "llmMessageRowUser" : "llmMessageRowAssistant"}`}
+            >
+              <div
+                className={`llmMessageBubble ${msg.role === "user" ? "llmMessageBubbleUser" : "llmMessageBubbleAssistant"}`}
+                style={{
+                  background: msg.role === "user" ? theme.primaryColor : theme.altBackground,
+                  color: theme.textColorAlt,
+                }}
+              >
+                {msg.content || (loading && i === messages.length - 1 ? "Typing..." : "")}
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </CardBody>
+
+        <CardFooter
+          className="llmChatFooter"
+          style={{ background: theme.altBackground, borderTopColor: theme.shadowColor }}
+        >
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            value={input}
+            className="llmChatInput"
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                send()
+              }
+            }}
+            placeholder="Type a message..."
+            style={{
+              background: theme.primaryBackground,
+              color: theme.textColorAlt,
+              borderColor: theme.shadowColor,
+            }}
+          />
+          <button
+            onClick={send}
+            disabled={loading || !input.trim()}
+            className="llmChatSend"
+            aria-label="Send message"
+            style={{
+              background: theme.primaryColor,
+              color: theme.textColorAlt,
+              opacity: loading || !input.trim() ? 0.4 : 1,
+            }}
+          >
+            <IoIosSend />
+          </button>
+        </CardFooter>
       </Card>
     </div>
   )
