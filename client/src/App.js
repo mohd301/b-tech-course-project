@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.css";
 import "./styles/styles.css";
-import { Button,Offcanvas } from "reactstrap";
+import { Offcanvas } from "reactstrap";
 import { HiOutlineChat } from "react-icons/hi";
 // User
 import Login from "./comps/Login";
@@ -27,6 +27,8 @@ import GenerateReport from "./compsAdmin/GenerateReport";
 // Regulator
 import HomeRegulator from "./compsRegulator/HomeRegulator";
 import UploadDataset from "./compsRegulator/UploadDataset";
+import DataCreator from "./compsRegulator/DataCreator";
+import RetrainModels from "./compsRegulator/RetrainModels";
 
 import { useEffect, useState, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -45,23 +47,29 @@ import { decryptToken } from "./functions/decryptToken";
 import { useTheme } from "./compsMisc/ThemeContext";
 import LLm from "./compsMisc/LLm";
 
+function UnauthorizedRedirect({ type, setAuthMsg }) {
+  useEffect(() => {
+    setAuthMsg("Unauthorized access");
+  }, [setAuthMsg]);
+
+  return <Navigate to={determineRoute(type)} />
+}
+
 function App() {
-  const { toggleTheme, mode } = useTheme();
+  const { toggleTheme, mode, theme } = useTheme();
 
   const alertedRef = useRef(false);
   const [authMsg, setAuthMsg] = useState("");
+  const [isLlmOpen, setIsLlmOpen] = useState(false);
 
   const navigate = useNavigate();
 
   // Protect routes to prevent unauthorised access
   function PrivateRoute({ children, allowedRoles }) {
-    let route = "";
     const type = getUserType();
 
     if (!allowedRoles.includes(type)) {
-      setAuthMsg("Unauthorized access");
-      route = determineRoute(type);
-      return <Navigate to={route} />
+      return <UnauthorizedRedirect type={type} setAuthMsg={setAuthMsg} />
     }
 
     // Only return children when user is of authorized type
@@ -70,6 +78,7 @@ function App() {
 
   const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
+  const toggleLlm = () => setIsLlmOpen((prev) => !prev);
 
   // This useEffect sets up a timer to automatically log out the user when the JWT token expires. 
   // It calculates the remaining time until expiration and logs out the user
@@ -195,29 +204,47 @@ function App() {
               <UploadDataset />
             </PrivateRoute>}>
           </Route>
+
+          <Route path='/dataCreator' element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <DataCreator />
+            </PrivateRoute>}>
+          </Route>
+
+          <Route path='/retrainModels' element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <RetrainModels />
+            </PrivateRoute>}>
+          </Route>
         </Routes>
 
         <button className="themeButton" onClick={toggleTheme}>
           {mode === "light" ? <FaMoon /> : <FaSun />}
         </button>
-        
-  <Button
-  
-    onClick={function noRefCheck(){}}
-    className="position-fixed"
-    style={{ 
-    bottom: '20px', 
-    right: '20px', 
-     // Ensures it stays above other content
-    borderRadius: '100%', // Optional: makes it a circular floating action button
-    padding: '15px' 
-  }}
-  >
-    <HiOutlineChat />
-  </Button>
-  <Offcanvas toggle={function noRefCheck(){}}>
-    <LLm/>
-  </Offcanvas>
+
+        <button
+          onClick={toggleLlm}
+          className="llmLauncher"
+          aria-label="Open chat assistant"
+          style={{
+            background: theme.primaryColor,
+            color: theme.textColorAlt,
+            borderColor: mode === "light" ? "#ffffff" : "rgba(255, 255, 255, 0.35)",
+          }}
+        >
+          <HiOutlineChat className="llmLauncherIcon" />
+        </button>
+        <Offcanvas
+          isOpen={isLlmOpen}
+          toggle={toggleLlm}
+          direction="end"
+          className="llmOffcanvas"
+          backdrop={false}
+          scrollable
+          unmountOnClose={false}
+        >
+          <LLm onClose={toggleLlm} />
+        </Offcanvas>
 
       </main>
 
