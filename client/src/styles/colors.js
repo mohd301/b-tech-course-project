@@ -9,7 +9,8 @@ export const lightTheme = {
   textColorBlack: '#000000',
   altBackground: '#ffffff',
   shadowColor: "rgba(0, 0, 0, 0.5)",
-  sus :"#E77D22"
+  sus :"#E77D22",
+  bgGray: "#7f7f7f"
 };
 
 export const darkTheme = {
@@ -23,5 +24,6 @@ export const darkTheme = {
   textColorBlack: '#000000',
   altBackground: '#000000',  
   shadowColor: "rgba(255, 255, 255, 0.5)",
-  sus:"#FF4D00"
+  sus:"#FF4D00",
+  bgGray: "#7f7f7f"
 };
