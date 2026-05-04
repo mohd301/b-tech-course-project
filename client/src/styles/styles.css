@@ -242,6 +242,38 @@ input:disabled {
   filter: brightness(85%);
 }
 
+.llmLauncher {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 62px;
+  height: 62px;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1040;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+}
+
+.llmLauncher:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 20px 38px rgba(0, 0, 0, 0.3);
+  filter: brightness(0.97);
+}
+
+.llmLauncher:focus-visible {
+  outline: 3px solid rgba(102, 187, 106, 0.35);
+  outline-offset: 3px;
+}
+
+.llmLauncherIcon {
+  font-size: 2rem;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+}
+
 /* Modal Styles */
 
 .modal {
@@ -390,4 +422,209 @@ input:disabled {
   /* show horizontal scroll if content is wider */
   scrollbar-width: thin;
   width: 100%;
+}
+
+/* LLM Chatbot */
+.llmOffcanvas {
+  width: min(100vw, 420px) !important;
+  background: linear-gradient(180deg, var(--primaryBackground) 0%, var(--altBackground) 100%);
+  color: var(--textColorAlt);
+  border-left: 1px solid rgba(125, 125, 125, 0.25);
+  box-shadow: -10px 0 28px rgba(0, 0, 0, 0.16);
+  pointer-events: auto;
+}
+
+.llmOffcanvas .offcanvas-body {
+  padding: 0;
+  display: flex;
+  min-height: 100%;
+}
+
+.llmOffcanvas .offcanvas-body > * {
+  flex: 1;
+  min-height: 0;
+}
+
+.llmChatShell {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.llmChatCard {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.llmChatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem 0.9rem;
+  border-bottom: 1px solid;
+}
+
+.llmChatTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.llmChatSubtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+.llmChatClose {
+  flex-shrink: 0;
+  min-width: 72px;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.llmChatClose:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.96);
+}
+
+.llmChatMessages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.llmMessageRow {
+  display: flex;
+}
+
+.llmMessageRowUser {
+  justify-content: flex-end;
+}
+
+.llmMessageRowAssistant {
+  justify-content: flex-start;
+}
+
+.llmMessageBubble {
+  max-width: min(85%, 22rem);
+  padding: 0.8rem 0.95rem;
+  border-radius: 1.05rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.llmMessageBubbleUser {
+  border-bottom-right-radius: 0.35rem;
+}
+
+.llmMessageBubbleAssistant {
+  border-bottom-left-radius: 0.35rem;
+}
+
+.llmChatFooter {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  padding: 1rem;
+  border-top: 1px solid;
+}
+
+.llmChatInput {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  resize: none;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid;
+  border-radius: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  overflow-y: auto;
+  outline: none;
+  box-shadow: none;
+}
+
+.llmChatInput:focus {
+  box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.2);
+}
+
+.llmChatSend {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+}
+
+.llmChatSend:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(0.95);
+}
+
+.llmChatSend:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 767.98px) {
+  .llmLauncher {
+    width: 54px;
+    height: 54px;
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .llmLauncherIcon {
+    font-size: 1.55rem;
+  }
+
+  .llmOffcanvas {
+    width: 100vw !important;
+  }
+
+  .llmChatHeader {
+    padding: 0.9rem 0.9rem 0.8rem;
+  }
+
+  .llmChatMessages {
+    padding: 0.9rem;
+  }
+
+  .llmChatFooter {
+    gap: 0.6rem;
+    padding: 0.85rem;
+  }
+
+  .llmMessageBubble {
+    max-width: 90%;
+    font-size: 0.92rem;
+  }
 }
