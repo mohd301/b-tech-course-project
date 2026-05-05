@@ -212,30 +212,6 @@ input:disabled {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.aiButton {
-  position: fixed;
-  bottom: 10vh;
-  /* distance from bottom */
-  right: 20px;
-  /* distance from left */
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  /* makes it a circle */
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background-color: var(--primaryColor);
-  color: var(--textColorAlt);
-  border: none;
-  cursor: pointer;
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
 .themeButton:hover {
   transform: scale(1.05);
   filter: brightness(85%);

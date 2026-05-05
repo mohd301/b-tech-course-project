@@ -7,7 +7,8 @@ const ELinkSchema = new mongoose.Schema(
         NationalID: { type: String, required: true },
         Fraud: { type: Number, required: true, default: 0 },
         Eligibility:{type:Number,required:true},
-        Reason:{type:String,required:false}
+        Reason:{type:String,required:false},
+        Gove:{type:String,required:true}
     },
     {
         versionKey: false

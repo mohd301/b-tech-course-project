@@ -78,8 +78,7 @@ function App() {
 
   const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
-   const toggleLlm = () => setIsLlmOpen((prev) => !prev);
-
+  const toggleLlm = () => setIsLlmOpen((prev) => !prev);
 
   // This useEffect sets up a timer to automatically log out the user when the JWT token expires. 
   // It calculates the remaining time until expiration and logs out the user
@@ -222,16 +221,30 @@ function App() {
         <button className="themeButton" onClick={toggleTheme}>
           {mode === "light" ? <FaMoon /> : <FaSun />}
         </button>
-        
-  <Button
-            onClick={toggleLlm}
-            className="aiButton"
-          >
-            <HiOutlineChat />
-          </Button>
-          <Offcanvas isOpen={isLlmOpen} toggle={toggleLlm} direction="end" className="llmOffcanvas">
-            <LLm />
-          </Offcanvas>
+
+        <button
+          onClick={toggleLlm}
+          className="llmLauncher"
+          aria-label="Open chat assistant"
+          style={{
+            background: theme.primaryColor,
+            color: theme.textColorAlt,
+            borderColor: mode === "light" ? "#ffffff" : "rgba(255, 255, 255, 0.35)",
+          }}
+        >
+          <HiOutlineChat className="llmLauncherIcon" />
+        </button>
+        <Offcanvas
+          isOpen={isLlmOpen}
+          toggle={toggleLlm}
+          direction="end"
+          className="llmOffcanvas"
+          backdrop={false}
+          scrollable
+          unmountOnClose={false}
+        >
+          <LLm onClose={toggleLlm} />
+        </Offcanvas>
 
       </main>
 
