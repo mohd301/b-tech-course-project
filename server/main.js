@@ -1035,14 +1035,19 @@ subsidyApp.post('/retrainImodel',
         }
     }
 )
-subsidyApp.get("/eligibility-analytics", async (req, res) => {
+subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
+        console.log(1)
         const data = await ELinkModel.find();
+        
         const totalApplicants = data.length;
         const eligibleCount = data.filter(d => d.Eligibility === 1).length;
         const ineligibleCount = data.filter(d => d.Eligibility === 0).length;
         const fraudCount = data.filter(d => d.Fraud === 1).length;
-        const newdata=[totalApplicants,eligibleCount,ineligibleCount,fraudCount]
+        console.log(data)
+        //const gov = data.Gove || 'muscat'
+        const newdata={"totalApplicants":totalApplicants,"eligibleCount":eligibleCount,"ineligibleCount":ineligibleCount,"fraudCount":fraudCount}
+        console.log(newdata)
         res.json({ serverMsg: "Analytics fetched", data: newdata, flag: true })
     } catch (e) {
         console.log(e)

@@ -46,6 +46,7 @@ import { decryptToken } from "./functions/decryptToken";
 
 import { useTheme } from "./compsMisc/ThemeContext";
 import LLm from "./compsMisc/LLm";
+import Analytics from "./compsRegulator/Analytics";
 
 function UnauthorizedRedirect({ type, setAuthMsg }) {
   useEffect(() => {
@@ -214,6 +215,11 @@ function App() {
           <Route path='/retrainModels' element={
             <PrivateRoute allowedRoles={["Regulator"]}>
               <RetrainModels />
+            </PrivateRoute>}>
+          </Route>
+          <Route path='/eanaltics' element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <Analytics />
             </PrivateRoute>}>
           </Route>
         </Routes>

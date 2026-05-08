@@ -165,6 +165,18 @@ export const createDataThunk=createAsyncThunk('privSlice/createDataThunk',async(
         throw err
     }
 })
+export const fetchELAnalytics = createAsyncThunk("privSlice/fetchELAnalytics", async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/eligibility_analytics`,
+        )
+        
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
 
 const initialState = {
     msg: null,
@@ -175,6 +187,7 @@ const initialState = {
     elInfo: [],
     loading: false,
     flag: false,
+    analytic:{}
 }
 
 const privSlice = createSlice(
@@ -365,6 +378,23 @@ const privSlice = createSlice(
             })
 
             builder.addCase(fetchELInfoThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+            builder.addCase(fetchELAnalytics.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchELAnalytics.fulfilled, (state, action) => {
+                state.analytic = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchELAnalytics.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.flag = false
                 state.loading = false
