@@ -1045,8 +1045,8 @@ subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", 
         const ineligibleCount = data.filter(d => d.Eligibility === 0).length;
         const fraudCount = data.filter(d => d.Fraud === 1).length;
         console.log(data)
-        //const gov = data.Gove || 'muscat'
-        const newdata={"totalApplicants":totalApplicants,"eligibleCount":eligibleCount,"ineligibleCount":ineligibleCount,"fraudCount":fraudCount}
+        const gov = data.Gove || 'muscat'
+        const newdata={"totalApplicants":totalApplicants,"eligibleCount":eligibleCount,"ineligibleCount":ineligibleCount,"fraudCount":fraudCount,'gov':gov}
         console.log(newdata)
         res.json({ serverMsg: "Analytics fetched", data: newdata, flag: true })
     } catch (e) {
