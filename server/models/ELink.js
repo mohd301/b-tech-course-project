@@ -11,7 +11,7 @@ const ELinkSchema = new mongoose.Schema(
         Gove:{type:String,required:true}
     },
     {
-        versionKey: false
+        versionKey: false,timestamps:true,
     }
 )
 

@@ -41,7 +41,9 @@ const upload = multer({
 })
 
 dotenv.config()
-
+function getLastEligibilityResult() {
+    return eresults;
+}
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES = "1h"
@@ -68,6 +70,7 @@ Rules:
 - If the user seems confused, explain in simple words.
 - Do not claim to have submitted, checked, changed, approved, or retrieved anything unless the system explicitly supports that action.
 - Do not provide legal, financial, or policy advice beyond helping the user use this platform.
+- when get the result of ${getLastEligibilityResult()} explain the reson for example if salary is too high mention that if eligibly is 0.
 
 Behavior:
 - For application questions, guide the user step by step through the fuel subsidy process in this system.
@@ -810,6 +813,7 @@ subsidyApp.put("/fruad/:id",
             console.log(e)
         }
     })
+let eresults = null;
 subsidyApp.get("/Eligibility/:ID/:_id",
     audit("ELIGIBILITY_FLAG", { type: "Applicant", id: req => req.params.ID }),
     async (req, res) => {
@@ -870,6 +874,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 
                     }
                     await ELinkModel.create(newdata)
+                    eresults = { serverMsg: "Success!", flag: true, Data: data }
                     res.json({ serverMsg: "Success!", flag: true, Data: data })
                 }
             }
@@ -879,6 +884,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
             console.log(e)
         }
     }
+
 )
 subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {

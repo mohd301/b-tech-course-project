@@ -90,6 +90,23 @@ export default function HomeRegulator() {
                         </Card>
                     </Link>
                 </Col>
+                 <Col md={6} lg={4}>
+                    <Link to="/eanaltics" style={{ textDecoration: "none" }}>
+                        <Card className="dash-card h-100">
+                            <CardBody className="d-flex flex-column align-items-center justify-content-center p-5">
+                                <div style={iconStyle} className="iconContainer mb-2">
+                                    <FaDatabase size={50} color={theme.textColorAlt} />
+                                </div>
+                                <CardTitle tag="h3" style={{ color: theme.textColorAlt }} className="text-center">
+                                    View analytics
+                                </CardTitle>
+                                <p style={{ color: theme.textColorAlt, textAlign: "center" }} className="mt-2">
+                                    View, edit, and delete analytics
+                                </p>
+                            </CardBody>
+                        </Card>
+                    </Link>
+                </Col>
             </Row>
         </Container >
     );
