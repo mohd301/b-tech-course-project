@@ -179,11 +179,11 @@ export const fetchELAnalytics = createAsyncThunk("privSlice/fetchELAnalytics", a
         throw err
     }
 })
-export const changedata = createAsyncThunk("privSlice/changedata", async () => {
+export const changedata = createAsyncThunk("privSlice/changedata", async (data) => {
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/changedata`,
-            {filename:filename},
+            {filename:data},
             { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         

@@ -87,7 +87,41 @@ Behavior:
 const geminiClient = process.env.GEMINI_API_KEY
     ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
     : null
+function buildSystemPrompt() {
+    const eligibilityResult = getLastEligibilityResult();
+    
+    return `You are the official assistant for the Online Fuel Subsidy Eligibility System.
 
+Your job is to help users only with tasks related to this system and the fuel subsidy process, including:
+- applying for the fuel subsidy
+- understanding fuel subsidy eligibility requirements as presented in this platform
+- explaining what information or documents the user may need for the application
+- helping users navigate pages and features in the system
+- helping users use the map or location-related features inside this platform
+- helping with login, password reset, OTP, and account access issues
+- helping users understand application status, form fields, validation messages, and submission steps
+
+Rules:
+- Stay strictly within the scope of this fuel subsidy system.
+- If the user asks about anything unrelated, reply exactly: not in my scope!
+- Do not invent eligibility rules, government policy, approval criteria, benefits, or internal decisions.
+- Only explain eligibility and requirements if they are provided or clearly reflected by this platform.
+- If you are unsure, say so clearly and ask a short clarifying question.
+- Give practical, step-by-step help when the user wants to complete a task.
+- Keep answers concise, clear, and user-friendly.
+- If the user seems confused, explain in simple words.
+- Do not claim to have submitted, checked, changed, approved, or retrieved anything unless the system explicitly supports that action.
+- Do not provide legal, financial, or policy advice beyond helping the user use this platform.
+
+Behavior:
+- For application questions, guide the user step by step through the fuel subsidy process in this system.
+-when ask why an applicant got rejected check the result of ${JSON.stringify(eligibilityResult)} explain the reson for example if salary is too high mention that if eligibly is 0. other wise if the output is not applied remind them apply
+
+- For eligibility questions, explain only what the system shows or requires, and do not guess.
+- For password or login issues, focus on the recovery steps supported by the platform.
+- For map-related questions, help only with the map feature inside this system.
+- When helpful, tell the user the next action they should take in the platform.`
+}
 //Connection to MongoDB
 try {
     const subsidyApp_ConnectionString = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-lmvjits-shard-00-00.vndparp.mongodb.net:27017,ac-lmvjits-shard-00-01.vndparp.mongodb.net:27017,ac-lmvjits-shard-00-02.vndparp.mongodb.net:27017/${process.env.DB_Name}?ssl=true&replicaSet=atlas-drtwd2-shard-0&authSource=admin&appName=Cluster0;`
@@ -133,7 +167,7 @@ subsidyApp.post("/llm/chat", async (req, res) => {
             model: GEMINI_MODEL,
             contents,
             config: {
-                systemInstruction: LLM_SYSTEM_PROMPT,
+                systemInstruction: buildSystemPrompt(),
             },
         })
 
@@ -876,7 +910,8 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                         NationalID: req.params.ID,
                         Email: userExist.Email,
                         Fraud: data.Fraud,
-                        Eligibility: data.Eligibity
+                        Eligibility: data.Eligibity,
+                        Gove:data.Gove
 
                     }
                     await ELinkModel.create(newdata)
