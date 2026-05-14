@@ -41,8 +41,13 @@ const upload = multer({
 })
 
 dotenv.config()
+let eresults = null;
 function getLastEligibilityResult() {
+    if(eresults){
     return eresults;
+    }else {
+        return "not applied yet"
+    }
 }
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET
@@ -70,10 +75,11 @@ Rules:
 - If the user seems confused, explain in simple words.
 - Do not claim to have submitted, checked, changed, approved, or retrieved anything unless the system explicitly supports that action.
 - Do not provide legal, financial, or policy advice beyond helping the user use this platform.
-- when get the result of ${getLastEligibilityResult()} explain the reson for example if salary is too high mention that if eligibly is 0.
 
 Behavior:
 - For application questions, guide the user step by step through the fuel subsidy process in this system.
+-when ask why an applicant got rejected check the result of ${getLastEligibilityResult()} explain the reson for example if salary is too high mention that if eligibly is 0. other wise if the output is not applied remind them apply
+
 - For eligibility questions, explain only what the system shows or requires, and do not guess.
 - For password or login issues, focus on the recovery steps supported by the platform.
 - For map-related questions, help only with the map feature inside this system.
@@ -813,7 +819,7 @@ subsidyApp.put("/fruad/:id",
             console.log(e)
         }
     })
-let eresults = null;
+
 subsidyApp.get("/Eligibility/:ID/:_id",
     audit("ELIGIBILITY_FLAG", { type: "Applicant", id: req => req.params.ID }),
     async (req, res) => {
@@ -1058,5 +1064,19 @@ subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", 
     } catch (e) {
         console.log(e)
         res.json({ serverMsg: "Error fetching analytics", flag: false })
+    }
+})
+subsidyApp.get("changedata",audit("Active_dataSet",{type:"SYSTEM",id:req=>"Dataset"}),async(req,res)=>{
+    try{ 
+        req.auditSuccess=true
+        const response = await fetch("http://127.0.0.1:5000/datafile"+req.body.filename)
+        const fliter = {originalName:req.body.filename}
+        const update = {Active:true}
+        DatasetModel.findOneAndUpdate({ fliter, update})
+        res.json({serverMsg:"Success",flag:false})
+    }catch{
+        console.log(e)
+        res.json({serverMsg:"Error",flag:false})
+
     }
 })

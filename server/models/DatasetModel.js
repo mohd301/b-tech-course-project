@@ -10,7 +10,8 @@ const datasetSchema = new mongoose.Schema(
         columnCount: { type: Number, default: 0 },
         columns: { type: [String], default: [] },
         content: { type: String, required: true },
-        description: { type: String, default: "" }
+        description: { type: String, default: "" },
+        Active:{type:Boolean,default:false}
     },
     {
         timestamps: { createdAt: true, updatedAt: false },
