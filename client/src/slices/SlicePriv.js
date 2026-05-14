@@ -130,7 +130,7 @@ export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetSt
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/getDatasetStats`,
-        
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         return response.data
     } catch (err) {
@@ -144,6 +144,7 @@ export const fetchELInfoThunk = createAsyncThunk("privSlice/fetchELInfoThunk", a
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/viewELlink`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         return response.data
     } catch (err) {
@@ -169,6 +170,21 @@ export const fetchELAnalytics = createAsyncThunk("privSlice/fetchELAnalytics", a
     try {
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/eligibility_analytics`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+export const changedata = createAsyncThunk("privSlice/changedata", async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/changedata`,
+            {filename:filename},
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
         
         return response.data
@@ -187,7 +203,8 @@ const initialState = {
     elInfo: [],
     loading: false,
     flag: false,
-    analytic:{}
+    analytic:{},
+    
 }
 
 const privSlice = createSlice(
@@ -395,6 +412,23 @@ const privSlice = createSlice(
             })
 
             builder.addCase(fetchELAnalytics.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+             builder.addCase(changedata.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(changedata.fulfilled, (state, action) => {
+                
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(changedata.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.flag = false
                 state.loading = false

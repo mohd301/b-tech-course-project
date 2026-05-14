@@ -1066,7 +1066,7 @@ subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", 
         res.json({ serverMsg: "Error fetching analytics", flag: false })
     }
 })
-subsidyApp.get("changedata",audit("Active_dataSet",{type:"SYSTEM",id:req=>"Dataset"}),async(req,res)=>{
+subsidyApp.get("/changedata",audit("Active_dataSet",{type:"SYSTEM",id:req=>"Dataset"}),async(req,res)=>{
     try{ 
         req.auditSuccess=true
         const response = await fetch("http://127.0.0.1:5000/datafile"+req.body.filename)
