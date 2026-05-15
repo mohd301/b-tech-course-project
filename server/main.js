@@ -6,6 +6,9 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import multer from "multer"
 import { GoogleGenAI } from "@google/genai"
+import fs from "fs/promises"
+import path from "path"
+import { fileURLToPath } from "url"
 
 import UserModel from "./models/UserModel.js"
 import PrivUserModel from "./models/PrivUserModel.js"
@@ -41,6 +44,97 @@ const upload = multer({
 })
 
 dotenv.config()
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://127.0.0.1:5000"
+const SYNTHETIC_DATA_DIR = path.resolve(__dirname, "..", "synthetic data")
+const ML_TRAINING_DATASET_PATH = path.join(SYNTHETIC_DATA_DIR, "synthetic_subsidy_cylinders.csv")
+
+function toMlPath(filePath) {
+    return filePath.split(path.sep).join("/")
+}
+
+function datasetSummary(dataset) {
+    return {
+        _id: dataset._id,
+        originalName: dataset.originalName,
+        rowCount: dataset.rowCount,
+        columnCount: dataset.columnCount
+    }
+}
+
+async function writeDatasetForMl(dataset) {
+    await fs.mkdir(SYNTHETIC_DATA_DIR, { recursive: true })
+    await fs.writeFile(ML_TRAINING_DATASET_PATH, dataset.content, "utf-8")
+
+    return {
+        activeFile: toMlPath(ML_TRAINING_DATASET_PATH)
+    }
+}
+
+async function notifyMlServerDataset(dataset, files) {
+    const response = await fetch(`${ML_SERVICE_URL}/datafile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            datasetId: dataset._id.toString(),
+            originalName: dataset.originalName,
+            filename: files.activeFile,
+            trainingFilename: files.activeFile
+        })
+    })
+
+    const rawText = await response.text()
+    let responseData
+    try {
+        responseData = rawText ? JSON.parse(rawText) : {}
+    } catch {
+        responseData = { raw: rawText }
+    }
+
+    if (!response.ok) {
+        throw new Error(responseData.error || responseData.serverMsg || `ML server responded with ${response.status}`)
+    }
+
+    return responseData
+}
+
+async function syncDatasetWithMl(dataset) {
+    const files = await writeDatasetForMl(dataset)
+
+    try {
+        return {
+            files,
+            mlServer: {
+                synced: true,
+                data: await notifyMlServerDataset(dataset, files)
+            }
+        }
+    } catch (error) {
+        return {
+            files,
+            mlServer: {
+                synced: false,
+                error: error.message
+            }
+        }
+    }
+}
+
+async function syncActiveDatasetWithMl() {
+    const activeDataset = await DatasetModel.findOne({ Active: true })
+    if (!activeDataset) {
+        return null
+    }
+
+    const sync = await syncDatasetWithMl(activeDataset)
+    return {
+        dataset: activeDataset,
+        ...sync
+    }
+}
+
 async function getEligibilityResultForUser(userId) {
     if (typeof userId !== "string" || !userId.trim()) {
         return null
@@ -1151,8 +1245,29 @@ subsidyApp.post('/retrainEmodel',
     audit("RETRAIN_ELIGIBILITY_MODEL", { type: "Model", id: req => req.user.id }),
     async (req, res) => {
         try {
-            const response = await fetch("http://127.0.0.1:5000/trainE", {
-                method: "POST"
+            const requester = await PrivUserModel.findById(req.user.id)
+            if (!requester || requester.Type !== "Regulator") {
+                req.auditSuccess = false
+                return res.status(403).json({ serverMsg: "Only regulators can retrain models", flag: false })
+            }
+
+            const activeDatasetSync = await syncActiveDatasetWithMl()
+            if (!activeDatasetSync) {
+                req.auditSuccess = false
+                return res.status(400).json({
+                    serverMsg: "Activate a dataset before retraining the eligibility model",
+                    flag: false
+                })
+            }
+
+            const response = await fetch(`${ML_SERVICE_URL}/trainE`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    filename: activeDatasetSync.files.activeFile,
+                    datasetId: activeDatasetSync.dataset._id.toString(),
+                    originalName: activeDatasetSync.dataset.originalName
+                })
             });
 
             const rawText = await response.text();
@@ -1169,13 +1284,18 @@ subsidyApp.post('/retrainEmodel',
                     ? "Eligibility model retrained successfully"
                     : responseData.error || "Eligibility model retraining failed",
                 flag: response.ok,
-                data: responseData
+                data: {
+                    ...responseData,
+                    activeDataset: datasetSummary(activeDatasetSync.dataset),
+                    mlFiles: activeDatasetSync.files,
+                    mlServerDatasetSync: activeDatasetSync.mlServer
+                }
             });
         } catch (e) {
             req.auditSuccess = false;
             console.log(e);
             return res.status(500).json({
-                serverMsg: "Unable to contact the synthetic data service at http://127.0.0.1:5000/trainE. Start it with: python \"synthetic data/mlserver.py\"",
+                serverMsg: `Unable to contact the synthetic data service at ${ML_SERVICE_URL}/trainE. Start it with: python "synthetic data/mlserver.py"`,
                 flag: false
             });
         }
@@ -1187,8 +1307,29 @@ subsidyApp.post('/retrainImodel',
     audit("RETRAIN_FRAUD_MODEL", { type: "Model", id: req => req.user.id }),
     async (req, res) => {
         try {
-            const response = await fetch("http://127.0.0.1:5000/trainI", {
-                method: "POST"
+            const requester = await PrivUserModel.findById(req.user.id)
+            if (!requester || requester.Type !== "Regulator") {
+                req.auditSuccess = false
+                return res.status(403).json({ serverMsg: "Only regulators can retrain models", flag: false })
+            }
+
+            const activeDatasetSync = await syncActiveDatasetWithMl()
+            if (!activeDatasetSync) {
+                req.auditSuccess = false
+                return res.status(400).json({
+                    serverMsg: "Activate a dataset before retraining the fraud model",
+                    flag: false
+                })
+            }
+
+            const response = await fetch(`${ML_SERVICE_URL}/trainI`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    filename: activeDatasetSync.files.activeFile,
+                    datasetId: activeDatasetSync.dataset._id.toString(),
+                    originalName: activeDatasetSync.dataset.originalName
+                })
             });
 
             const rawText = await response.text();
@@ -1205,13 +1346,18 @@ subsidyApp.post('/retrainImodel',
                     ? "Fraud model retrained successfully"
                     : responseData.error || "Fraud model retraining failed",
                 flag: response.ok,
-                data: responseData
+                data: {
+                    ...responseData,
+                    activeDataset: datasetSummary(activeDatasetSync.dataset),
+                    mlFiles: activeDatasetSync.files,
+                    mlServerDatasetSync: activeDatasetSync.mlServer
+                }
             });
         } catch (e) {
             req.auditSuccess = false;
             console.log(e);
             return res.status(500).json({
-                serverMsg: "Unable to contact the synthetic data service at http://127.0.0.1:5000/trainI. Start it with: python \"synthetic data/mlserver.py\"",
+                serverMsg: `Unable to contact the synthetic data service at ${ML_SERVICE_URL}/trainI. Start it with: python "synthetic data/mlserver.py"`,
                 flag: false
             });
         }
@@ -1261,20 +1407,65 @@ subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", 
         res.json({ serverMsg: "Error fetching monthly analytics", flag: false });
     }
 });
-subsidyApp.get("/changedata",audit("Active_dataSet",{type:"SYSTEM",id:req=>"Dataset"}),async(req,res)=>{
-    try{ 
-        req.auditSuccess=true
-        const response = await fetch("http://127.0.0.1:5000/datafile"+req.body.filename)
-        const fliter = {originalName:req.body.filename}
-        const update = {Active:true}
-        DatasetModel.findOneAndUpdate({ fliter, update})
-        res.json({serverMsg:"Success",flag:true})
-    }catch{
-        console.log(e)
-        res.json({serverMsg:"Error",flag:false})
+subsidyApp.put("/changedata/:id",
+    authAudit,
+    audit("ACTIVATE_DATASET", { type: "Dataset", id: req => req.params.id }),
+    async (req, res) => {
+        try {
+            const requester = await PrivUserModel.findById(req.user.id)
+            if (!requester || requester.Type !== "Regulator") {
+                req.auditSuccess = false
+                return res.status(403).json({ serverMsg: "Only regulators can activate datasets", flag: false })
+            }
 
+            if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+                req.auditSuccess = false
+                return res.status(400).json({ serverMsg: "Invalid dataset id", flag: false })
+            }
+
+            const dataset = await DatasetModel.findById(req.params.id)
+            if (!dataset) {
+                req.auditSuccess = false
+                return res.status(404).json({ serverMsg: "Dataset not found", flag: false })
+            }
+
+            const mlSync = await syncDatasetWithMl(dataset)
+
+            await DatasetModel.updateMany(
+                { _id: { $ne: dataset._id } },
+                { $set: { Active: false } }
+            )
+
+            const activatedDataset = await DatasetModel.findByIdAndUpdate(
+                dataset._id,
+                { $set: { Active: true } },
+                { new: true, projection: { content: 0 } }
+            )
+
+            req.auditSuccess = true
+            req.changes = {
+                activatedDataset: dataset.originalName,
+                wasActive: dataset.Active
+            }
+
+            res.json({
+                serverMsg: mlSync.mlServer.synced
+                    ? "Dataset activated and synced with the ML server"
+                    : "Dataset activated. ML files were updated, but the ML server could not be notified.",
+                data: {
+                    ...activatedDataset.toObject(),
+                    mlFiles: mlSync.files,
+                    mlServerDatasetSync: mlSync.mlServer
+                },
+                flag: true
+            })
+        } catch (e) {
+            req.auditSuccess = false
+            console.log(e)
+            res.status(500).json({ serverMsg: "Error activating dataset", flag: false })
+        }
     }
-})
+)
 subsidyApp.get('/vcondition',async(req,res)=>{
     try{
            const a = await ConditionModel.find()
