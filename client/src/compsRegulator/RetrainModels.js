@@ -120,8 +120,8 @@ export default function RetrainModels() {
             </div>
 
             <Alert color="info">
-                Retrain the backend models after generating a new synthetic dataset. These actions use the latest
-                `synthetic_subsidy_cylinders.csv` file produced by the synthetic data service.
+                Retrain the backend models from the dataset currently marked Active in Manage Datasets. Activate the
+                dataset first, then run these actions.
             </Alert>
 
             <Alert color="warning">
@@ -133,7 +133,7 @@ export default function RetrainModels() {
                 <Col lg="6">
                     <ResultCard
                         title="Eligibility Model"
-                        description="Rebuild the eligibility classifier from the latest synthetic dataset and save the refreshed model artifact."
+                        description="Rebuild the eligibility classifier from the active dataset and save the refreshed model artifact."
                         actionLabel="Retrain Eligibility Model"
                         onAction={() => runRetrain("retrainEmodel", setEligibilityBusy, setEligibilityResult, "Eligibility model retrained.")}
                         busy={eligibilityBusy}
@@ -145,7 +145,7 @@ export default function RetrainModels() {
                 <Col lg="6">
                     <ResultCard
                         title="Fraud Model"
-                        description="Rebuild the fraud detection model from the same synthetic dataset and inspect the preview of detected fraud rows."
+                        description="Rebuild the fraud detection model from the active dataset and inspect the preview of detected fraud rows."
                         actionLabel="Retrain Fraud Model"
                         onAction={() => runRetrain("retrainImodel", setFraudBusy, setFraudResult, "Fraud model retrained.")}
                         busy={fraudBusy}
@@ -190,7 +190,7 @@ export default function RetrainModels() {
                                 Fraud retrain output
                             </CardTitle>
                             <CardText style={{ color: theme.textColorAlt, marginBottom: 0 }}>
-                                The backend returns a fraud count and a small preview of flagged rows from the newly processed synthetic dataset.
+                                The backend returns a fraud count and a small preview of flagged rows from the newly processed active dataset.
                             </CardText>
                         </CardBody>
                     </Card>
