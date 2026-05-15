@@ -74,6 +74,7 @@ export default function Navbar() {
                     <Link style={{ color: theme.textColor }} to="/manageUsers">Manage Users</Link>
                     <Link style={{ color: theme.textColor }} to="/manageDatasets">View Datasets</Link>
                     <Link style={{ color: theme.textColor }} to="/generateReport">Generate Report</Link>
+                    <Link style={{ color: theme.textColor }} to="/analytics">Analytics</Link>
                     <Link style={{ color: theme.textColor }} to="/audit">Audit Log</Link>
                 </>
             }
