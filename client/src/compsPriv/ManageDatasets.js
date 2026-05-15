@@ -3,8 +3,8 @@ import { Container, Table, Button, Modal, ModalHeader, ModalBody, ModalFooter, I
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useTheme } from "../compsMisc/ThemeContext";
-import { fetchDatasetsThunk, deleteDatasetThunk, updateDatasetThunk, fetchDatasetThunk } from "../slices/SlicePriv";
-import { FaTrash, FaEdit, FaEye } from "react-icons/fa";
+import { fetchDatasetsThunk, deleteDatasetThunk, updateDatasetThunk, fetchDatasetThunk, activateDatasetThunk } from "../slices/SlicePriv";
+import { FaTrash, FaEdit, FaEye, FaCheckCircle } from "react-icons/fa";
 import CenteredSpinner from "../compsMisc/CenteredSpinner";
 import { getUserType } from "../functions/getUserType";
 
@@ -15,6 +15,7 @@ export default function ManageDatasets() {
     const loading = useSelector((state) => state.priv.loading);
     const userType = getUserType(); // "Admin" or "Regulator"
     const canManage = userType === "Regulator"; // Only Regulator can edit/delete
+    const canActivate = userType === "Regulator"; // Only Regulator can select the active dataset
 
     const [deleteModal, setDeleteModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
@@ -81,6 +82,15 @@ export default function ManageDatasets() {
         }
     };
 
+    const handleActivate = async (dataset) => {
+        try {
+            const result = await dispatch(activateDatasetThunk(dataset._id)).unwrap();
+            toast.success(result.serverMsg || `${dataset.originalName} is now active`);
+        } catch (err) {
+            toast.error(err || "Failed to activate dataset");
+        }
+    };
+
     const formatFileSize = (bytes) => {
         if (bytes === 0) return "0 Bytes";
         const k = 1024;
@@ -118,13 +128,30 @@ export default function ManageDatasets() {
         color: "#fff"
     };
 
+    const btnActivateStyle = {
+        backgroundColor: theme.primaryColor,
+        border: "none",
+        borderRadius: "4px"
+    };
+
+    const statusStyle = (isActive) => ({
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.35rem",
+        borderRadius: "999px",
+        padding: "0.25rem 0.65rem",
+        fontWeight: 600,
+        color: isActive ? theme.textColorAlt : theme.textColorBlack,
+        backgroundColor: isActive ? theme.primaryColor : "rgba(125, 125, 125, 0.18)"
+    });
+
     return (
         <Container className="py-4" style={{ minHeight: "80vh" }}>
             <Container className="d-flex justify-content-center align-items-center">
                 <Container style={{ height: "100%" }}>
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <h2 style={{ color: theme.textColorAlt }}>
-                            {canManage ? "Manage Datasets" : "View Datasets"}
+                            {canManage || canActivate ? "Manage Datasets" : "View Datasets"}
                         </h2>
                     </div>
 
@@ -141,6 +168,7 @@ export default function ManageDatasets() {
                                         <th>Size</th>
                                         <th>Rows</th>
                                         <th>Columns</th>
+                                        <th>Status</th>
                                         <th>Date</th>
                                         <th>Actions</th>
                                     </tr>
@@ -155,6 +183,12 @@ export default function ManageDatasets() {
                                                 <td>{formatFileSize(dataset.fileSize)}</td>
                                                 <td>{dataset.rowCount}</td>
                                                 <td>{dataset.columnCount}</td>
+                                                <td>
+                                                    <span style={statusStyle(dataset.Active)}>
+                                                        {dataset.Active && <FaCheckCircle />}
+                                                        {dataset.Active ? "Active" : "Inactive"}
+                                                    </span>
+                                                </td>
                                                 <td className="nowrap">{formatDate(dataset.createdAt)}</td>
                                                 <td>
                                                     <Button
@@ -187,12 +221,24 @@ export default function ManageDatasets() {
                                                             </Button>
                                                         </>
                                                     )}
+
+                                                    {canActivate && (
+                                                        <Button
+                                                            className="simpleButton"
+                                                            style={btnActivateStyle}
+                                                            size="sm"
+                                                            disabled={loading || dataset.Active}
+                                                            onClick={() => handleActivate(dataset)}
+                                                        >
+                                                            <FaCheckCircle /> {dataset.Active ? "Active" : "Activate"}
+                                                        </Button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="8" className="text-center py-4">
+                                            <td colSpan="9" className="text-center py-4">
                                                 No datasets found
                                             </td>
                                         </tr>
