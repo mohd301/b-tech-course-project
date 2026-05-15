@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import { Card, CardBody, CardFooter } from "reactstrap"
 import { useTheme } from "../compsMisc/ThemeContext"
 import { IoIosSend } from "react-icons/io"
+import { decryptToken } from "../functions/decryptToken"
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || `http://localhost:${process.env.REACT_APP_PORT || "7500"}`
 
@@ -42,6 +43,7 @@ export default function LLm({ onClose }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          userId: decryptToken()?.id,
           messages: updatedHistory,
         }),
       })
