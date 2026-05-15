@@ -41,19 +41,31 @@ const upload = multer({
 })
 
 dotenv.config()
-let eresults = null;
-function getLastEligibilityResult() {
-    if(eresults){
-    return eresults;
-    }else {
-        return "not applied yet"
+async function getEligibilityResultForUser(userId) {
+    if (typeof userId !== "string" || !userId.trim()) {
+        return null
+    }
+
+    const eligibilityLink = await ELinkModel.findOne({ UserID: userId.trim() }).sort({ updatedAt: -1 })
+    if (!eligibilityLink) {
+        return null
+    }
+
+    return {
+        Data: {
+            Eligibility: eligibilityLink.Eligibility,
+            Fraud: eligibilityLink.Fraud,
+            Reason: eligibilityLink.Reason,
+            Gove: eligibilityLink.Gove,
+        }
     }
 }
+
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES = "1h"
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite"
-const LLM_SYSTEM_PROMPT = `You are the official assistant for the Online Fuel Subsidy Eligibility System.
+const LLM_SYSTEM_PROMPT_BASE = `You are the official assistant for the Online Fuel Subsidy Eligibility System.
 
 Your job is to help users only with tasks related to this system and the fuel subsidy process, including:
 - applying for the fuel subsidy
@@ -78,8 +90,11 @@ Rules:
 
 Behavior:
 - For application questions, guide the user step by step through the fuel subsidy process in this system.
--when ask why an applicant got rejected check the result of ${getLastEligibilityResult()} explain the reson for example if salary is too high mention that if eligibly is 0. other wise if the output is not applied remind them apply
-
+- When the user asks about application status, use only the applicant-facing eligibility context below. If no application result is available, tell them to apply first.
+- If the applicant-facing status says the application needs further review, say only that it needs further review. Do not say the applicant is eligible or not eligible.
+- If the applicant-facing status says not eligible and a reason is present, explain that reason in simple words. For example, if the reason is Salary, say the salary was too high for the model result.
+- Never show raw eligibility context, field names, JSON, or numeric codes to the user.
+- Never use the word fraud with applicants.
 - For eligibility questions, explain only what the system shows or requires, and do not guess.
 - For password or login issues, focus on the recovery steps supported by the platform.
 - For map-related questions, help only with the map feature inside this system.
@@ -87,40 +102,105 @@ Behavior:
 const geminiClient = process.env.GEMINI_API_KEY
     ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
     : null
-function buildSystemPrompt() {
-    const eligibilityResult = getLastEligibilityResult();
-    
-    return `You are the official assistant for the Online Fuel Subsidy Eligibility System.
 
-Your job is to help users only with tasks related to this system and the fuel subsidy process, including:
-- applying for the fuel subsidy
-- understanding fuel subsidy eligibility requirements as presented in this platform
-- explaining what information or documents the user may need for the application
-- helping users navigate pages and features in the system
-- helping users use the map or location-related features inside this platform
-- helping with login, password reset, OTP, and account access issues
-- helping users understand application status, form fields, validation messages, and submission steps
+function normalizeEligibilityResult(result) {
+    if (!result) return null
 
-Rules:
-- Stay strictly within the scope of this fuel subsidy system.
-- If the user asks about anything unrelated, reply exactly: not in my scope!
-- Do not invent eligibility rules, government policy, approval criteria, benefits, or internal decisions.
-- Only explain eligibility and requirements if they are provided or clearly reflected by this platform.
-- If you are unsure, say so clearly and ask a short clarifying question.
-- Give practical, step-by-step help when the user wants to complete a task.
-- Keep answers concise, clear, and user-friendly.
-- If the user seems confused, explain in simple words.
-- Do not claim to have submitted, checked, changed, approved, or retrieved anything unless the system explicitly supports that action.
-- Do not provide legal, financial, or policy advice beyond helping the user use this platform.
+    const data = result.Data || result
+    const reviewRequired = data.Fraud === 1
+    const eligibility = data.Eligibility ?? data.Eligibity ?? null
+    const reason = data.Reason ?? data.reason ?? data.reson ?? null
 
-Behavior:
-- For application questions, guide the user step by step through the fuel subsidy process in this system.
--when ask why an applicant got rejected check the result of ${JSON.stringify(eligibilityResult)} explain the reson for example if salary is too high mention that if eligibly is 0. other wise if the output is not applied remind them apply
+    if (reviewRequired) {
+        return {
+            ApplicantStatus: "needs further review",
+            ApplicantMessage: "Your application needs further review before a final status can be provided.",
+            Reason: null,
+            Gove: data.Gove ?? null,
+        }
+    }
 
-- For eligibility questions, explain only what the system shows or requires, and do not guess.
-- For password or login issues, focus on the recovery steps supported by the platform.
-- For map-related questions, help only with the map feature inside this system.
-- When helpful, tell the user the next action they should take in the platform.`
+    return {
+        ApplicantStatus: eligibility === 1 ? "eligible" : eligibility === 0 ? "not eligible" : "unknown",
+        ApplicantMessage: eligibility === 1
+            ? "Your application is eligible."
+            : eligibility === 0
+                ? "Your application is not eligible."
+                : "No final application status is available.",
+        Reason: reason,
+        Gove: data.Gove ?? null,
+    }
+}
+
+function isApplicationStatusQuestion(text) {
+    if (typeof text !== "string") return false
+
+    const normalizedText = text.toLowerCase()
+
+    return (
+        normalizedText.includes("status") &&
+        (
+            normalizedText.includes("eligib") ||
+            normalizedText.includes("application") ||
+            normalizedText.includes("apply")
+        )
+    )
+}
+
+function formatEligibilityReason(reason) {
+    if (typeof reason !== "string" || !reason.trim()) return null
+
+    return reason
+        .trim()
+        .replace(/_/g, " ")
+        .replace(/\s+/g, " ")
+        .toLowerCase()
+}
+
+function buildApplicantStatusReply(eligibilityResult) {
+    if (!eligibilityResult) {
+        return "No application result is available yet. Please apply first."
+    }
+
+    if (eligibilityResult.ApplicantStatus === "needs further review") {
+        return "Your application needs further review before a final status can be provided."
+    }
+
+    if (eligibilityResult.ApplicantStatus === "not eligible") {
+        const reason = formatEligibilityReason(eligibilityResult.Reason)
+
+        if (reason) {
+            return `Your application is not eligible because your ${reason} is too high.`
+        }
+
+        return "Your application is not eligible."
+    }
+
+    if (eligibilityResult.ApplicantStatus === "eligible") {
+        return "Your application is eligible."
+    }
+
+    return "No final application status is available."
+}
+
+async function buildEligibilityContext(userId) {
+    const eligibilityResult = normalizeEligibilityResult(await getEligibilityResultForUser(userId))
+
+    if (!eligibilityResult) {
+        return "Current eligibility context: no application result is available yet."
+    }
+
+    const reasonText = eligibilityResult.ApplicantStatus === "not eligible" && eligibilityResult.Reason
+        ? ` Explanation to include: ${eligibilityResult.Reason} is too high.`
+        : ""
+
+    return `Current applicant-facing application status: ${eligibilityResult.ApplicantMessage}${reasonText}`
+}
+
+async function buildSystemPrompt(userId) {
+    return `${LLM_SYSTEM_PROMPT_BASE}
+
+${await buildEligibilityContext(userId)}`
 }
 //Connection to MongoDB
 try {
@@ -158,6 +238,20 @@ subsidyApp.post("/llm/chat", async (req, res) => {
     }
 
     try {
+        const userId = typeof req.body?.userId === "string" ? req.body.userId : null
+        const latestUserMessage = [...rawMessages].reverse().find((message) => message?.role === "user")
+        const eligibilityResult = normalizeEligibilityResult(await getEligibilityResultForUser(userId))
+
+        if (isApplicationStatusQuestion(latestUserMessage?.content)) {
+            res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
+            res.setHeader("Cache-Control", "no-cache")
+            res.setHeader("Connection", "keep-alive")
+            res.write(`${JSON.stringify({ message: { content: buildApplicantStatusReply(eligibilityResult) } })}\n`)
+            return res.end()
+        }
+
+        const systemInstruction = await buildSystemPrompt(userId)
+
         res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
         res.setHeader("Cache-Control", "no-cache")
         res.setHeader("Connection", "keep-alive")
@@ -167,7 +261,7 @@ subsidyApp.post("/llm/chat", async (req, res) => {
             model: GEMINI_MODEL,
             contents,
             config: {
-                systemInstruction: buildSystemPrompt(),
+                systemInstruction,
             },
         })
 
@@ -869,10 +963,21 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 
                 // No need to recheck elibility for user who already got result
                 // Also check if civil ID is already used by another user to prevent fraud (one user cannot link with multiple civil IDs and one civil ID cannot link with multiple users)
-                if (docexist || civilIdInUse) {
+                if (docexist) {
                     req.auditSuccess = true
 
-                    res.json({ serverMsg: "Eligibility result already recieved or civil ID already in use.", flag: true })
+                    const existingResult = {
+                        Eligibity: docexist.Eligibility,
+                        Fraud: docexist.Fraud,
+                        Reason: docexist.Reason,
+                        Gove: docexist.Gove
+                    }
+                    res.json({ serverMsg: "Eligibility result already received.", flag: true, Data: existingResult })
+
+                } else if (civilIdInUse) {
+                    req.auditSuccess = true
+
+                    res.json({ serverMsg: "Civil ID already in use.", flag: false })
 
                 } else {
                     req.auditSuccess = true
@@ -886,6 +991,8 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                             flag: false
                         });
                     }
+                    const eligibilityReason = data.Reason ?? data.reason ?? data.reson ?? null
+                    data.Reason = eligibilityReason
 
                     switch (data.Eligibity) {
                         case 1:
@@ -911,11 +1018,11 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                         Email: userExist.Email,
                         Fraud: data.Fraud,
                         Eligibility: data.Eligibity,
+                        Reason: eligibilityReason,
                         Gove:data.Gove
 
                     }
                     await ELinkModel.create(newdata)
-                    eresults = { serverMsg: "Success!", flag: true, Data: data }
                     res.json({ serverMsg: "Success!", flag: true, Data: data })
                 }
             }
