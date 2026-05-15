@@ -21,6 +21,7 @@ export default function Apply() {
     const { theme } = useTheme()
     const [Data, Setdata] = useState()
     const [res, Setres] = useState("")
+    const rejectionReason = Data?.Reason || Data?.reson
     const dispatch = useDispatch()
     const loading = useSelector((state) => state.user.loading)
     const { register, handleSubmit, getValues, watch, setValue, formState: { errors } } = useForm({
@@ -140,7 +141,7 @@ useEffect(() => {
                             {!loading ? (
                                 <CardBody className="p-4">
                                     <div className="mb-5">
-                                        <h1 className="text-center" style={{ color: theme.textColorAlt }}>Apply for Eligibity</h1>
+                                        <h1 className="text-center" style={{ color: theme.textColorAlt }}>Apply for Eligibility</h1>
                                     </div>
                                     <Label style={{ color: theme.textColorAlt }}>Enter your ID</Label>
  
@@ -260,7 +261,9 @@ useEffect(() => {
                                                     <CardFooter>
                                                         <p style={{ color: theme.textColorAlt }} className="text-center">Not Eligible</p>
  
-                                                        <p style={{ color: theme.textColorAlt }} className="text-center">{Data.reson} is too high</p>
+                                                        {rejectionReason ? (
+                                                            <p style={{ color: theme.textColorAlt }} className="text-center">{rejectionReason} is too high</p>
+                                                        ) : null}
                                                     </CardFooter>
                                                 </Card>
                                             ))
