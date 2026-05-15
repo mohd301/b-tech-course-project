@@ -179,18 +179,22 @@ export const fetchELAnalytics = createAsyncThunk("privSlice/fetchELAnalytics", a
         throw err
     }
 })
-export const changedata = createAsyncThunk("privSlice/changedata", async (data) => {
+export const activateDatasetThunk = createAsyncThunk("privSlice/activateDatasetThunk", async (id, { rejectWithValue }) => {
     try {
-        const response = await axios.get(
-            `http://localhost:${process.env.REACT_APP_PORT}/changedata`,
-            {filename:data},
+        const response = await axios.put(
+            `http://localhost:${process.env.REACT_APP_PORT}/changedata/${id}`,
+            {},
             { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
         )
-        
+
+        if (!response.data.flag) {
+            return rejectWithValue(response.data.serverMsg || "Failed to activate dataset")
+        }
+
         return response.data
     } catch (err) {
         console.log(err)
-        throw err
+        return rejectWithValue(err.response?.data?.serverMsg || "Failed to activate dataset")
     }
 })
 export const fetchELAnalyticsMonthly = createAsyncThunk("privSlice/fetchELAnalyticsMonthly", async () => {
@@ -429,20 +433,24 @@ const privSlice = createSlice(
                 state.flag = false
                 state.loading = false
             })
-             builder.addCase(changedata.pending, (state) => {
+            builder.addCase(activateDatasetThunk.pending, (state) => {
                 state.loading = true
                 state.msg = ""
             })
 
-            builder.addCase(changedata.fulfilled, (state, action) => {
-                
+            builder.addCase(activateDatasetThunk.fulfilled, (state, action) => {
+                const activeDataset = action.payload.data
+                state.datasetList = state.datasetList.map((dataset) => ({
+                    ...dataset,
+                    Active: dataset._id === activeDataset?._id
+                }))
                 state.msg = action.payload.serverMsg
                 state.flag = action.payload.flag
                 state.loading = false
             })
 
-            builder.addCase(changedata.rejected, (state, action) => {
-                state.msg = action.error.message
+            builder.addCase(activateDatasetThunk.rejected, (state, action) => {
+                state.msg = action.payload || action.error.message
                 state.flag = false
                 state.loading = false
             })
