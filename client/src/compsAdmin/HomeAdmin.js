@@ -1,6 +1,6 @@
 import { Container, Row, Col, Card, CardBody, CardTitle, CardText } from "reactstrap";
 import { Link } from "react-router-dom";
-import { FaUsers, FaDatabase, FaFilePdf, FaClipboardList } from "react-icons/fa";
+import { FaUsers, FaDatabase, FaFilePdf, FaClipboardList, FaChartBar } from "react-icons/fa";
 import { useTheme } from "../compsMisc/ThemeContext.js";
 
 export default function HomeAdmin() {
@@ -85,6 +85,24 @@ export default function HomeAdmin() {
                                 </CardTitle>
                                 <CardText style={{ color: theme.textColorAlt, opacity: 0.8 }}>
                                     View system activity logs
+                                </CardText>
+                            </CardBody>
+                        </Card>
+                    </Link>
+                </Col>
+
+                <Col md="6" lg="3">
+                    <Link to="/analytics" style={{ textDecoration: "none" }}>
+                        <Card className="h-100 dash-card">
+                            <CardBody className="text-center d-flex flex-column align-items-center justify-content-center py-5">
+                                <div style={iconStyle} className="iconContainer mb-2">
+                                    <FaChartBar size={28} color={theme.textColorAlt} />
+                                </div>
+                                <CardTitle tag="h5" style={{ color: theme.textColorAlt, fontWeight: "600" }}>
+                                    Analytics
+                                </CardTitle>
+                                <CardText style={{ color: theme.textColorAlt, opacity: 0.8 }}>
+                                    View audit and security activity
                                 </CardText>
                             </CardBody>
                         </Card>
