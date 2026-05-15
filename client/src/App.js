@@ -219,7 +219,12 @@ function App() {
           </Route>
           <Route path='/eanaltics' element={
             <PrivateRoute allowedRoles={["Regulator"]}>
-              <Analytics />
+              <Analytics context="Regulator" />
+            </PrivateRoute>}>
+          </Route>
+          <Route path='/analytics' element={
+            <PrivateRoute allowedRoles={["Admin"]}>
+              <Analytics context="Admin" />
             </PrivateRoute>}>
           </Route>
         </Routes>
