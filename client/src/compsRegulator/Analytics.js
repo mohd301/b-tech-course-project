@@ -6,7 +6,7 @@ import Chart  from "chart.js/auto";
 
 import { useSelector, useDispatch } from 'react-redux';
 import { useTheme } from "../compsMisc/ThemeContext";
-import { fetchELAnalytics } from "../slices/SlicePriv";
+import { fetchELAnalytics, fetchELAnalyticsMonthly } from "../slices/SlicePriv";
 import { Responsive, useContainerWidth } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -191,10 +191,12 @@ export default function Analytics() {
     const [open, setOpen] = useState("1");
     const { width, containerRef } = useContainerWidth();
     const [charts, setCharts] = useState([]);
-
+    
     const toggle = (id) => setOpen(open === id ? undefined : id);
 
     const analyti = useSelector((state) => state.priv.analytic);
+    const monthlyData = useSelector(state => state.priv.manalytis || []);
+    console.log(analyti)
     const MONTHS = [
   'January',
   'February',
@@ -227,6 +229,7 @@ export default function Analytics() {
 
     useEffect(() => {
         dispatch(fetchELAnalytics());
+        dispatch(fetchELAnalyticsMonthly());
     }, [dispatch]);
 
     // analyti.gov is expected to be an array of governorate strings
@@ -239,18 +242,23 @@ export default function Analytics() {
         labels: ["Eligible", "Ineligible"],
         datasets: [{ data: [analyti.eligibleCount || 0, analyti.ineligibleCount || 0], backgroundColor: [theme.primaryColor, theme.secondaryColor] }],
     };
-    const labels = months({count: 7});
-    const lineData = {
-        
-        labels: labels,
-        datasets: [{ label: [labels], data: [(analyti.eligibleCount || 0) + (analyti.ineligibleCount || 0)], backgroundColor: [theme.primaryColor] }],
-        Fill:false
-    };
+    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const labels = monthlyData.map(d => `${MONTH_NAMES[d._id.month - 1]} ${d._id.year}`);
+
+const lineData = {
+    labels: labels,
+    datasets: [{ 
+        label: [labels], 
+        data: monthlyData.map(d => (d.eligibleCount || 0) + (d.ineligibleCount || 0)), 
+        backgroundColor: [theme.primaryColor] 
+    }],
+    Fill: false
+};
     const barData1 = {
         labels: ["Muscat", "Dhofar", "Sur", "Nizwa", "Sohar"],
         datasets: [{
             label: "Entries",
-            data: [areaNum.Muscat ||5, areaNum.Dhofar, areaNum.Sur, areaNum.Nizwa, areaNum.Sohar],
+            data: [areaNum.Muscat ||0, areaNum.Dhofar, areaNum.Sur, areaNum.Nizwa, areaNum.Sohar],
             backgroundColor: [theme.primaryColor],
         }],
     };

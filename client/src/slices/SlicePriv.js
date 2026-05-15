@@ -193,6 +193,18 @@ export const changedata = createAsyncThunk("privSlice/changedata", async (data) 
         throw err
     }
 })
+export const fetchELAnalyticsMonthly = createAsyncThunk("privSlice/fetchELAnalyticsMonthly", async () => {
+    try {
+        const response = await axios.get(
+            `http://localhost:${process.env.REACT_APP_PORT}/eligibility_analytics/monthly`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        )
+        return response.data
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
 
 const initialState = {
     msg: null,
@@ -204,6 +216,7 @@ const initialState = {
     loading: false,
     flag: false,
     analytic:{},
+    manalytis:[]
     
 }
 
@@ -405,7 +418,7 @@ const privSlice = createSlice(
             })
 
             builder.addCase(fetchELAnalytics.fulfilled, (state, action) => {
-                state.analytic = action.payload.data
+                state.analytic = action.payload.data 
                 state.msg = action.payload.serverMsg
                 state.flag = action.payload.flag
                 state.loading = false
@@ -429,6 +442,23 @@ const privSlice = createSlice(
             })
 
             builder.addCase(changedata.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+            builder.addCase(fetchELAnalyticsMonthly.pending, (state) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchELAnalyticsMonthly.fulfilled, (state, action) => {
+                state.manalytis = action.payload.data 
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchELAnalyticsMonthly.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.flag = false
                 state.loading = false

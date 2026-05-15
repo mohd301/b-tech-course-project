@@ -11,7 +11,8 @@ const datasetSchema = new mongoose.Schema(
         columns: { type: [String], default: [] },
         content: { type: String, required: true },
         description: { type: String, default: "" },
-        Active:{type:Boolean,default:false}
+        Active:{type:Boolean,default:false},
+        conditionId:   { type: mongoose.Schema.Types.ObjectId, ref: "conditions" },
     },
     {
         timestamps: { createdAt: true, updatedAt: false },

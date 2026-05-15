@@ -23,6 +23,9 @@ export default function Apply() {
     const [res, Setres] = useState("")
     const dispatch = useDispatch()
     const loading = useSelector((state) => state.user.loading)
+    const { register, handleSubmit, getValues, watch, setValue, formState: { errors } } = useForm({
+        resolver: yupResolver(SchemaID)
+    })
  
     // ── Camera state (added) ──────────────────────────────────────────────
     const [cameraOpen, setCameraOpen] = useState(false)
@@ -32,21 +35,25 @@ export default function Apply() {
     const canvasRef = useRef(null)
     const streamRef = useRef(null)
  
-    const startCamera = useCallback(async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }
-            })
-            streamRef.current = stream
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream
-                videoRef.current.play()
-            }
-            setCameraOpen(true)
-        } catch (e) {
-            toast.error("Camera access denied. Please enter the ID manually.")
-        }
-    }, [])
+   const startCamera = useCallback(async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }
+        })
+        streamRef.current = stream
+        setCameraOpen(true) // trigger render first, then attach in useEffect
+    } catch (e) {
+        toast.error("Camera access denied. Please enter the ID manually.")
+    }
+}, [])
+
+// Attach stream to video element AFTER it renders
+useEffect(() => {
+    if (cameraOpen && videoRef.current && streamRef.current) {
+        videoRef.current.srcObject = streamRef.current
+        videoRef.current.play().catch(() => {})
+    }
+}, [cameraOpen])
  
     const stopCamera = useCallback(() => {
         if (streamRef.current) {
@@ -57,52 +64,56 @@ export default function Apply() {
     }, [])
  
     const captureAndScan = useCallback(async () => {
-        const video = videoRef.current
-        const canvas = canvasRef.current
-        if (!video || !canvas) return
- 
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-        const ctx = canvas.getContext("2d")
-        // Grayscale + contrast for better OCR accuracy
-        ctx.filter = "grayscale(1) contrast(1.4)"
-        ctx.drawImage(video, 0, 0)
- 
-        stopCamera()
-        setOcrLoading(true)
-        setOcrProgress(0)
- 
-        try {
-            const { data } = await Tesseract.recognize(canvas, "eng", {
-                logger: (m) => {
-                    if (m.status === "recognizing text") {
-                        setOcrProgress(Math.round(m.progress * 100))
-                    }
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    if (!video || !canvas) return
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext("2d")
+    ctx.filter = "grayscale(1) contrast(1.4)"
+    ctx.drawImage(video, 0, 0)
+
+    stopCamera()
+    setOcrLoading(true)
+    setOcrProgress(0)
+
+    try {
+        // Convert canvas to Blob before passing to Tesseract
+        const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob((b) => {
+                if (b) resolve(b)
+                else reject(new Error("Canvas toBlob failed"))
+            }, "image/png")
+        })
+
+        const { data } = await Tesseract.recognize(blob, "eng", {
+            logger: (m) => {
+                if (m.status === "recognizing text") {
+                    setOcrProgress(Math.round(m.progress * 100))
                 }
-            })
- 
-            // Extract first sequence that looks like an ID number
-            const idMatch = data.text.match(/\b[0-9]{6,12}\b/)
-            if (idMatch) {
-                setValue("ID", idMatch[0])
-                toast.success("ID extracted successfully!")
-            } else {
-                toast.warning("Could not detect an ID number. Please enter manually.")
             }
-        } catch (e) {
-            toast.error("OCR failed. Please enter the ID manually.")
-        } finally {
-            setOcrLoading(false)
+        })
+
+        const idMatch = data.text.match(/\b[0-9]{6,12}\b/)
+        if (idMatch) {
+            setValue("ID", idMatch[0])
+            toast.success("ID extracted successfully!")
+        } else {
+            toast.warning("Could not detect an ID number. Please enter manually.")
         }
-    }, [stopCamera])
+    } catch (e) {
+        toast.error("OCR failed. Please enter the ID manually.")
+    } finally {
+        setOcrLoading(false)
+    }
+}, [stopCamera, setValue])
  
     // Stop camera if component unmounts
     useEffect(() => () => stopCamera(), [stopCamera])
     // ── End camera additions ──────────────────────────────────────────────
  
-    const { register, handleSubmit, getValues, watch, setValue, formState: { errors } } = useForm({
-        resolver: yupResolver(SchemaID)
-    })
+    
  
     async function getdata(data) {
         try {

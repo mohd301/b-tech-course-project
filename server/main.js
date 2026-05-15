@@ -14,7 +14,7 @@ import MLmodel from "./models/MlModel.js"
 import AuditModel from "./models/AuditModel.js"
 import DatasetModel from "./models/DatasetModel.js"
 import ELinkModel from "./models/ELink.js"
-
+import ConditionModel from "./models/ConditionModel.js"
 import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
 import parseCSV from "./functions/parseCSV.js"
@@ -962,6 +962,15 @@ subsidyApp.post("/createData",
                 req.auditSuccess = false;
                 return res.status(400).json({ serverMsg: "Invalid synthetic data payload", flag: false });
             }
+            const condition = await ConditionModel.create({
+                name:           req.body.name || "synthetic_subsidy_cylinders",
+                createdBy:      req.user.username || req.user.id,
+                creatorId:      req.user.id,
+                rowCount:       req.body.rowCount || 0,
+                fraud_fraction: req.body.fraud_fraction || 0,
+                fraudmulti:     req.body.fraudmulti || {},
+                conditions:     req.body.Conditions,
+            });
 
             const flaskPayload = {
                 ...req.body,
@@ -988,14 +997,33 @@ subsidyApp.post("/createData",
 
             if (!response.ok) {
                 req.auditSuccess = false;
+                
                 return res.status(response.status).json({
                     serverMsg: responseData.error || "Synthetic data generation failed",
                     flag: false,
                     data: responseData
                 });
             }
-
+            const csvContent = typeof responseData === "string" ? responseData : JSON.stringify(responseData);
+            const lines = csvContent.trim().split("\n");
+            const columns = lines[0] ? lines[0].split(",").map(c => c.trim()) : [];
+            const rowCount = lines.length - 1;
+            const columnCount = columns.length;
+            const dataset = await DatasetModel.create({
+                originalName: (req.body.name || "synthetic_subsidy_cylinders") + ".csv",
+                fileSize:     Buffer.byteLength(csvContent, "utf8"),
+                uploadedBy:   req.user.username || req.user.id,
+                uploaderId:   req.user.id,
+                rowCount,
+                columnCount,
+                columns,
+                content:      csvContent,
+                description:  req.body.description || "Synthetic dataset",
+                conditionId:  condition._id,
+            })
             req.auditSuccess = true;
+            
+            
             return res.json({
                 serverMsg: "Synthetic data generated successfully",
                 flag: true,
@@ -1092,7 +1120,7 @@ subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", 
         const ineligibleCount = data.filter(d => d.Eligibility === 0).length;
         const fraudCount = data.filter(d => d.Fraud === 1).length;
         console.log(data)
-        const gov = data.Gove || 'muscat'
+        const gov = data.map(d => d.Gove).filter(Boolean);
         const newdata={"totalApplicants":totalApplicants,"eligibleCount":eligibleCount,"ineligibleCount":ineligibleCount,"fraudCount":fraudCount,'gov':gov}
         console.log(newdata)
         res.json({ serverMsg: "Analytics fetched", data: newdata, flag: true })
@@ -1101,6 +1129,31 @@ subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", 
         res.json({ serverMsg: "Error fetching analytics", flag: false })
     }
 })
+subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", { type: "USER", id: req => "Analytics" }), async (req, res) => {
+    try {
+        const data = await ELinkModel.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year:  { $year: "$createdAt" },
+                        month: { $month: "$createdAt" }
+                    },
+                    eligibleCount:   { $sum: { $cond: [{ $eq: ["$Eligibility", 1] }, 1, 0] } },
+                    ineligibleCount: { $sum: { $cond: [{ $eq: ["$Eligibility", 0] }, 1, 0] } },
+                    fraudCount:      { $sum: { $cond: [{ $eq: ["$Fraud", 1] }, 1, 0] } },
+                    totalApplicants: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } },
+            { $limit: 7 }
+        ]);
+
+        res.json({ serverMsg: "Monthly analytics fetched", data, flag: true });
+    } catch (e) {
+        console.log(e);
+        res.json({ serverMsg: "Error fetching monthly analytics", flag: false });
+    }
+});
 subsidyApp.get("/changedata",audit("Active_dataSet",{type:"SYSTEM",id:req=>"Dataset"}),async(req,res)=>{
     try{ 
         req.auditSuccess=true
@@ -1108,10 +1161,26 @@ subsidyApp.get("/changedata",audit("Active_dataSet",{type:"SYSTEM",id:req=>"Data
         const fliter = {originalName:req.body.filename}
         const update = {Active:true}
         DatasetModel.findOneAndUpdate({ fliter, update})
-        res.json({serverMsg:"Success",flag:false})
+        res.json({serverMsg:"Success",flag:true})
     }catch{
         console.log(e)
         res.json({serverMsg:"Error",flag:false})
 
     }
 })
+subsidyApp.get('/vcondition',async(req,res)=>{
+    try{
+           const a = await ConditionModel.find()
+           res.json({serverMsg:"Success",flag:true,a})
+    
+}catch(e){
+    console.log(e)
+}})
+subsidyApp.delete('/delcondition',async(req,res)=>{
+    try{
+            await ConditionModel.deleteMany()
+           res.json({serverMsg:"Success",flag:true,})
+    
+}catch(e){
+    console.log(e)
+}})
