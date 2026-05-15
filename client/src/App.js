@@ -233,7 +233,7 @@ function App() {
           className="themeButton"
           aria-label="Open chat assistant"
           style={{
-            right: "20px !important",
+            right: "20px",
           }}
         >
           <HiOutlineChat className="llmLauncherIcon" />
