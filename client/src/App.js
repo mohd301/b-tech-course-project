@@ -224,18 +224,16 @@ function App() {
           </Route>
         </Routes>
 
-        <button className="themeButton" onClick={toggleTheme}>
+        <button className="themeButton" onClick={toggleTheme} style={{left: "20px"}}>
           {mode === "light" ? <FaMoon /> : <FaSun />}
         </button>
 
         <button
           onClick={toggleLlm}
-          className="llmLauncher"
+          className="themeButton"
           aria-label="Open chat assistant"
           style={{
-            background: theme.primaryColor,
-            color: theme.textColorAlt,
-            borderColor: mode === "light" ? "#ffffff" : "rgba(255, 255, 255, 0.35)",
+            right: "20px !important",
           }}
         >
           <HiOutlineChat className="llmLauncherIcon" />

@@ -192,8 +192,7 @@ input:disabled {
   position: fixed;
   bottom: 10vh;
   /* distance from bottom */
-  left: 20px;
-  /* distance from left */
+
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -237,44 +236,19 @@ input:disabled {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.downloadButton:hover {
-  transform: scale(1.05);
-  filter: brightness(85%);
-}
-
-.llmLauncher {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  width: 62px;
-  height: 62px;
-  border: 3px solid transparent;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1040;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
-}
-
-.llmLauncher:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 20px 38px rgba(0, 0, 0, 0.3);
-  filter: brightness(0.97);
-}
-
 .llmLauncher:focus-visible {
   outline: 3px solid rgba(102, 187, 106, 0.35);
   outline-offset: 3px;
 }
 
 .llmLauncherIcon {
-  font-size: 2rem;
+  font-size: 1.9rem;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
 }
 
-/* Modal Styles */
+/* 
+Modal Styles 
+*/
 
 .modal {
   background-color: rgba(0, 0, 0, 0.205);
@@ -295,7 +269,9 @@ input:disabled {
   border-top: 1px solid var(--textColorAlt);
 }
 
-/* ## Card Styles ## */
+/* 
+## Card Styles ## 
+*/
 
 .logRegCard{
   box-shadow: 0px 4px 16px var(--shadowColor);
@@ -329,7 +305,9 @@ input:disabled {
   margin-top: auto;
 }
 
-/* Dashboard Card Styles */
+/* 
+Dashboard Card Styles 
+*/
 .dash-card {
   background-color: var(--altBackground);
   border: 1px solid var(--textColorBlack);
@@ -424,7 +402,10 @@ input:disabled {
   width: 100%;
 }
 
-/* LLM Chatbot */
+/* 
+LLM Chatbot 
+*/
+
 .llmOffcanvas {
   width: min(100vw, 420px) !important;
   background: linear-gradient(180deg, var(--primaryBackground) 0%, var(--altBackground) 100%);
