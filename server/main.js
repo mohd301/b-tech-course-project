@@ -22,7 +22,8 @@ import audit from "./audit/audit.js"
 import authAudit from "./audit/authAudit.js"
 import parseCSV from "./functions/parseCSV.js"
 
-import { generateOtp, sendOtpEmail, saveOtp, verifyOtp, sendFraudEmail, sendEligibilityEmail } from "./email.js"
+import { generateOtp, sendOtpEmail, saveOtp, verifyOtp, sendFraudEmail, sendEligibilityEmail, sendConditionEmail } from "./email.js"
+import { type } from "os"
 
 const subsidyApp = new express()
 subsidyApp.use(express.json())
@@ -1223,7 +1224,7 @@ subsidyApp.post("/createData",
                 conditionId:  condition._id,
             })
             req.auditSuccess = true;
-            
+            sendConditionEmail(PrivUserModel,`New codition \t condition ID ${conditionId} \t condition ${condition}`)
             
             return res.json({
                 serverMsg: "Synthetic data generated successfully",
@@ -1482,3 +1483,33 @@ subsidyApp.delete('/delcondition',async(req,res)=>{
 }catch(e){
     console.log(e)
 }})
+subsidyApp.get('/viewFruad',authAudit,audit("REGULATOR",{type:"REGULATOR",id:req => req.params.id}),async(req,res)=>{
+try{
+    const data = await ELinkModel.find(Fraud=1)
+    res.auditSuccess
+    res.json({serverMsg:'Success',flag:true,data})
+}catch(e){
+    console.log(e)
+    res.json({serverMsg:"Failed",flag:false})
+}
+})
+subsidyApp.put('/viewFruad',authAudit,audit("REGULATOR",{type:"REGULATOR",id:req => req.params.id}),async(req,res)=>{
+try{
+    await ELinkModel.findOneAndUpdate({_id:req.body._id},{Fraud:req.body.Fraud})
+    const data = UserModel.findOne({ID:req.body.ID})
+    const status =await ELinkModel.findOne({_id:req.body._id})
+    if(status.Eligibility===1){
+    sendEligibilityEmail(data.email,`Your your review haven been finsihed you are now eligible for the subsidy `)
+    
+    res.auditSuccess
+    res.json({serverMsg:'Success',flag:true,data})
+    }else{
+    sendEligibilityEmail(data.email,`Your your review haven been finsihed you are now not eligible for the subsidy `)
+    res.auditSuccess
+    res.json({serverMsg:'Success',flag:true,data})
+    }
+}catch(e){
+    console.log(e)
+    res.json({serverMsg:"Failed",flag:false})
+}
+})
