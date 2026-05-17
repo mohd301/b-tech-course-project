@@ -1243,7 +1243,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 
 )
 
-subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
+subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "Applicant", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
 
         const filters = buildEligibilityFilter(req.query)
@@ -1270,13 +1270,26 @@ subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req =
     }
 })
 
-subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
+subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "Applicant", id: req => req.params.Email }), async (req, res) => {
     try {
         const elist = await ELinkModel.deleteOne({ Email: req.params.Email })
+
         res.deletedCount
         req.auditSuccess = true;
-        req.auditActor = "SYSTEM";
         res.json({ serverMsg: "success", data: elist })
+    } catch (e) {
+        req.auditSuccess = false
+        console.log(e)
+    }
+})
+
+subsidyApp.delete("/deleteEligibility/:_id", authAudit, audit("REMOVE_ELIGIBILITY", { type: "Applicant", id: req => req.params._id }), async (req, res) => {
+    try {
+        const elist = await ELinkModel.findByIdAndDelete(req.params._id)
+
+        res.deletedCount
+        req.auditSuccess = true;
+        res.json({ serverMsg: "success", data: elist, flag: true })
     } catch (e) {
         req.auditSuccess = false
         console.log(e)
