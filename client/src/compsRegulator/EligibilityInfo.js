@@ -32,9 +32,9 @@ const EligibilityInfo = () => {
             u.eligibilityInfo?.NationalID?.toLowerCase().includes(search.toLowerCase())
         ) || [];
 
-    const handleDelete = async (_id) => {
+    const handleDelete = async (userEligibilityInfo) => {
         try {
-            await dispatch(deleteUserEligibilityThunk(_id)).unwrap();
+            await dispatch(deleteUserEligibilityThunk(userEligibilityInfo)).unwrap();
             toast.success("Fraud Case Dismissed Successfully");
             dispatch(fetchAggregatedUserInfo());
         } catch (err) {
@@ -119,7 +119,7 @@ const EligibilityInfo = () => {
                             <div>
                                 <button
                                     className="simpleButton p-1"
-                                    onClick={() => handleDelete(user.eligibilityInfo._id)}
+                                    onClick={() => handleDelete(user.eligibilityInfo)}
                                     style={{
                                         color: theme.textColorAlt,
                                         backgroundColor: theme.secondaryColor,

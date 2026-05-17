@@ -1283,12 +1283,13 @@ subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "Ap
     }
 })
 
-subsidyApp.delete("/deleteEligibility/:_id", authAudit, audit("REMOVE_ELIGIBILITY", { type: "Applicant", id: req => req.params._id }), async (req, res) => {
+subsidyApp.delete("/deleteEligibility/:_id/:Email", authAudit, audit("REMOVE_ELIGIBILITY", { type: "Applicant", id: req => req.params._id }), async (req, res) => {
     try {
         const elist = await ELinkModel.findByIdAndDelete(req.params._id)
 
         res.deletedCount
         req.auditSuccess = true;
+        sendEligibilityEmail(req.params.Email, "Your Eligibility Status Review has been Dismissed. You May Reapply")
         res.json({ serverMsg: "success", data: elist, flag: true })
     } catch (e) {
         req.auditSuccess = false

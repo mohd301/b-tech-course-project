@@ -278,9 +278,9 @@ export const fetchAggregatedUserInfo = createAsyncThunk("privSlice/fetchAggregat
 })
 
 // Regulator: Delete user eligibility
-export const deleteUserEligibilityThunk = createAsyncThunk("privSlice/deleteUserEligibilityThunk", async (_id) => {
+export const deleteUserEligibilityThunk = createAsyncThunk("privSlice/deleteUserEligibilityThunk", async (userEligibilityInfo) => {
     try {
-        const response = await axios.delete(`http://localhost:${process.env.REACT_APP_PORT}/deleteEligibility/${_id}`,
+        const response = await axios.delete(`http://localhost:${process.env.REACT_APP_PORT}/deleteEligibility/${userEligibilityInfo._id}/${userEligibilityInfo.Email}`,
             { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } })
         return (response.data)
     } catch (err) {
