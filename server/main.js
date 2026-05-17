@@ -67,8 +67,25 @@ function datasetSummary(dataset) {
 
 async function writeDatasetForMl(dataset) {
     await fs.mkdir(SYNTHETIC_DATA_DIR, { recursive: true })
+    let fileContent = dataset.content
+    try {
+        const records = JSON.parse(dataset.content)
+        if (Array.isArray(records) && records.length > 0) {
+            const headers = Object.keys(records[0]).join(",")
+            const rows = records.map(row =>
+                Object.values(row).map(val =>
+                    String(val).includes(",") || String(val).includes('"')
+                        ? `"${String(val).replace(/"/g, '""')}"`
+                        : val
+                ).join(",")
+            )
+            fileContent = [headers, ...rows].join("\n")
+        }
+    } catch {
+        //DONT ADD ANYTHING HERE
+    }
     await fs.writeFile(ML_TRAINING_DATASET_PATH, dataset.content, "utf-8")
-
+    console.log(dataset.content)
     return {
         activeFile: toMlPath(ML_TRAINING_DATASET_PATH)
     }
@@ -732,8 +749,8 @@ subsidyApp.put("/forgotPassword",
 
                 req.auditSuccess = true;
 
-                if(!models.length>1){
-                    if(models[0] === UserModel){
+                if (!models.length > 1) {
+                    if (models[0] === UserModel) {
                         req.auditActor = userExist._id.toString();
                     } else {
                         req.auditActor = privUserExist._id.toString();
@@ -1210,7 +1227,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                         Fraud: data.Fraud,
                         Eligibility: data.Eligibity,
                         Reason: eligibilityReason,
-                        Gove:data.Gove
+                        Gove: data.Gove
 
                     }
                     await ELinkModel.create(newdata)
@@ -1227,7 +1244,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 )
 subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
-        
+
         const filters = buildEligibilityFilter(req.query)
         const elist = await ELinkModel.find(filters).sort({ createdAt: -1 }).lean()
         const userIds = elist
@@ -1275,13 +1292,13 @@ subsidyApp.post("/createData",
                 return res.status(400).json({ serverMsg: "Invalid synthetic data payload", flag: false });
             }
             const condition = await ConditionModel.create({
-                name:           req.body.name || "synthetic_subsidy_cylinders",
-                createdBy:      req.user.username || req.user.id,
-                creatorId:      req.user.id,
-                rowCount:       req.body.rowCount || 0,
+                name: req.body.name || "synthetic_subsidy_cylinders",
+                createdBy: req.user.username || req.user.id,
+                creatorId: req.user.id,
+                rowCount: req.body.rowCount || 0,
                 fraud_fraction: req.body.fraud_fraction || 0,
-                fraudmulti:     req.body.fraudmulti || {},
-                conditions:     req.body.Conditions,
+                fraudmulti: req.body.fraudmulti || {},
+                conditions: req.body.Conditions,
             });
 
             const flaskPayload = {
@@ -1309,46 +1326,46 @@ subsidyApp.post("/createData",
 
             if (!response.ok) {
                 req.auditSuccess = false;
-                
+
                 return res.status(response.status).json({
                     serverMsg: responseData.error || "Synthetic data generation failed",
                     flag: false,
                     data: responseData
                 });
             }
-            const csvContent = typeof responseData === "string" ? responseData : JSON.stringify(responseData);
-            console.log(csvContent.Data)
+            const csvContent = typeof responseData.Data === "string" ? responseData.Data : JSON.stringify(responseData.Data);
+            console.log(csvContent)
             const lines = csvContent.trim().split("\n");
             const columns = lines[0] ? lines[0].split(",").map(c => c.trim()) : [];
             const rowCount = lines.length - 1;
             const columnCount = columns.length;
             const dataset = await DatasetModel.create({
                 originalName: (req.body.name || "synthetic_subsidy_cylinders") + ".csv",
-                fileSize:     Buffer.byteLength(csvContent, "utf8"),
-                uploadedBy:   req.user.username || req.user.id,
-                uploaderId:   req.user.id,
+                fileSize: Buffer.byteLength(csvContent, "utf8"),
+                uploadedBy: req.user.username || req.user.id,
+                uploaderId: req.user.id,
                 rowCount,
                 columnCount,
                 columns,
-                content:      csvContent,
-                description:  req.body.description || "Synthetic dataset",
-                conditionId:  condition._id,
+                content: csvContent,
+                description: req.body.description || "Synthetic dataset",
+                conditionId: condition._id,
             })
-            
+
             console.log(req.body.Conditions)
             function formatConditions(conditions) {
-  return conditions
-    .map(group =>
-      group
-        .map(({ col, op, val }) => `${col} ${op} ${val}`)
-        .join(" AND ")
-    )
-    .join("\n");
-}
-const formatted = formatConditions(req.body.Conditions)
+                return conditions
+                    .map(group =>
+                        group
+                            .map(({ col, op, val }) => `${col} ${op} ${val}`)
+                            .join(" AND ")
+                    )
+                    .join("\n");
+            }
+            const formatted = formatConditions(req.body.Conditions)
             req.auditSuccess = true;
-            sendConditionEmail(PrivUserModel,`New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
-            
+            sendConditionEmail(PrivUserModel, `New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
+
             return res.json({
                 serverMsg: "Synthetic data generated successfully",
                 flag: true,
@@ -1394,12 +1411,21 @@ subsidyApp.post('/retrainEmodel',
                 })
             });
 
+
             const rawText = await response.text();
             let responseData;
             try {
                 responseData = rawText ? JSON.parse(rawText) : {};
             } catch (parseError) {
                 responseData = { raw: rawText };
+            }
+
+            
+            if (response.ok && responseData.Data) {
+                await DatasetModel.findByIdAndUpdate(
+                    activeDatasetSync.dataset._id,
+                    { $set: { content: JSON.stringify(responseData.Data) } }
+                )
             }
 
             req.auditSuccess = response.ok;
@@ -1487,17 +1513,17 @@ subsidyApp.post('/retrainImodel',
         }
     }
 )
-subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", id: req => "Analytics" }), async (req, res) => {
+subsidyApp.get("/eligibility_analytics", audit("GET_analytics", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
         const filters = buildEligibilityFilter(req.query)
         const data = await ELinkModel.find(filters);
-        
+
         const totalApplicants = data.length;
         const eligibleCount = data.filter(isEligibleRecord).length;
         const ineligibleCount = data.filter(isNotEligibleRecord).length;
         const fraudCount = data.filter(d => d.Fraud === 1).length;
         const gov = data.map(d => d.Gove).filter(Boolean);
-        const newdata={"totalApplicants":totalApplicants,"eligibleCount":eligibleCount,"ineligibleCount":ineligibleCount,"fraudCount":fraudCount,'gov':gov}
+        const newdata = { "totalApplicants": totalApplicants, "eligibleCount": eligibleCount, "ineligibleCount": ineligibleCount, "fraudCount": fraudCount, 'gov': gov }
         res.json({ serverMsg: "Analytics fetched", data: newdata, flag: true })
     } catch (e) {
         console.log(e)
@@ -1512,12 +1538,12 @@ subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", 
             {
                 $group: {
                     _id: {
-                        year:  { $year: "$createdAt" },
+                        year: { $year: "$createdAt" },
                         month: { $month: "$createdAt" }
                     },
-                    eligibleCount:   { $sum: { $cond: [{ $and: [{ $ne: ["$Fraud", 1] }, { $eq: ["$Eligibility", 1] }] }, 1, 0] } },
+                    eligibleCount: { $sum: { $cond: [{ $and: [{ $ne: ["$Fraud", 1] }, { $eq: ["$Eligibility", 1] }] }, 1, 0] } },
                     ineligibleCount: { $sum: { $cond: [{ $and: [{ $ne: ["$Fraud", 1] }, { $eq: ["$Eligibility", 0] }] }, 1, 0] } },
-                    fraudCount:      { $sum: { $cond: [{ $eq: ["$Fraud", 1] }, 1, 0] } },
+                    fraudCount: { $sum: { $cond: [{ $eq: ["$Fraud", 1] }, 1, 0] } },
                     totalApplicants: { $sum: 1 }
                 }
             },
@@ -1590,49 +1616,51 @@ subsidyApp.put("/changedata/:id",
         }
     }
 )
-subsidyApp.get('/vcondition',async(req,res)=>{
-    try{
-           const a = await ConditionModel.find()
-           res.json({serverMsg:"Success",flag:true,a})
-    
-}catch(e){
-    console.log(e)
-}})
-subsidyApp.delete('/delcondition',async(req,res)=>{
-    try{
-            await ConditionModel.deleteMany()
-           res.json({serverMsg:"Success",flag:true,})
-    
-}catch(e){
-    console.log(e)
-}})
-subsidyApp.get('/viewFruad',authAudit,audit("REGULATOR",{type:"REGULATOR",id:req => req.params.id}),async(req,res)=>{
-try{
-    const data = await ELinkModel.find(Fraud=1)
-    res.auditSuccess
-    res.json({serverMsg:'Success',flag:true,data})
-}catch(e){
-    console.log(e)
-    res.json({serverMsg:"Failed",flag:false})
-}
-})
-subsidyApp.put('/viewFruad',authAudit,audit("REGULATOR",{type:"REGULATOR",id:req => req.params.id}),async(req,res)=>{
-try{
-    await ELinkModel.findOneAndUpdate({_id:req.body._id},{Fraud:req.body.Fraud})
-    const data = UserModel.findOne({ID:req.body.ID})
-    const status =await ELinkModel.findOne({_id:req.body._id})
-    if(status.Eligibility===1){
-    sendEligibilityEmail(data.email,`Your your review haven been finsihed you are now eligible for the subsidy `)
-    
-    res.auditSuccess
-    res.json({serverMsg:'Success',flag:true,data})
-    }else{
-    sendEligibilityEmail(data.email,`Your your review haven been finsihed you are now not eligible for the subsidy `)
-    res.auditSuccess
-    res.json({serverMsg:'Success',flag:true,data})
+subsidyApp.get('/vcondition', async (req, res) => {
+    try {
+        const a = await ConditionModel.find()
+        res.json({ serverMsg: "Success", flag: true, a })
+
+    } catch (e) {
+        console.log(e)
     }
-}catch(e){
-    console.log(e)
-    res.json({serverMsg:"Failed",flag:false})
-}
+})
+subsidyApp.delete('/delcondition', async (req, res) => {
+    try {
+        await ConditionModel.deleteMany()
+        res.json({ serverMsg: "Success", flag: true, })
+
+    } catch (e) {
+        console.log(e)
+    }
+})
+subsidyApp.get('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", id: req => req.params.id }), async (req, res) => {
+    try {
+        const data = await ELinkModel.find(Fraud = 1)
+        res.auditSuccess
+        res.json({ serverMsg: 'Success', flag: true, data })
+    } catch (e) {
+        console.log(e)
+        res.json({ serverMsg: "Failed", flag: false })
+    }
+})
+subsidyApp.put('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", id: req => req.params.id }), async (req, res) => {
+    try {
+        await ELinkModel.findOneAndUpdate({ _id: req.body._id }, { Fraud: req.body.Fraud })
+        const data = UserModel.findOne({ ID: req.body.ID })
+        const status = await ELinkModel.findOne({ _id: req.body._id })
+        if (status.Eligibility === 1) {
+            sendEligibilityEmail(data.email, `Your your review haven been finsihed you are now eligible for the subsidy `)
+
+            res.auditSuccess
+            res.json({ serverMsg: 'Success', flag: true, data })
+        } else {
+            sendEligibilityEmail(data.email, `Your your review haven been finsihed you are now not eligible for the subsidy `)
+            res.auditSuccess
+            res.json({ serverMsg: 'Success', flag: true, data })
+        }
+    } catch (e) {
+        console.log(e)
+        res.json({ serverMsg: "Failed", flag: false })
+    }
 })
