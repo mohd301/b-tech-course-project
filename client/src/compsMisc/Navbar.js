@@ -83,6 +83,7 @@ export default function Navbar() {
                 <>
                     <Link style={{ color: theme.textColor }} to="/uploadDataset">Upload Dataset</Link>
                     <Link style={{ color: theme.textColor }} to="/manageDatasets">Manage Datasets</Link>
+                    <Link style={{ color: theme.textColor }} to="/eligibilityInfo">View Eligibility and Fraud Cases</Link>
                 </>
             }
         </Container>

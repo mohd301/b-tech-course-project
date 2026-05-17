@@ -29,6 +29,7 @@ import HomeRegulator from "./compsRegulator/HomeRegulator";
 import UploadDataset from "./compsRegulator/UploadDataset";
 import DataCreator from "./compsRegulator/DataCreator";
 import RetrainModels from "./compsRegulator/RetrainModels";
+import EligibilityInfo from "./compsRegulator/EligibilityInfo";
 
 import { useEffect, useState, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -227,9 +228,15 @@ function App() {
               <Analytics context="Admin" />
             </PrivateRoute>}>
           </Route>
+          <Route path='/eligibilityInfo' element={
+            <PrivateRoute allowedRoles={["Regulator"]}>
+              <EligibilityInfo/>
+            </PrivateRoute>}>
+          </Route>
         </Routes>
 
-        <button className="themeButton" onClick={toggleTheme} style={{left: "20px"}}>
+
+        <button className="themeButton" onClick={toggleTheme} style={{ left: "20px" }}>
           {mode === "light" ? <FaMoon /> : <FaSun />}
         </button>
 

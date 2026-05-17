@@ -1,7 +1,7 @@
 import { Container, Card, CardBody, CardTitle, Row, Col } from "reactstrap";
 import { Link } from "react-router-dom";
 import { useTheme } from "../compsMisc/ThemeContext";
-import { FaUpload, FaDatabase, FaFlask, FaSyncAlt,FaChartLine } from "react-icons/fa";
+import { FaUpload, FaDatabase, FaFlask, FaSyncAlt, FaChartLine, FaScroll} from "react-icons/fa";
 
 export default function HomeRegulator() {
     const { theme } = useTheme();
@@ -90,7 +90,7 @@ export default function HomeRegulator() {
                         </Card>
                     </Link>
                 </Col>
-                 <Col md={6} lg={4}>
+                <Col md={6} lg={4}>
                     <Link to="/eanaltics" style={{ textDecoration: "none" }}>
                         <Card className="dash-card h-100">
                             <CardBody className="d-flex flex-column align-items-center justify-content-center p-5">
@@ -102,6 +102,23 @@ export default function HomeRegulator() {
                                 </CardTitle>
                                 <p style={{ color: theme.textColorAlt, textAlign: "center" }} className="mt-2">
                                     View, edit, and delete analytics
+                                </p>
+                            </CardBody>
+                        </Card>
+                    </Link>
+                </Col>
+                <Col md={6} lg={4}>
+                    <Link to="/eligibilityInfo" style={{ textDecoration: "none" }}>
+                        <Card className="dash-card h-100">
+                            <CardBody className="d-flex flex-column align-items-center justify-content-center p-5">
+                                <div style={iconStyle} className="iconContainer mb-2">
+                                    <FaScroll size={50} color={theme.textColorAlt} />
+                                </div>
+                                <CardTitle tag="h3" style={{ color: theme.textColorAlt }} className="text-center">
+                                    View Eligibility and Fraud Cases
+                                </CardTitle>
+                                <p style={{ color: theme.textColorAlt, textAlign: "center" }} className="mt-2">
+                                    View Individual Eligibility and Fraud cases
                                 </p>
                             </CardBody>
                         </Card>
