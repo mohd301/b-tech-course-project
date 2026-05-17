@@ -277,6 +277,18 @@ export const fetchAggregatedUserInfo = createAsyncThunk("privSlice/fetchAggregat
     }
 })
 
+// Regulator: Delete user eligibility
+export const deleteUserEligibilityThunk = createAsyncThunk("privSlice/deleteUserEligibilityThunk", async (_id) => {
+    try {
+        const response = await axios.delete(`http://localhost:${process.env.REACT_APP_PORT}/deleteEligibility/${_id}`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } })
+        return (response.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
 const initialState = {
     msg: null,
     userList: [],
@@ -554,6 +566,24 @@ const privSlice = createSlice(
             })
 
             builder.addCase(fetchAggregatedUserInfo.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
+            // Regulator: Delete user Eligibility
+            builder.addCase(deleteUserEligibilityThunk.pending, (state, action) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(deleteUserEligibilityThunk.fulfilled, (state, action) => {
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(deleteUserEligibilityThunk.rejected, (state, action) => {
                 state.msg = action.error.message
                 state.flag = false
                 state.loading = false
