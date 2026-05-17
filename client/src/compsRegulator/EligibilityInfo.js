@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAggregatedUserInfo } from "../slices/SlicePriv";
 import { useTheme } from "../compsMisc/ThemeContext";
+import { toast } from "react-toastify";
+
+import { fetchAggregatedUserInfo } from "../slices/SlicePriv";
+import { deleteUserEligibilityThunk } from "../slices/SlicePriv";
 
 import CenteredSpinner from "../compsMisc/CenteredSpinner"
 
@@ -14,7 +17,7 @@ const EligibilityInfo = () => {
 
     useEffect(() => {
         dispatch(fetchAggregatedUserInfo());
-    }, [dispatch]);
+    }, []);
 
     // Split and filter data
     const eligibleUsers =
@@ -28,6 +31,16 @@ const EligibilityInfo = () => {
             (u.Fraud > 0 || u.eligibilityInfo?.Fraud > 0) &&
             u.eligibilityInfo?.NationalID?.toLowerCase().includes(search.toLowerCase())
         ) || [];
+
+    const handleDelete = async (_id) => {
+        try {
+            await dispatch(deleteUserEligibilityThunk(_id)).unwrap();
+            toast.success("Fraud Case Dismissed Successfully");
+            dispatch(fetchAggregatedUserInfo());
+        } catch (err) {
+            toast.error("Failed to delete user");
+        }
+    };
 
     return (
         <div className="d-flex" style={{ background: theme.primaryBackground, minHeight: "82.1vh" }}>
@@ -89,13 +102,34 @@ const EligibilityInfo = () => {
                             borderRadius: "10px",
                             boxShadow: `0 2px 5px ${theme.shadowColor}`,
                             borderLeft: `5px solid ${theme.sus}`,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start"
                         }}>
-                            <p style={{ color: theme.textColorAlt }}><strong>Email:</strong> {user.Email}</p>
-                            <p style={{ color: theme.textColorAlt }}><strong>Phone:</strong> {user.Phone}</p>
-                            <p style={{ color: theme.textColorAlt }}><strong>National ID:</strong> {user.eligibilityInfo?.NationalID}</p>
-                            {user.eligibilityInfo?.Reason && (
-                                <p style={{ color: theme.textColorAlt }}><strong>Reason:</strong> {user.eligibilityInfo.Reason}</p>
-                            )}
+
+                            <div style={{ borderRight: `2px solid ${theme.bgGray}`, width: "50%" }}>
+                                <p style={{ color: theme.textColorAlt }}><strong>Email:</strong> {user.Email}</p>
+                                <p style={{ color: theme.textColorAlt }}><strong>Phone:</strong> {user.Phone}</p>
+                                <p style={{ color: theme.textColorAlt }}><strong>National ID:</strong> {user.eligibilityInfo?.NationalID}</p>
+                                {user.eligibilityInfo?.Reason && (
+                                    <p style={{ color: theme.textColorAlt }}><strong>Reason:</strong> {user.eligibilityInfo.Reason}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <button
+                                    className="simpleButton p-1"
+                                    onClick={() => handleDelete(user.eligibilityInfo._id)}
+                                    style={{
+                                        color: theme.textColorAlt,
+                                        backgroundColor: theme.secondaryColor,
+                                        border: "1px solid",
+                                        borderRadius: "4px",
+                                    }}>
+                                    Dismiss
+                                </button>
+                            </div>
+
                         </div>
                     ))
                 )}
