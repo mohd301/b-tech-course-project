@@ -266,6 +266,17 @@ export const fetchELAnalyticsMonthly = createAsyncThunk("privSlice/fetchELAnalyt
     }
 })
 
+// Regulator: Get all applied applicant info
+export const fetchAggregatedUserInfo = createAsyncThunk("privSlice/fetchAggregatedUserInfo", async () => {
+    try {
+        const response = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/getAggregatedUserInfo`)
+        return (response.data)
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+})
+
 const initialState = {
     msg: null,
     userList: [],
@@ -276,7 +287,8 @@ const initialState = {
     loading: false,
     flag: false,
     analytic:{},
-    manalytis:[]
+    manalytis:[],
+    userEligibility: []
     
 }
 
@@ -528,6 +540,25 @@ const privSlice = createSlice(
                 state.loading = false
             })
             
+            // Regulator: Get all applied applicant info
+            builder.addCase(fetchAggregatedUserInfo.pending, (state, action) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchAggregatedUserInfo.fulfilled, (state, action) => {
+                state.userEligibility = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchAggregatedUserInfo.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
+
         }
     }
 )
