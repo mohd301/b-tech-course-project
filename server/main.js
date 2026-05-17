@@ -296,6 +296,92 @@ async function buildSystemPrompt(userId) {
 
 ${await buildEligibilityContext(userId)}`
 }
+
+const DATE_PRESETS = new Set(["today", "last7", "last30", "thisMonth", "thisYear"])
+
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+function startOfDay(date) {
+    const nextDate = new Date(date)
+    nextDate.setHours(0, 0, 0, 0)
+    return nextDate
+}
+
+function startOfNextDay(date) {
+    const nextDate = startOfDay(date)
+    nextDate.setDate(nextDate.getDate() + 1)
+    return nextDate
+}
+
+function buildDatePresetRange(datePreset) {
+    if (!DATE_PRESETS.has(datePreset)) {
+        return null
+    }
+
+    const now = new Date()
+    let startDate
+    let endDate = startOfNextDay(now)
+
+    if (datePreset === "today") {
+        startDate = startOfDay(now)
+    } else if (datePreset === "last7") {
+        startDate = startOfDay(now)
+        startDate.setDate(startDate.getDate() - 6)
+    } else if (datePreset === "last30") {
+        startDate = startOfDay(now)
+        startDate.setDate(startDate.getDate() - 29)
+    } else if (datePreset === "thisMonth") {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+    } else if (datePreset === "thisYear") {
+        startDate = new Date(now.getFullYear(), 0, 1)
+    }
+
+    return { $gte: startDate, $lt: endDate }
+}
+
+function addDatePresetFilter(query, datePreset) {
+    const createdAt = buildDatePresetRange(datePreset)
+    if (createdAt) {
+        query.createdAt = createdAt
+    }
+    return query
+}
+
+function buildDatasetFilter(filters = {}) {
+    return addDatePresetFilter({}, filters.datePreset)
+}
+
+function buildEligibilityFilter(filters = {}) {
+    const query = addDatePresetFilter({}, filters.datePreset)
+    const region = typeof filters.region === "string" ? filters.region.trim() : ""
+    const status = typeof filters.status === "string" ? filters.status.trim() : ""
+
+    if (region && region !== "all") {
+        query.Gove = new RegExp(`^${escapeRegExp(region)}$`, "i")
+    }
+
+    if (status === "needs_review") {
+        query.Fraud = 1
+    } else if (status === "eligible") {
+        query.Fraud = { $ne: 1 }
+        query.Eligibility = 1
+    } else if (status === "not_eligible") {
+        query.Fraud = { $ne: 1 }
+        query.Eligibility = 0
+    }
+
+    return query
+}
+
+function isEligibleRecord(record) {
+    return record.Fraud !== 1 && record.Eligibility === 1
+}
+
+function isNotEligibleRecord(record) {
+    return record.Fraud !== 1 && record.Eligibility === 0
+}
 //Connection to MongoDB
 try {
     const subsidyApp_ConnectionString = `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ac-lmvjits-shard-00-00.vndparp.mongodb.net:27017,ac-lmvjits-shard-00-01.vndparp.mongodb.net:27017,ac-lmvjits-shard-00-02.vndparp.mongodb.net:27017/${process.env.DB_Name}?ssl=true&replicaSet=atlas-drtwd2-shard-0&authSource=admin&appName=Cluster0;`
@@ -904,7 +990,8 @@ subsidyApp.get("/getDatasets",
     async (req, res) => {
         try {
             req.auditActor = "SYSTEM";
-            const datasets = await DatasetModel.find({}, { content: 0 }).sort({ createdAt: -1 })
+            const filters = buildDatasetFilter(req.query)
+            const datasets = await DatasetModel.find(filters, { content: 0 }).sort({ createdAt: -1 })
             req.auditSuccess = true
             res.json({ serverMsg: "Datasets fetched", data: datasets, flag: true })
         } catch (err) {
@@ -998,17 +1085,26 @@ subsidyApp.get("/getDatasetStats",
     async (req, res) => {
         try {
             req.auditActor = "SYSTEM";
-            const totalDatasets = await DatasetModel.countDocuments()
-            const totalSize = await DatasetModel.aggregate([{ $group: { _id: null, totalSize: { $sum: "$fileSize" } } }])
-            const totalRows = await DatasetModel.aggregate([{ $group: { _id: null, totalRows: { $sum: "$rowCount" } } }])
+            const filters = buildDatasetFilter(req.query)
+            const totalDatasets = await DatasetModel.countDocuments(filters)
+            const totals = await DatasetModel.aggregate([
+                { $match: filters },
+                {
+                    $group: {
+                        _id: null,
+                        totalSize: { $sum: "$fileSize" },
+                        totalRows: { $sum: "$rowCount" }
+                    }
+                }
+            ])
 
             req.auditSuccess = true
             res.json({
                 serverMsg: "Statistics fetched",
                 data: {
                     totalDatasets,
-                    totalSize: totalSize[0]?.totalSize || 0,
-                    totalRows: totalRows[0]?.totalRows || 0
+                    totalSize: totals[0]?.totalSize || 0,
+                    totalRows: totals[0]?.totalRows || 0
                 },
                 flag: true
             })
@@ -1131,13 +1227,27 @@ subsidyApp.get("/Eligibility/:ID/:_id",
 subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
         
-        const elist = await ELinkModel.find()
+        const filters = buildEligibilityFilter(req.query)
+        const elist = await ELinkModel.find(filters).sort({ createdAt: -1 }).lean()
+        const userIds = elist
+            .map(el => el.UserID)
+            .filter(id => mongoose.Types.ObjectId.isValid(id))
+        const users = await UserModel.find({ _id: { $in: userIds } }, { Phone: 1 }).lean()
+        const phoneByUserId = users.reduce((phoneMap, user) => {
+            phoneMap[user._id.toString()] = user.Phone
+            return phoneMap
+        }, {})
+        const sanitizedList = elist.map(({ NationalID, ...eligibilityRecord }) => ({
+            ...eligibilityRecord,
+            Phone: phoneByUserId[eligibilityRecord.UserID] || "-"
+        }))
         req.auditSuccess = true;
         req.auditActor = "SYSTEM";
-        res.json({ serverMsg: "success", data: elist })
+        res.json({ serverMsg: "success", data: sanitizedList, flag: true })
     } catch (e) {
         req.auditSuccess = false
         console.log(e)
+        res.json({ serverMsg: "Error fetching eligibility info", flag: false })
     }
 })
 subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
@@ -1365,17 +1475,15 @@ subsidyApp.post('/retrainImodel',
 )
 subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
-        console.log(1)
-        const data = await ELinkModel.find();
+        const filters = buildEligibilityFilter(req.query)
+        const data = await ELinkModel.find(filters);
         
         const totalApplicants = data.length;
-        const eligibleCount = data.filter(d => d.Eligibility === 1).length;
-        const ineligibleCount = data.filter(d => d.Eligibility === 0).length;
+        const eligibleCount = data.filter(isEligibleRecord).length;
+        const ineligibleCount = data.filter(isNotEligibleRecord).length;
         const fraudCount = data.filter(d => d.Fraud === 1).length;
-        console.log(data)
         const gov = data.map(d => d.Gove).filter(Boolean);
         const newdata={"totalApplicants":totalApplicants,"eligibleCount":eligibleCount,"ineligibleCount":ineligibleCount,"fraudCount":fraudCount,'gov':gov}
-        console.log(newdata)
         res.json({ serverMsg: "Analytics fetched", data: newdata, flag: true })
     } catch (e) {
         console.log(e)
@@ -1384,15 +1492,17 @@ subsidyApp.get("/eligibility_analytics" ,audit("GET_analytics", { type: "USER", 
 })
 subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
+        const filters = buildEligibilityFilter(req.query)
         const data = await ELinkModel.aggregate([
+            { $match: filters },
             {
                 $group: {
                     _id: {
                         year:  { $year: "$createdAt" },
                         month: { $month: "$createdAt" }
                     },
-                    eligibleCount:   { $sum: { $cond: [{ $eq: ["$Eligibility", 1] }, 1, 0] } },
-                    ineligibleCount: { $sum: { $cond: [{ $eq: ["$Eligibility", 0] }, 1, 0] } },
+                    eligibleCount:   { $sum: { $cond: [{ $and: [{ $ne: ["$Fraud", 1] }, { $eq: ["$Eligibility", 1] }] }, 1, 0] } },
+                    ineligibleCount: { $sum: { $cond: [{ $and: [{ $ne: ["$Fraud", 1] }, { $eq: ["$Eligibility", 0] }] }, 1, 0] } },
                     fraudCount:      { $sum: { $cond: [{ $eq: ["$Fraud", 1] }, 1, 0] } },
                     totalApplicants: { $sum: 1 }
                 }
