@@ -1420,7 +1420,7 @@ subsidyApp.post('/retrainEmodel',
                 responseData = { raw: rawText };
             }
 
-            
+
             if (response.ok && responseData.Data) {
                 await DatasetModel.findByIdAndUpdate(
                     activeDatasetSync.dataset._id,
@@ -1513,6 +1513,7 @@ subsidyApp.post('/retrainImodel',
         }
     }
 )
+
 subsidyApp.get("/eligibility_analytics", audit("GET_analytics", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
         const filters = buildEligibilityFilter(req.query)
@@ -1530,6 +1531,7 @@ subsidyApp.get("/eligibility_analytics", audit("GET_analytics", { type: "USER", 
         res.json({ serverMsg: "Error fetching analytics", flag: false })
     }
 })
+
 subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
         const filters = buildEligibilityFilter(req.query)
@@ -1557,6 +1559,7 @@ subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", 
         res.json({ serverMsg: "Error fetching monthly analytics", flag: false });
     }
 });
+
 subsidyApp.put("/changedata/:id",
     authAudit,
     audit("ACTIVATE_DATASET", { type: "Dataset", id: req => req.params.id }),
@@ -1616,6 +1619,7 @@ subsidyApp.put("/changedata/:id",
         }
     }
 )
+
 subsidyApp.get('/vcondition', async (req, res) => {
     try {
         const a = await ConditionModel.find()
@@ -1625,6 +1629,7 @@ subsidyApp.get('/vcondition', async (req, res) => {
         console.log(e)
     }
 })
+
 subsidyApp.delete('/delcondition', async (req, res) => {
     try {
         await ConditionModel.deleteMany()
@@ -1634,6 +1639,7 @@ subsidyApp.delete('/delcondition', async (req, res) => {
         console.log(e)
     }
 })
+
 subsidyApp.get('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", id: req => req.params.id }), async (req, res) => {
     try {
         const data = await ELinkModel.find(Fraud = 1)
@@ -1644,6 +1650,7 @@ subsidyApp.get('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", 
         res.json({ serverMsg: "Failed", flag: false })
     }
 })
+
 subsidyApp.put('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", id: req => req.params.id }), async (req, res) => {
     try {
         await ELinkModel.findOneAndUpdate({ _id: req.body._id }, { Fraud: req.body.Fraud })
