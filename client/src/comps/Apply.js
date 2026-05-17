@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Button, Input, Card, Form, Label, CardBody, CardImg, CardHeader, CardFooter } from "reactstrap"
 import { useSelector, useDispatch } from "react-redux"
 import { FiXCircle } from "react-icons/fi";
+import { FaCamera } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 import { MdRateReview } from "react-icons/md";
 import { toast } from "react-toastify";
@@ -10,13 +11,13 @@ import Tesseract from 'tesseract.js';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import SchemaID from "../validations/SchemaID"
- 
+
 import { useTheme } from "../compsMisc/ThemeContext"
 import { decryptToken } from "../functions/decryptToken"
 import { userApplyThunk } from "../slices/SliceUser"
- 
+
 import CenteredSpinner from "../compsMisc/CenteredSpinner"
- 
+
 export default function Apply() {
     const { theme } = useTheme()
     const [Data, Setdata] = useState()
@@ -27,7 +28,7 @@ export default function Apply() {
     const { register, handleSubmit, getValues, watch, setValue, formState: { errors } } = useForm({
         resolver: yupResolver(SchemaID)
     })
- 
+
     // ── Camera state (added) ──────────────────────────────────────────────
     const [cameraOpen, setCameraOpen] = useState(false)
     const [ocrLoading, setOcrLoading] = useState(false)
@@ -35,27 +36,27 @@ export default function Apply() {
     const videoRef = useRef(null)
     const canvasRef = useRef(null)
     const streamRef = useRef(null)
- 
-   const startCamera = useCallback(async () => {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }
-        })
-        streamRef.current = stream
-        setCameraOpen(true) // trigger render first, then attach in useEffect
-    } catch (e) {
-        toast.error("Camera access denied. Please enter the ID manually.")
-    }
-}, [])
 
-// Attach stream to video element AFTER it renders
-useEffect(() => {
-    if (cameraOpen && videoRef.current && streamRef.current) {
-        videoRef.current.srcObject = streamRef.current
-        videoRef.current.play().catch(() => {})
-    }
-}, [cameraOpen])
- 
+    const startCamera = useCallback(async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }
+            })
+            streamRef.current = stream
+            setCameraOpen(true) // trigger render first, then attach in useEffect
+        } catch (e) {
+            toast.error("Camera access denied. Please enter the ID manually.")
+        }
+    }, [])
+
+    // Attach stream to video element AFTER it renders
+    useEffect(() => {
+        if (cameraOpen && videoRef.current && streamRef.current) {
+            videoRef.current.srcObject = streamRef.current
+            videoRef.current.play().catch(() => { })
+        }
+    }, [cameraOpen])
+
     const stopCamera = useCallback(() => {
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(t => t.stop())
@@ -63,59 +64,73 @@ useEffect(() => {
         }
         setCameraOpen(false)
     }, [])
- 
+
     const captureAndScan = useCallback(async () => {
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas) return
+        const video = videoRef.current
+        const canvas = canvasRef.current
+        if (!video || !canvas) return
 
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    const ctx = canvas.getContext("2d")
-    ctx.filter = "grayscale(1) contrast(1.4)"
-    ctx.drawImage(video, 0, 0)
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        const ctx = canvas.getContext("2d")
+        ctx.filter = "grayscale(1) contrast(1.4)"
+        ctx.drawImage(video, 0, 0)
 
-    stopCamera()
-    setOcrLoading(true)
-    setOcrProgress(0)
+        stopCamera()
+        setOcrLoading(true)
+        setOcrProgress(0)
 
-    try {
-        // Convert canvas to Blob before passing to Tesseract
-        const blob = await new Promise((resolve, reject) => {
-            canvas.toBlob((b) => {
-                if (b) resolve(b)
-                else reject(new Error("Canvas toBlob failed"))
-            }, "image/png")
-        })
+        try {
+            // Convert canvas to Blob before passing to Tesseract
+            const blob = await new Promise((resolve, reject) => {
+                canvas.toBlob((b) => {
+                    if (b) resolve(b)
+                    else reject(new Error("Canvas toBlob failed"))
+                }, "image/png")
+            })
 
-        const { data } = await Tesseract.recognize(blob, "eng", {
-            logger: (m) => {
-                if (m.status === "recognizing text") {
-                    setOcrProgress(Math.round(m.progress * 100))
+            const { data } = await Tesseract.recognize(blob, "eng", {
+                logger: (m) => {
+                    if (m.status === "recognizing text") {
+                        setOcrProgress(Math.round(m.progress * 100))
+                    }
                 }
-            }
-        })
+            })
 
-        const idMatch = data.text.match(/\b[0-9]{6,12}\b/)
-        if (idMatch) {
-            setValue("ID", idMatch[0])
-            toast.success("ID extracted successfully!")
-        } else {
-            toast.warning("Could not detect an ID number. Please enter manually.")
-        }
-    } catch (e) {
-        toast.error("OCR failed. Please enter the ID manually.")
-    } finally {
-        setOcrLoading(false)
-    }
-}, [stopCamera, setValue])
- 
+            const idMatch = data.text.match(/\b[0-9]{6,12}\b/)
+            const dateMatch = data.text.match(/\b(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[0-2])[\/\-](19|20)[2]\d{1}\b|\b(0?[1-9]|[12][0-9]|3[01])\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(19|20)[2]\d{1}\b/i)
+            console.log(dateMatch[0])
+            if (idMatch && dateMatch) {
+                const [day, month, year] = dateMatch[0].split("/").map(Number)
+                const expiryDate = new Date(year, month - 1, day)
+                const today = new Date()
+
+                if (expiryDate > today) {
+                    setValue("ID", idMatch[0])
+                    setValue("ExpiryDate", dateMatch[0])
+                    toast.success("ID extracted successfully!")
+                } else {
+                    toast.warning("Your ID has expired. Please renew your ID before applying.")
+                }
+            } else if (idMatch && !dateMatch) {
+                setValue("ID", idMatch[0])
+                toast.warning("ID extracted but expiry date not detected. Please verify manually.")}
+                 else {
+                    toast.warning("Could not detect an ID number. Please enter manually.")
+                }
+            } catch (e) {
+                toast.error("OCR failed. Please enter the ID manually.")
+            } finally {
+                setOcrLoading(false)
+            }
+        }, [stopCamera, setValue])
+
     // Stop camera if component unmounts
     useEffect(() => () => stopCamera(), [stopCamera])
     // ── End camera additions ──────────────────────────────────────────────
- 
-    
- 
+
+
+
     async function getdata(data) {
         try {
             const user = decryptToken()
@@ -130,7 +145,7 @@ useEffect(() => {
             console.log(e)
         }
     }
- 
+
     return (
         <>
             <div style={{ background: theme.primaryBackground, minHeight: "82.1vh" }}>
@@ -144,7 +159,7 @@ useEffect(() => {
                                         <h1 className="text-center" style={{ color: theme.textColorAlt }}>Apply for Eligibility</h1>
                                     </div>
                                     <Label style={{ color: theme.textColorAlt }}>Enter your ID</Label>
- 
+
                                     {/* ── ID input + camera button (added) ── */}
                                     <div className="d-flex align-items-center gap-2" style={{ width: "45%" }}>
                                         <input
@@ -168,10 +183,10 @@ useEffect(() => {
                                                 lineHeight: 1
                                             }}
                                         >
-                                            {cameraOpen ? "✕" : "📷"}
+                                            {cameraOpen ? "✕" : <FaCamera />}
                                         </Button>
                                     </div>
- 
+
                                     {/* ── Camera preview (added) ── */}
                                     {cameraOpen && (
                                         <div className="mt-3" style={{ width: "45%", position: "relative" }}>
@@ -189,7 +204,7 @@ useEffect(() => {
                                                     pointerEvents: "none"
                                                 }}>
                                                     <div style={{
-                                                        width: "80%", height: "55%",
+                                                        width: "80%", height: "61%",
                                                         border: "2px solid rgba(255,255,255,0.75)",
                                                         borderRadius: "0.4rem"
                                                     }} />
@@ -205,7 +220,7 @@ useEffect(() => {
                                             </Button>
                                         </div>
                                     )}
- 
+
                                     {/* ── OCR progress bar (added) ── */}
                                     {ocrLoading && (
                                         <div className="mt-2" style={{ width: "45%" }}>
@@ -220,15 +235,15 @@ useEffect(() => {
                                             </div>
                                         </div>
                                     )}
- 
+
                                     {/* Hidden canvas for frame capture (added) */}
                                     <canvas ref={canvasRef} style={{ display: "none" }} />
                                     {/* ── End camera additions ── */}
- 
+
                                     <div style={{ minHeight: "2rem", color: theme.textError, fontSize: "0.95rem" }}>
                                         <u>{errors.ID?.message}</u>
                                     </div>
- 
+
                                     {Data && res === "!" ? (
                                         Data?.Fraud === 1 ? (<Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }}
                                             className="d-flex justify-content-center mt-4 mb-4 logRegCard">
@@ -241,7 +256,7 @@ useEffect(() => {
                                             </CardFooter>
                                         </Card>) :
                                             Data?.Eligibity === 1 ? (
- 
+
                                                 <Card style={{ background: theme.tertiaryColor, minHeight: "20vh", width: "15vw", borderRadius: "6vh" }}
                                                     className="d-flex justify-content-center mt-4 mb-4 logRegCard">
                                                     <CardHeader className="d-flex justify-content-center">
@@ -260,7 +275,7 @@ useEffect(() => {
                                                         size={"3em"} /></CardHeader>
                                                     <CardFooter>
                                                         <p style={{ color: theme.textColorAlt }} className="text-center">Not Eligible</p>
- 
+
                                                         {rejectionReason ? (
                                                             <p style={{ color: theme.textColorAlt }} className="text-center">{rejectionReason} is too high</p>
                                                         ) : null}
@@ -271,11 +286,11 @@ useEffect(() => {
                                             <></>
                                         )}
                                     <div className="d-flex align-items-end justify-content-end mt-5">
- 
+
                                         <Button style={{ background: theme.primaryColor }} type="submit">Submit</Button>
                                     </div>
- 
- 
+
+
                                 </CardBody>
                             ) : (
                                 <CenteredSpinner color={theme.primaryColor} />

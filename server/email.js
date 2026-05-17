@@ -83,3 +83,14 @@ export const sendEligibilityEmail = async (applicantEmail, msg) => {
         text: msg
     });
 }
+export const sendConditionEmail = async (regModel, msg) => {
+    const regs = await regModel.find()
+    for (let reg of regs) {
+        transporter.sendMail({
+            from: process.env.EMAIL,
+            to: reg.Email,
+            subject: "New Conditions",
+            text: msg
+        });
+    }
+}
