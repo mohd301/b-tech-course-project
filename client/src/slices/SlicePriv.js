@@ -70,10 +70,16 @@ export const uploadDatasetThunk = createAsyncThunk("privSlice/uploadDatasetThunk
 })
 
 // Fetch all datasets
-export const fetchDatasetsThunk = createAsyncThunk("privSlice/fetchDatasetsThunk", async () => {
+export const fetchDatasetsThunk = createAsyncThunk("privSlice/fetchDatasetsThunk", async (filters = {}) => {
     try {
+        const params = {}
+        if (filters.datePreset && filters.datePreset !== "all") {
+            params.datePreset = filters.datePreset
+        }
+
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/getDatasets`,
+            { params }
         )
         return response.data
     } catch (err) {
@@ -126,11 +132,19 @@ export const updateDatasetThunk = createAsyncThunk("privSlice/updateDatasetThunk
 })
 
 // Fetch dataset statistics
-export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetStatsThunk", async () => {
+export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetStatsThunk", async (filters = {}) => {
     try {
+        const params = {}
+        if (filters.datePreset && filters.datePreset !== "all") {
+            params.datePreset = filters.datePreset
+        }
+
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/getDatasetStats`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+            {
+                params,
+                headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+            }
         )
         return response.data
     } catch (err) {
@@ -140,11 +154,25 @@ export const fetchDatasetStatsThunk = createAsyncThunk("privSlice/fetchDatasetSt
 })
 
 // Fetch Eligibility info
-export const fetchELInfoThunk = createAsyncThunk("privSlice/fetchELInfoThunk", async () => {
+export const fetchELInfoThunk = createAsyncThunk("privSlice/fetchELInfoThunk", async (filters = {}) => {
     try {
+        const params = {}
+        if (filters.datePreset && filters.datePreset !== "all") {
+            params.datePreset = filters.datePreset
+        }
+        if (filters.region && filters.region !== "all") {
+            params.region = filters.region
+        }
+        if (filters.status && filters.status !== "all") {
+            params.status = filters.status
+        }
+
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/viewELlink`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+            {
+                params,
+                headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+            }
         )
         return response.data
     } catch (err) {
@@ -166,11 +194,25 @@ export const createDataThunk=createAsyncThunk('privSlice/createDataThunk',async(
         throw err
     }
 })
-export const fetchELAnalytics = createAsyncThunk("privSlice/fetchELAnalytics", async () => {
+export const fetchELAnalytics = createAsyncThunk("privSlice/fetchELAnalytics", async (filters = {}) => {
     try {
+        const params = {}
+        if (filters.datePreset && filters.datePreset !== "all") {
+            params.datePreset = filters.datePreset
+        }
+        if (filters.region && filters.region !== "all") {
+            params.region = filters.region
+        }
+        if (filters.status && filters.status !== "all") {
+            params.status = filters.status
+        }
+
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/eligibility_analytics`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+            {
+                params,
+                headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+            }
         )
         
         return response.data
@@ -197,11 +239,25 @@ export const activateDatasetThunk = createAsyncThunk("privSlice/activateDatasetT
         return rejectWithValue(err.response?.data?.serverMsg || "Failed to activate dataset")
     }
 })
-export const fetchELAnalyticsMonthly = createAsyncThunk("privSlice/fetchELAnalyticsMonthly", async () => {
+export const fetchELAnalyticsMonthly = createAsyncThunk("privSlice/fetchELAnalyticsMonthly", async (filters = {}) => {
     try {
+        const params = {}
+        if (filters.datePreset && filters.datePreset !== "all") {
+            params.datePreset = filters.datePreset
+        }
+        if (filters.region && filters.region !== "all") {
+            params.region = filters.region
+        }
+        if (filters.status && filters.status !== "all") {
+            params.status = filters.status
+        }
+
         const response = await axios.get(
             `http://localhost:${process.env.REACT_APP_PORT}/eligibility_analytics/monthly`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+            {
+                params,
+                headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+            }
         )
         return response.data
     } catch (err) {
