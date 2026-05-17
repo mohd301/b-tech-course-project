@@ -1242,6 +1242,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
     }
 
 )
+
 subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
 
@@ -1268,6 +1269,7 @@ subsidyApp.get("/viewELlink", audit("GET_ELIGIBILITY", { type: "USER", id: req =
         res.json({ serverMsg: "Error fetching eligibility info", flag: false })
     }
 })
+
 subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "USER", id: req => "All_eligibility_info" }), async (req, res) => {
     try {
         const elist = await ELinkModel.deleteOne({ Email: req.params.Email })
@@ -1280,6 +1282,7 @@ subsidyApp.delete("/deleteELINK/:Email", audit("REMOVE_ELIGIBILITY", { type: "US
         console.log(e)
     }
 })
+
 subsidyApp.post("/createData",
     authAudit,
     audit("CREATE_SYNTHETIC_DATA", { type: "Dataset", id: req => req.user.id }),
@@ -1669,5 +1672,34 @@ subsidyApp.put('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", 
     } catch (e) {
         console.log(e)
         res.json({ serverMsg: "Failed", flag: false })
+    }
+})
+
+subsidyApp.get('/getAggregatedUserInfo', audit("GET_USERS_ELIGIBILITY", {
+    type: "Applicant",
+    id: req => "all_applicants_applied"
+}), async (req, res) => {
+    try {
+        req.auditActor = "SYSTEM";
+        const result = await UserModel.aggregate([
+            {
+                $lookup: {
+                    from: "eligibility links",
+                    localField: "Email",
+                    foreignField: "Email",
+                    as: "eligibilityInfo"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$eligibilityInfo",
+                }
+            }
+        ]);
+        req.auditSuccess = true;
+        res.json({ serverMsg: "User Eligibility info fetched successfully!", data: result, flag: true })
+    } catch (err) {
+        req.auditSuccess = false;
+        console.log(err)
     }
 })
