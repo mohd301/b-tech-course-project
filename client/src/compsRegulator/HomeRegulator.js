@@ -1,7 +1,7 @@
 import { Container, Card, CardBody, CardTitle, Row, Col } from "reactstrap";
 import { Link } from "react-router-dom";
 import { useTheme } from "../compsMisc/ThemeContext";
-import { FaUpload, FaDatabase, FaFlask, FaSyncAlt } from "react-icons/fa";
+import { FaUpload, FaDatabase, FaFlask, FaSyncAlt,FaChartLine } from "react-icons/fa";
 
 export default function HomeRegulator() {
     const { theme } = useTheme();
@@ -95,7 +95,7 @@ export default function HomeRegulator() {
                         <Card className="dash-card h-100">
                             <CardBody className="d-flex flex-column align-items-center justify-content-center p-5">
                                 <div style={iconStyle} className="iconContainer mb-2">
-                                    <FaDatabase size={50} color={theme.textColorAlt} />
+                                    <FaChartLine size={50} color={theme.textColorAlt} />
                                 </div>
                                 <CardTitle tag="h3" style={{ color: theme.textColorAlt }} className="text-center">
                                     View analytics

@@ -1317,6 +1317,7 @@ subsidyApp.post("/createData",
                 });
             }
             const csvContent = typeof responseData === "string" ? responseData : JSON.stringify(responseData);
+            console.log(csvContent.Data)
             const lines = csvContent.trim().split("\n");
             const columns = lines[0] ? lines[0].split(",").map(c => c.trim()) : [];
             const rowCount = lines.length - 1;
@@ -1333,8 +1334,20 @@ subsidyApp.post("/createData",
                 description:  req.body.description || "Synthetic dataset",
                 conditionId:  condition._id,
             })
+            
+            console.log(req.body.Conditions)
+            function formatConditions(conditions) {
+  return conditions
+    .map(group =>
+      group
+        .map(({ col, op, val }) => `${col} ${op} ${val}`)
+        .join(" AND ")
+    )
+    .join("\n");
+}
+const formatted = formatConditions(req.body.Conditions)
             req.auditSuccess = true;
-            sendConditionEmail(PrivUserModel,`New codition \t condition ID ${conditionId} \t condition ${condition}`)
+            sendConditionEmail(PrivUserModel,`New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
             
             return res.json({
                 serverMsg: "Synthetic data generated successfully",
