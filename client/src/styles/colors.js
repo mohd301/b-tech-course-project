@@ -10,7 +10,8 @@ export const lightTheme = {
   altBackground: '#ffffff',
   shadowColor: "rgba(0, 0, 0, 0.5)",
   sus :"#E77D22",
-  bgGray: "#7f7f7f"
+  bgGray: "#7f7f7f",
+  greenAlt: "#65c8a7"
 };
 
 export const darkTheme = {
@@ -25,5 +26,6 @@ export const darkTheme = {
   altBackground: '#000000',  
   shadowColor: "rgba(255, 255, 255, 0.5)",
   sus:"#FF4D00",
-  bgGray: "#7f7f7f"
+  bgGray: "#7f7f7f",
+  greenAlt: "#3f7462"
 };

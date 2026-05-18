@@ -101,39 +101,21 @@ export default function RetrainModels() {
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                 <div>
                     <h2 style={{ color: theme.textColorAlt, marginBottom: "8px" }}>Model Retraining</h2>
-                    <div
-                        style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            background: "rgba(102, 187, 106, 0.14)",
-                            color: theme.textColorAlt,
-                            borderRadius: "999px",
-                            padding: "8px 14px",
-                            fontSize: "0.9rem"
-                        }}
-                    >
-                        <span>Regulator tool</span>
-                        <Badge color="success">Flask linked</Badge>
-                    </div>
                 </div>
             </div>
 
-            <Alert color="info">
-                Retrain the backend models from the dataset currently marked Active in Manage Datasets. Activate the
+            <Alert className="AlertStyle p-3">
+                <span style={{fontSize: "1.2rem"}}>
+                Retrain models from the dataset currently marked Active in Manage Datasets. Activate the
                 dataset first, then run these actions.
-            </Alert>
-
-            <Alert color="warning">
-                If retraining fails with a connectivity message, start the Flask service first with
-                `python "synthetic data/mlserver.py"`.
+                </span>
             </Alert>
 
             <Row className="g-4">
                 <Col lg="6">
                     <ResultCard
                         title="Eligibility Model"
-                        description="Rebuild the eligibility classifier from the active dataset and save the refreshed model artifact."
+                        description="Rebuild the eligibility classifier from the active dataset and save the refreshed model."
                         actionLabel="Retrain Eligibility Model"
                         onAction={() => runRetrain("retrainEmodel", setEligibilityBusy, setEligibilityResult, "Eligibility model retrained.")}
                         busy={eligibilityBusy}
@@ -171,7 +153,7 @@ export default function RetrainModels() {
                                 Eligibility retrain output
                             </CardTitle>
                             <CardText style={{ color: theme.textColorAlt, marginBottom: 0 }}>
-                                The backend returns accuracy, confusion matrix, F1 score, and recall so you can sanity-check the refreshed classifier.
+                                Get accuracy, confusion matrix, F1 score, and recall to check the refreshed classifier.
                             </CardText>
                         </CardBody>
                     </Card>
@@ -190,7 +172,7 @@ export default function RetrainModels() {
                                 Fraud retrain output
                             </CardTitle>
                             <CardText style={{ color: theme.textColorAlt, marginBottom: 0 }}>
-                                The backend returns a fraud count and a small preview of flagged rows from the newly processed active dataset.
+                                Returns fraud count and a small preview of flagged rows from the newly processed active dataset.
                             </CardText>
                         </CardBody>
                     </Card>

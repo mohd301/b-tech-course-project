@@ -1307,7 +1307,7 @@ export default function DataCreator() {
                         {serialized.errors.length > 0 ? (
                             <Alert color="danger"><div className="fw-semibold mb-2">Validation errors</div><ul className="mb-0 ps-3">{serialized.errors.map((error) => <li key={error}>{error}</li>)}</ul></Alert>
                         ) : (
-                            <Alert color="success">Payload is valid and ready to copy, download, or generate.</Alert>
+                            <Alert className="AlertStyle">Payload is valid and ready to copy, download, or generate.</Alert>
                         )}
                         <div className="d-flex gap-2 flex-wrap mb-3">
                             <Button color="dark" onClick={handleCopy} disabled={serialized.errors.length > 0}><FaCopy className="me-2" />Copy JSON</Button>

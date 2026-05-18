@@ -292,7 +292,7 @@ export default function GenerateReport() {
     const inputStyle = {
         backgroundColor: theme.altBackground,
         color: theme.textColorAlt,
-        border: `1px solid ${theme.tertiaryColor}`
+        border: `1px solid ${theme.textColorAlt}`
     };
 
     const statLabelStyle = {
@@ -534,7 +534,7 @@ export default function GenerateReport() {
                             <FaFilePdf className="me-2" />
                             Generate PDF Report
                         </Button>
-                        <Button color="secondary" outline onClick={resetFilters}>
+                        <Button color="secondary" onClick={resetFilters}>
                             Reset Filters
                         </Button>
                     </div>

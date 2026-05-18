@@ -253,7 +253,7 @@ input:disabled {
 .downloadButton {
   position: fixed;
   bottom: 10vh;
-  right: 20px;
+  right: 70px;
   height: 40px;
   border-radius: 10%;
 
@@ -642,4 +642,10 @@ LLM Chatbot
     max-width: 90%;
     font-size: 0.92rem;
   }
+}
+
+.AlertStyle{
+  background-color: var(--greenAlt); 
+  color: var(--textColorAlt); 
+  border-color: var(--textColorAlt); 
 }

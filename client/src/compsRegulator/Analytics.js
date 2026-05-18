@@ -269,9 +269,9 @@ const ChartCard = ({ title, type, data, theme, onRemove }) => {
                 <canvas ref={canvasRef} />
             </CardBody>
             <CardFooter className="py-1 text-center">
-                <small>{title}</small>
+                <small style={{color: theme.textColorAlt}}>{title}</small>
                 {onRemove && (
-                    <Button size="sm" className="ms-2" onClick={onRemove}>
+                    <Button className="simpleButton ms-2" style={{backgroundColor: theme.secondaryColor}} size="sm" onClick={onRemove}>
                         <FaTrash />
                     </Button>
                 )}
