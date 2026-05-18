@@ -94,6 +94,13 @@ beforeEach(() => {
     localStorage.clear();
 });
 
+test("Renders login form fields", () => {
+    expect(screen.getByRole("heading", { name: "Login" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("eg@email.com")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("*******")).toBeInTheDocument();
+    const loginButton = screen.getByRole("button", { name: "Login" });
+});
+
 test("Login success sets token and navigates", async () => {
 
     const emailInput = screen.getByPlaceholderText("eg@email.com");

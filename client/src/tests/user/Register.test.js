@@ -91,6 +91,9 @@ test("Renders registration form fields", () => {
     expect(screen.getByRole("heading", { name: "Register" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("eg@email.com")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("9xxx-xxxx")).toBeInTheDocument();
+    expect(screen.getAllByPlaceholderText("*******")[0]).toBeInTheDocument();
+    expect(screen.getAllByPlaceholderText("*******")[1]).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Register" })).toBeInTheDocument();
 });
 
 test("Shows validation errors on empty submit", async () => {
@@ -108,7 +111,7 @@ test("Shows validation errors on empty submit", async () => {
     });
 });
 
-test("Successful OTP flow opens modal", async () => {
+test("OTP modal shows after valid inputs", async () => {
     const emailInput = screen.getByPlaceholderText("eg@email.com");
     const phoneInput = screen.getByPlaceholderText("9xxx-xxxx");
     const registerButton = screen.getByRole("button", { name: "Register" });
