@@ -196,6 +196,7 @@ function App() {
               <HomeRegulator />
             </PrivateRoute>}>
           </Route>
+
           <Route path="/apply" element={
             <PrivateRoute allowedRoles={"User"}>
               <Apply />
@@ -218,23 +219,25 @@ function App() {
               <RetrainModels />
             </PrivateRoute>}>
           </Route>
+
           <Route path='/eanaltics' element={
             <PrivateRoute allowedRoles={["Regulator"]}>
               <Analytics context="Regulator" />
             </PrivateRoute>}>
           </Route>
+
           <Route path='/analytics' element={
             <PrivateRoute allowedRoles={["Admin"]}>
               <Analytics context="Admin" />
             </PrivateRoute>}>
           </Route>
+
           <Route path='/eligibilityInfo' element={
             <PrivateRoute allowedRoles={["Regulator"]}>
               <EligibilityInfo/>
             </PrivateRoute>}>
           </Route>
         </Routes>
-
 
         <button className="themeButton" onClick={toggleTheme} style={{ left: "20px" }}>
           {mode === "light" ? <FaMoon /> : <FaSun />}
