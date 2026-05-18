@@ -8,7 +8,7 @@ import { FaBell } from "react-icons/fa6";
 import { getUserType } from "../functions/getUserType.js";
 import { useTheme } from "./ThemeContext.js";
 import { determineRoute } from "../functions/determineRoute.js";
-import { fetchELInfoThunk } from "../slices/SlicePriv.js";
+import { fetchAggregatedUserInfo } from "../slices/SlicePriv.js";
 import { fetchRulesThunk } from "../slices/SlicePriv.js";
 
 import Logout from "./Logout.js";
@@ -23,17 +23,19 @@ export default function Navbar() {
 
     useEffect(() => {
         if (type === "Regulator") {
-            dispatch(fetchELInfoThunk())
+            dispatch(fetchAggregatedUserInfo())
         }
         if (type === "Admin") {
             dispatch(fetchRulesThunk())
         }
     }, [dispatch, type]);
 
-    const elInfo = useSelector((state) => state.priv.elInfo)
+    const elInfo = useSelector((state) => state.priv.userEligibility)
     const rulesInfo = useSelector((state) => state.priv.rules)
     const rulesNew = rulesInfo?.[0]?.conditions || []
-    const frauds = elInfo.filter(el => el.Fraud === 1)
+    const frauds = elInfo.filter(user =>
+        user.Fraud > 0 || user.eligibilityInfo?.Fraud > 0
+    )
 
     let sentence
     if (type === "Regulator" && frauds.length > 0){
