@@ -8,7 +8,8 @@ const ELinkSchema = new mongoose.Schema(
         Fraud: { type: Number, required: true, default: 0 },
         Eligibility:{type:Number,required:true},
         Reason:{type:String,required:false},
-        Gove:{type:String,required:true}
+        Gove:{type:String,required:true},
+        FraudReason:{type:String,required:false},
     },
     {
         versionKey: false,timestamps:true,

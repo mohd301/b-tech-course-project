@@ -41,7 +41,7 @@ const EligibilityInfo = () => {
             toast.error("Failed to delete user");
         }
     };
-
+    
     return (
         <div className="d-flex" style={{ background: theme.primaryBackground, minHeight: "82.1vh" }}>
 
@@ -111,8 +111,8 @@ const EligibilityInfo = () => {
                                 <p style={{ color: theme.textColorAlt }}><strong>Email:</strong> {user.Email}</p>
                                 <p style={{ color: theme.textColorAlt }}><strong>Phone:</strong> {user.Phone}</p>
                                 <p style={{ color: theme.textColorAlt }}><strong>National ID:</strong> {user.eligibilityInfo?.NationalID}</p>
-                                {user.eligibilityInfo?.Reason && (
-                                    <p style={{ color: theme.textColorAlt }}><strong>Reason:</strong> {user.eligibilityInfo.Reason}</p>
+                                {user.eligibilityInfo?.FraudReason && (
+                                    <p style={{ color: theme.textColorAlt }}><strong>Reason:</strong> {user.eligibilityInfo?.FraudReason}</p>
                                 )}
                             </div>
 

@@ -1227,7 +1227,8 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                         Fraud: data.Fraud,
                         Eligibility: data.Eligibity,
                         Reason: eligibilityReason,
-                        Gove: data.Gove
+                        Gove: data.Gove,
+                        FraudReason:data.Fraudreson
 
                     }
                     await ELinkModel.create(newdata)
@@ -1657,16 +1658,7 @@ subsidyApp.delete('/delcondition', async (req, res) => {
     }
 })
 
-subsidyApp.get('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", id: req => req.params.id }), async (req, res) => {
-    try {
-        const data = await ELinkModel.find(Fraud = 1)
-        res.auditSuccess
-        res.json({ serverMsg: 'Success', flag: true, data })
-    } catch (e) {
-        console.log(e)
-        res.json({ serverMsg: "Failed", flag: false })
-    }
-})
+
 
 subsidyApp.put('/viewFruad', authAudit, audit("REGULATOR", { type: "REGULATOR", id: req => req.params.id }), async (req, res) => {
     try {
