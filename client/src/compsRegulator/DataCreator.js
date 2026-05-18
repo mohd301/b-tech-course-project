@@ -431,7 +431,38 @@ function serializeRequest(state) {
     if (nEligible !== null) payload.n_eligible = nEligible;
     if (nIneligible !== null) payload.n_ineligible = nIneligible;
     if (fraudFraction !== null) payload.fraud_fraction = fraudFraction;
-
+        payload.Age=0                    
+        payload.Gender=0                  
+        payload.Marital_Status=0                
+        payload.Governorate=0            
+        payload.Household_Size=0          
+        payload.Salary=0                  
+        payload.Degree_Level=0             
+        payload.Employment_Status=0              
+        payload.Primary_Income_Source=0     
+        payload.Has_Other_Social_Benefits=0           
+        payload.Assets_Value=0             
+        payload.Liabilities_Value=0        
+        payload.Number_of_Children=0       
+        payload.Working_Children_Count=0    
+        payload.Total_Spouse_Income=0           
+        payload.Total_Children_Income=0          
+        payload.Total_Household_Income=0       
+        payload.Vehicle_Ownership=0           
+        payload.Vehicle_Count=0
+        payload.Cylinder_Count=0           
+        payload.Vehicle_Age_Years=0              
+        payload.Fuel_Type=0                
+        payload.Expected_Fuel_Consumption_L=0 
+        payload.Average_Fuel_Consumption_L=0 
+        payload.Fuel_Deviation_L=true 
+        payload.Fuel_Deviation_Ratio=true
+        payload.Previous_Subsidy_Received=0         
+        payload.Late_or_Missed_Renewals=0            
+        payload.Applications_Last_12_Months=0
+        payload.fraudmulti=0
+        payload.Conditions=0 
+        payload.ID=true           
     if (state.sections.Age) {
         const center = parseRequiredNumber(state.age.Center, "Age center", errors);
         const scale = parseRequiredNumber(state.age.Scale, "Age scale", errors, { min: 0 });
@@ -805,7 +836,7 @@ export default function DataCreator() {
 
     const serialized = serializeRequest(formState);
     const previewText = JSON.stringify(serialized.payload, null, 2);
-
+    console.log(previewText)
     const sectionWrapperStyle = {
         border: "1px solid rgba(102, 187, 106, 0.18)",
         borderRadius: "12px",

@@ -1309,6 +1309,20 @@ subsidyApp.post("/createData",
                 req.auditSuccess = false;
                 return res.status(400).json({ serverMsg: "Invalid synthetic data payload", flag: false });
             }
+            let c= req.body.Conditions
+            if(c===0){
+                c= [[{col:"Salary",op:"<=",value:600},
+                    {col:"Total_Household_Income",op:"<=",value:900},
+                    {col:"Vehicle_Ownership",op:"==",value:1}],
+                    [{col:"Marital_Status",op:"==",value:'Married'},
+                    {col:"Number_of_Children",op:">=",value:1},
+                    {col:"Vehicle_Ownership",op:"==",value:1}],
+                    [{col:"Age",op:"between",value:[18, 24]}
+                    ,{col:"Employment_Status",op:"isin",value:['Student', 'Unemployed']}
+                    ,{col:"Vehicle_Ownership",op:"==",value:1}]]
+                            
+            } 
+            console.log(c)
             const condition = await ConditionModel.create({
                 name: req.body.name || "synthetic_subsidy_cylinders",
                 createdBy: req.user.username || req.user.id,
@@ -1316,7 +1330,7 @@ subsidyApp.post("/createData",
                 rowCount: req.body.rowCount || 0,
                 fraud_fraction: req.body.fraud_fraction || 0,
                 fraudmulti: req.body.fraudmulti || {},
-                conditions: req.body.Conditions,
+                conditions: c,
             });
 
             const flaskPayload = {
@@ -1352,7 +1366,7 @@ subsidyApp.post("/createData",
                 });
             }
             const csvContent = typeof responseData.Data === "string" ? responseData.Data : JSON.stringify(responseData.Data);
-            console.log(csvContent)
+            
             const lines = csvContent.trim().split("\n");
             const columns = lines[0] ? lines[0].split(",").map(c => c.trim()) : [];
             const rowCount = lines.length - 1;
@@ -1370,8 +1384,9 @@ subsidyApp.post("/createData",
                 conditionId: condition._id,
             })
 
-            console.log(req.body.Conditions)
+            
             function formatConditions(conditions) {
+                if(typeof condition === Object){
                 return conditions
                     .map(group =>
                         group
@@ -1379,7 +1394,11 @@ subsidyApp.post("/createData",
                             .join(" AND ")
                     )
                     .join("\n");
-            }
+            }else{
+                conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
+                        
+            }}
+            
             const formatted = formatConditions(req.body.Conditions)
             req.auditSuccess = true;
             sendConditionEmail(PrivUserModel, `New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
