@@ -267,29 +267,11 @@ function getInitialState() {
         },
         // ─────────────────────────────────────────────────────
         conditionGroups: [createGroup()],
-        advancedOverrides: ""
     };
 }
 
 function isPlainObject(value) {
     return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function mergeDeep(target, source) {
-    if (!isPlainObject(target) || !isPlainObject(source)) {
-        return source;
-    }
-
-    const output = { ...target };
-    for (const [key, value] of Object.entries(source)) {
-        if (isPlainObject(value) && isPlainObject(output[key])) {
-            output[key] = mergeDeep(output[key], value);
-        } else {
-            output[key] = value;
-        }
-    }
-
-    return output;
 }
 
 function parseRequiredNumber(value, label, errors, options = {}) {
@@ -765,24 +747,10 @@ function serializeRequest(state) {
         }
     }
 
-    let advancedOverrides = {};
-    if (state.advancedOverrides.trim()) {
-        try {
-            advancedOverrides = JSON.parse(state.advancedOverrides);
-            if (!isPlainObject(advancedOverrides)) {
-                errors.push("Advanced overrides must be a JSON object.");
-            }
-        } catch (error) {
-            errors.push("Advanced overrides must be valid JSON.");
-        }
-    }
-
-    const mergedPayload = mergeDeep(payload, advancedOverrides);
-
     return {
         errors,
-        payload: mergedPayload,
-        legacyPayload: normalizeLegacyPayload(mergedPayload)
+        payload: payload,
+        legacyPayload: normalizeLegacyPayload(payload)
     };
 }
 
@@ -1332,21 +1300,6 @@ export default function DataCreator() {
                         )}
                     </InfoCard>
 
-                    <InfoCard title="Advanced Overrides" theme={theme}>
-                        <CardText style={{ color: theme.textColorAlt }}>
-                            Advanced overrides merge last, so they can add new top-level generator objects or replace the guided ones. This is the right place for fields like Applications_Last_12_Months, Late_or_Missed_Renewals, Average_Fuel_Consumption_L, or Expected_Fuel_Consumption_L.
-                        </CardText>
-                        <Label for="advancedOverrides" style={{ color: theme.textColorAlt }}>Advanced Overrides</Label>
-                        <Input
-                            id="advancedOverrides"
-                            type="textarea"
-                            rows="10"
-                            value={formState.advancedOverrides}
-                            onChange={(e) => setFormState((current) => ({ ...current, advancedOverrides: e.target.value }))}
-                            placeholder={"{\n  \"Applications_Last_12_Months\": { \"lam\": 1.0 },\n  \"Late_or_Missed_Renewals\": { \"lam\": 0.3 },\n  \"Expected_Fuel_Consumption_L\": { \"cylinder_map\": { \"4\": 100, \"6\": 130, \"8\": 160 } },\n  \"Average_Fuel_Consumption_L\": { \"noise_mean\": 0, \"noise_std\": 30 }\n}"}
-                            style={{ ...inputStyle, fontFamily: "Consolas, monospace" }}
-                        />
-                    </InfoCard>
                 </Col>
 
                 <Col xl="5">
