@@ -175,7 +175,7 @@ async function getEligibilityResultForUser(userId) {
 
 const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET
-const JWT_EXPIRES = "1h"
+const JWT_EXPIRES = "2h"
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite"
 const LLM_SYSTEM_PROMPT_BASE = `You are the official assistant for the Online Fuel Subsidy Eligibility System.
 
@@ -1228,7 +1228,7 @@ subsidyApp.get("/Eligibility/:ID/:_id",
                         Eligibility: data.Eligibity,
                         Reason: eligibilityReason,
                         Gove: data.Gove,
-                        FraudReason:data.Fraudreson
+                        FraudReason: data.Fraudreson
 
                     }
                     await ELinkModel.create(newdata)
@@ -1532,7 +1532,7 @@ subsidyApp.post('/retrainImodel',
     }
 )
 
-subsidyApp.get("/eligibility_analytics", audit("GET_analytics", { type: "USER", id: req => "Analytics" }), async (req, res) => {
+subsidyApp.get("/eligibility_analytics", audit("GET_ANALYTICS", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
         const filters = buildEligibilityFilter(req.query)
         const data = await ELinkModel.find(filters);
@@ -1550,7 +1550,7 @@ subsidyApp.get("/eligibility_analytics", audit("GET_analytics", { type: "USER", 
     }
 })
 
-subsidyApp.get("/eligibility_analytics/monthly", audit("GET_analytics_monthly", { type: "USER", id: req => "Analytics" }), async (req, res) => {
+subsidyApp.get("/eligibility_analytics/monthly", audit("GET_ANALYTICS_MONTHLY", { type: "USER", id: req => "Analytics" }), async (req, res) => {
     try {
         const filters = buildEligibilityFilter(req.query)
         const data = await ELinkModel.aggregate([
@@ -1704,6 +1704,22 @@ subsidyApp.get('/getAggregatedUserInfo', audit("GET_USERS_ELIGIBILITY", {
         ]);
         req.auditSuccess = true;
         res.json({ serverMsg: "User Eligibility info fetched successfully!", data: result, flag: true })
+    } catch (err) {
+        req.auditSuccess = false;
+        console.log(err)
+    }
+})
+
+subsidyApp.get("/getConditions", audit("GET_RULES", {
+    type: "Rules",
+    id: req => "all_rules"
+}), async (req, res) => {
+    try {
+        req.auditActor = "SYSTEM";
+        const result = await ConditionModel.find().sort({ createdAt: -1 })
+
+        req.auditSuccess = true;
+        res.json({ serverMsg: "New Rules fetched successfully!", data: result, flag: true })
     } catch (err) {
         req.auditSuccess = false;
         console.log(err)

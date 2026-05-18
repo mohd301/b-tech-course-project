@@ -289,6 +289,17 @@ export const deleteUserEligibilityThunk = createAsyncThunk("privSlice/deleteUser
     }
 })
 
+// Admin: Fetch new Conditions
+export const fetchRulesThunk = createAsyncThunk("privSlice/fetchRulesThunk", async () => {
+    try {
+        const response = await axios.get(`http://localhost:${process.env.REACT_APP_PORT}/getConditions`)
+        return (response.data)
+    } catch (err) {
+        console.log(err)
+        throw (err)
+    }
+})
+
 const initialState = {
     msg: null,
     userList: [],
@@ -300,7 +311,8 @@ const initialState = {
     flag: false,
     analytic:{},
     manalytis:[],
-    userEligibility: []
+    userEligibility: [],
+    rules: []
     
 }
 
@@ -589,6 +601,24 @@ const privSlice = createSlice(
                 state.loading = false
             })
 
+            // Regulator: Delete user Eligibility
+            builder.addCase(fetchRulesThunk.pending, (state, action) => {
+                state.loading = true
+                state.msg = ""
+            })
+
+            builder.addCase(fetchRulesThunk.fulfilled, (state, action) => {
+                state.rules = action.payload.data
+                state.msg = action.payload.serverMsg
+                state.flag = action.payload.flag
+                state.loading = false
+            })
+
+            builder.addCase(fetchRulesThunk.rejected, (state, action) => {
+                state.msg = action.error.message
+                state.flag = false
+                state.loading = false
+            })
         }
     }
 )
