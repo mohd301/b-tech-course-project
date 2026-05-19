@@ -112,8 +112,8 @@ function createGroup() {
 function getInitialState() {
     return {
         basics: {
-            n_eligible: "500",
-            n_ineligible: "300",
+            Total_records: "800",
+            
             fraud_fraction: "0.1"
         },
         sections: {
@@ -409,18 +409,13 @@ function serializeRequest(state) {
     const errors = [];
     const payload = {};
 
-    const nEligible = parseRequiredNumber(
-        state.basics.n_eligible,
-        "Eligible record count",
+    const Totalrecords = parseRequiredNumber(
+        state.basics.Total_records,
+        "Total record count",
         errors,
         { integer: true, min: 1, allowZero: false }
     );
-    const nIneligible = parseRequiredNumber(
-        state.basics.n_ineligible,
-        "Ineligible record count",
-        errors,
-        { integer: true, min: 1, allowZero: false }
-    );
+    
     const fraudFraction = parseRequiredNumber(
         state.basics.fraud_fraction,
         "Top-level fraud fraction",
@@ -428,8 +423,8 @@ function serializeRequest(state) {
         { min: 0.000001, max: 0.999999, allowZero: false }
     );
 
-    if (nEligible !== null) payload.n_eligible = nEligible;
-    if (nIneligible !== null) payload.n_ineligible = nIneligible;
+    if (Totalrecords !== null) payload.Total_records = Totalrecords;
+    
     if (fraudFraction !== null) payload.fraud_fraction = fraudFraction;
         payload.Age=0                    
         payload.Gender=0                  
@@ -1020,8 +1015,8 @@ export default function DataCreator() {
 
                     <InfoCard title="Basic Setup" theme={theme}>
                         <Row className="g-3">
-                            <Col md="4"><FormGroup><Label for="nEligible" style={{ color: theme.textColorAlt }}>Number of eligible records</Label><Input id="nEligible" type="number" value={formState.basics.n_eligible} onChange={(e) => updateBasics("n_eligible", e.target.value)} style={inputStyle} /></FormGroup></Col>
-                            <Col md="4"><FormGroup><Label for="nIneligible" style={{ color: theme.textColorAlt }}>Number of ineligible records</Label><Input id="nIneligible" type="number" value={formState.basics.n_ineligible} onChange={(e) => updateBasics("n_ineligible", e.target.value)} style={inputStyle} /></FormGroup></Col>
+                            <Col md="4"><FormGroup><Label for="Total_records" style={{ color: theme.textColorAlt }}>Number records</Label><Input id="Total_records" type="number" value={formState.basics.Total_records} onChange={(e) => updateBasics("Total_records", e.target.value)} style={inputStyle} /></FormGroup></Col>
+                            
                             <Col md="4"><FormGroup><Label for="fraudFraction" style={{ color: theme.textColorAlt }}>Top-level fraud fraction</Label><Input id="fraudFraction" type="number" step="0.01" value={formState.basics.fraud_fraction} onChange={(e) => updateBasics("fraud_fraction", e.target.value)} style={inputStyle} /></FormGroup></Col>
                         </Row>
                     </InfoCard>
