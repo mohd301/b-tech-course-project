@@ -85,7 +85,6 @@ async function writeDatasetForMl(dataset) {
         //DONT ADD ANYTHING HERE
     }
     await fs.writeFile(ML_TRAINING_DATASET_PATH, dataset.content, "utf-8")
-    console.log(dataset.content)
     return {
         activeFile: toMlPath(ML_TRAINING_DATASET_PATH)
     }
@@ -813,7 +812,6 @@ subsidyApp.post(
     async (req, res) => {
         try {
             const userEmail = req.body.Email;
-            console.log('a')
             const userExist = await UserModel.findOne({ Email: userEmail });
 
             if (!userExist) {
@@ -1487,20 +1485,19 @@ subsidyApp.post("/createData",
                 req.auditSuccess = false;
                 return res.status(400).json({ serverMsg: "Invalid synthetic data payload", flag: false });
             }
-            let c= req.body.Conditions
-            if(c===0){
-                c= [[{col:"Salary",op:"<=",value:600},
-                    {col:"Total_Household_Income",op:"<=",value:900},
-                    {col:"Vehicle_Ownership",op:"==",value:1}],
-                    [{col:"Marital_Status",op:"==",value:'Married'},
-                    {col:"Number_of_Children",op:">=",value:1},
-                    {col:"Vehicle_Ownership",op:"==",value:1}],
-                    [{col:"Age",op:"between",value:[18, 24]}
-                    ,{col:"Employment_Status",op:"isin",value:['Student', 'Unemployed']}
-                    ,{col:"Vehicle_Ownership",op:"==",value:1}]]
-                            
-            } 
-            console.log(c)
+            let c = req.body.Conditions
+            if (c === 0) {
+                c = [[{ col: "Salary", op: "<=", value: 600 },
+                { col: "Total_Household_Income", op: "<=", value: 900 },
+                { col: "Vehicle_Ownership", op: "==", value: 1 }],
+                [{ col: "Marital_Status", op: "==", value: 'Married' },
+                { col: "Number_of_Children", op: ">=", value: 1 },
+                { col: "Vehicle_Ownership", op: "==", value: 1 }],
+                [{ col: "Age", op: "between", value: [18, 24] }
+                    , { col: "Employment_Status", op: "isin", value: ['Student', 'Unemployed'] }
+                    , { col: "Vehicle_Ownership", op: "==", value: 1 }]]
+
+            }
             const condition = await ConditionModel.create({
                 name: req.body.name || "synthetic_subsidy_cylinders",
                 createdBy: req.user.username || req.user.id,
@@ -1543,43 +1540,72 @@ subsidyApp.post("/createData",
                     data: responseData
                 });
             }
-            const csvContent = typeof responseData.Data === "string" ? responseData.Data : JSON.stringify(responseData.Data);
-            
-            const lines = csvContent.trim().split("\n");
-            const columns = lines[0] ? lines[0].split(",").map(c => c.trim()) : [];
-            const rowCount = lines.length - 1;
+
+            const rawContent = typeof responseData.Data === "string"
+                ? responseData.Data
+                : JSON.stringify(responseData.Data);
+
+            let objects;
+            try {
+                objects = JSON.parse(rawContent);
+            } catch (e) {
+                throw new Error("Invalid JSON format: expected a JSON array");
+            }
+
+            if (!Array.isArray(objects)) {
+                throw new Error("Expected data to be an array of objects");
+            }
+
+            // Row count = number of objects
+            const rowCount = objects.length;
+
+            // Collect unique keys (columns)
+            const columnSet = new Set();
+            objects.forEach(obj => {
+                if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+                    Object.keys(obj).forEach(key => columnSet.add(key));
+                }
+            });
+
+            const columns = Array.from(columnSet);
             const columnCount = columns.length;
+
+            // Save dataset
             const dataset = await DatasetModel.create({
                 originalName: (req.body.name || "synthetic_subsidy_cylinders") + ".csv",
-                fileSize: Buffer.byteLength(csvContent, "utf8"),
+                fileSize: Buffer.byteLength(rawContent, "utf8"),
                 uploadedBy: req.user.username || req.user.id,
                 uploaderId: req.user.id,
                 rowCount,
                 columnCount,
                 columns,
-                content: csvContent,
+                content: rawContent,
                 description: req.body.description || "Synthetic dataset",
                 conditionId: condition._id,
-            })
+            });
 
-            
             function formatConditions(conditions) {
-                if(typeof condition === Object){
-                return conditions
-                    .map(group =>
-                        group
-                            .map(({ col, op, val }) => `${col} ${op} ${val}`)
-                            .join(" AND ")
-                    )
-                    .join("\n");
-            }else{
-                conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
-                        
-            }}
-            
+                if ( conditions === 0) {
+                    return conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
+                    
+                } else {
+                     return conditions
+                        .map(group =>
+                            group
+                                .map(({ col, op, val }) => `${col} ${op} ${val}`)
+                                .join(" AND ")
+                        )
+                        .join("\n");
+                }
+            }
+
+ 
             const formatted = formatConditions(req.body.Conditions)
+         
+           
+
             req.auditSuccess = true;
-            sendConditionEmail(PrivUserModel, `New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
+            sendConditionEmail(PrivUserModel, `New conditions has been added! the condition ID is: ${condition._id} \n Conditions are: \n ${formatted}`)
 
             return res.json({
                 serverMsg: "Synthetic data generated successfully",
@@ -1650,11 +1676,14 @@ subsidyApp.post('/retrainEmodel',
                     : responseData.error || "Eligibility model retraining failed",
                 flag: response.ok,
                 data: {
-                    ...responseData,
-                    activeDataset: datasetSummary(activeDatasetSync.dataset),
-                    mlFiles: activeDatasetSync.files,
-                    mlServerDatasetSync: activeDatasetSync.mlServer
-                }
+                    accuracy_score: responseData['accuracy_score'],
+                    confusion_matrix: responseData['confusion_matrix'],
+                    F1_score: responseData['F1_score'],
+                    Recall_score: responseData['Recall_score'],
+
+                }, activeDataset: datasetSummary(activeDatasetSync.dataset),
+                mlFiles: activeDatasetSync.files,
+                mlServerDatasetSync: activeDatasetSync.mlServer
             });
         } catch (e) {
             req.auditSuccess = false;
@@ -1704,7 +1733,12 @@ subsidyApp.post('/retrainImodel',
             } catch (parseError) {
                 responseData = { raw: rawText };
             }
-
+            if (response.ok && responseData.Data) {
+                await DatasetModel.findByIdAndUpdate(
+                    activeDatasetSync.dataset._id,
+                    { $set: { content: JSON.stringify(responseData.Data) } }
+                )
+            }
             req.auditSuccess = response.ok;
             return res.status(response.ok ? 200 : response.status).json({
                 serverMsg: response.ok
@@ -1712,11 +1746,11 @@ subsidyApp.post('/retrainImodel',
                     : responseData.error || "Fraud model retraining failed",
                 flag: response.ok,
                 data: {
-                    ...responseData,
-                    activeDataset: datasetSummary(activeDatasetSync.dataset),
-                    mlFiles: activeDatasetSync.files,
-                    mlServerDatasetSync: activeDatasetSync.mlServer
-                }
+                    fraud: responseData['5_fruad_user'],
+
+                }, activeDataset: datasetSummary(activeDatasetSync.dataset),
+                mlFiles: activeDatasetSync.files,
+                mlServerDatasetSync: activeDatasetSync.mlServer
             });
         } catch (e) {
             req.auditSuccess = false;
