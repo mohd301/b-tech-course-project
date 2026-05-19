@@ -119,7 +119,7 @@ export default function RetrainModels() {
                         actionLabel="Retrain Eligibility Model"
                         onAction={() => runRetrain("retrainEmodel", setEligibilityBusy, setEligibilityResult, "Eligibility model retrained.")}
                         busy={eligibilityBusy}
-                        result={eligibilityResult}
+                        result={eligibilityResult?.data}
                         theme={theme}
                         accent="rgba(102, 187, 106, 0.25)"
                     />
@@ -131,7 +131,7 @@ export default function RetrainModels() {
                         actionLabel="Retrain Fraud Model"
                         onAction={() => runRetrain("retrainImodel", setFraudBusy, setFraudResult, "Fraud model retrained.")}
                         busy={fraudBusy}
-                        result={fraudResult}
+                        result={fraudResult?.data}
                         theme={theme}
                         accent="rgba(255, 167, 38, 0.28)"
                     />

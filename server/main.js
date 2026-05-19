@@ -1496,11 +1496,14 @@ subsidyApp.post('/retrainEmodel',
                     : responseData.error || "Eligibility model retraining failed",
                 flag: response.ok,
                 data: {
-                    ...responseData,
-                    activeDataset: datasetSummary(activeDatasetSync.dataset),
+                    accuracy_score:responseData['accuracy_score'],
+                    confusion_matrix:responseData['confusion_matrix'],
+                    F1_score:responseData['F1_score'],
+                    Recall_score:responseData['Recall_score'],
+                    
+                },activeDataset: datasetSummary(activeDatasetSync.dataset),
                     mlFiles: activeDatasetSync.files,
                     mlServerDatasetSync: activeDatasetSync.mlServer
-                }
             });
         } catch (e) {
             req.auditSuccess = false;
@@ -1550,7 +1553,7 @@ subsidyApp.post('/retrainImodel',
             } catch (parseError) {
                 responseData = { raw: rawText };
             }
-
+            console.log(responseData["5_fruad_user"])
             req.auditSuccess = response.ok;
             return res.status(response.ok ? 200 : response.status).json({
                 serverMsg: response.ok
@@ -1558,11 +1561,11 @@ subsidyApp.post('/retrainImodel',
                     : responseData.error || "Fraud model retraining failed",
                 flag: response.ok,
                 data: {
-                    ...responseData,
-                    activeDataset: datasetSummary(activeDatasetSync.dataset),
+                    fraud:responseData['5_fruad_user'],
+                    
+                },activeDataset: datasetSummary(activeDatasetSync.dataset),
                     mlFiles: activeDatasetSync.files,
                     mlServerDatasetSync: activeDatasetSync.mlServer
-                }
             });
         } catch (e) {
             req.auditSuccess = false;
