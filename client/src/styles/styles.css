@@ -158,9 +158,9 @@ a:hover {
 }
 
 .Toastify__toast {
-  background: var(--altBackground);
-  color: var(--textColorAlt);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  background: var(--altBackground) !important;
+  color: var(--textColorAlt) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25) !important;
 }
 
 .Toastify__close-button {
