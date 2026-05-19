@@ -172,7 +172,7 @@ export default function RetrainModels() {
                                 Fraud retrain output
                             </CardTitle>
                             <CardText style={{ color: theme.textColorAlt, marginBottom: 0 }}>
-                                Returns fraud count and a small preview of flagged rows from the newly processed active dataset.
+                                Returns a small preview of flagged rows from the newly processed active dataset.
                             </CardText>
                         </CardBody>
                     </Card>
