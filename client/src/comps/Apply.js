@@ -96,10 +96,9 @@ export default function Apply() {
                     }
                 }
             })
-
-            const idMatch = data.text.match(/\b[0-9]{6,12}\b/)
-            const dateMatch = data.text.match(/\b(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[0-2])[\/\-](19|20)[2]\d{1}\b|\b(0?[1-9]|[12][0-9]|3[01])\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(19|20)[2]\d{1}\b/i)
-            console.log(dateMatch[0])
+            console.log(data.text)
+            const idMatch = data.text.match(/\b[0-9]{8}\b/)
+           const dateMatch = data.text.match(/\b(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[0-2])\/(19|20)\d{2}\b/)
             if (idMatch && dateMatch) {
                 const [day, month, year] = dateMatch[0].split("/").map(Number)
                 const expiryDate = new Date(year, month - 1, day)
