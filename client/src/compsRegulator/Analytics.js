@@ -35,7 +35,7 @@ const MONTHS = [
 ];
 
 function getAreaNum(govArray) {
-    const num = { Muscat: 15, Dhofar: 10, Sur: 10, Nizwa: 1, Sohar: 10 };
+    const num = { Muscat: 0, Dhofar: 0, Sur: 0, Nizwa: 0, Sohar: 0 };
     if (!Array.isArray(govArray)) return num;
 
     govArray.forEach((gov) => {
