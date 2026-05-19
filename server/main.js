@@ -177,12 +177,17 @@ const PORT = process.env.PORT;
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_EXPIRES = "2h"
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite"
+const DEFAULT_ELIGIBILITY_RULES_REPLY = `The default eligibility rules in this platform are:
+1. You may be eligible if your salary is 600 or less, your total household income is 900 or less, and you own a vehicle.
+2. You may be eligible if you are married, have at least one child, and own a vehicle.
+3. You may be eligible if you are between 18 and 24 years old, are a student or unemployed, and own a vehicle.`
+const APPLY_HELP_REPLY = "To apply for the fuel subsidy, go to the Apply Now page and scan your Civil ID. Would you like help finding the Apply Now page?"
 const LLM_SYSTEM_PROMPT_BASE = `You are the official assistant for the Online Fuel Subsidy Eligibility System.
 
 Your job is to help users only with tasks related to this system and the fuel subsidy process, including:
 - applying for the fuel subsidy
 - understanding fuel subsidy eligibility requirements as presented in this platform
-- explaining what information or documents the user may need for the application
+- explaining that the only applicant-provided requirement for the application is a Civil ID scan because the other information is already in the system
 - helping users navigate pages and features in the system
 - helping users use the map or location-related features inside this platform
 - helping with login, password reset, OTP, and account access issues
@@ -202,6 +207,7 @@ Rules:
 
 Behavior:
 - For application questions, guide the user step by step through the fuel subsidy process in this system.
+- For apply-help questions, say the user needs to scan their Civil ID and ask if they would like help finding the Apply Now page. Do not mention household income, vehicle details, marital status, children, student status, employment status, personal details, or that other information is already in the system.
 - When the user asks about application status, use only the applicant-facing eligibility context below. If no application result is available, tell them to apply first.
 - If the applicant-facing status says the application needs further review, say only that it needs further review. Do not say the applicant is eligible or not eligible.
 - If the applicant-facing status says not eligible and a reason is present, explain that reason in simple words. For example, if the reason is Salary, say the salary was too high for the model result.
@@ -309,10 +315,145 @@ async function buildEligibilityContext(userId) {
     return `Current applicant-facing application status: ${eligibilityResult.ApplicantMessage}${reasonText}`
 }
 
-async function buildSystemPrompt(userId) {
+function normalizeUserType(userType) {
+    return ["User", "Admin", "Regulator", "Guest"].includes(userType) ? userType : "Guest"
+}
+
+function buildRolePrompt(userType) {
+    if (userType === "Admin") {
+        return `Current user type: Admin.
+Admin recommendation use case:
+- If the admin asks for a recommendation or suggestion, focus on audit review only.
+- Recommend checking failed login attempts, repeated OTP/password failures, unusual admin actions, and unsuccessful recent requests.
+- If the admin asks for regulator or fraud-review recommendations, say that recommendation is only for regulator users and offer an audit recommendation instead.
+- Do not claim you reviewed live audit logs unless the admin provides audit details in the chat.`
+    }
+
+    if (userType === "Regulator") {
+        return `Current user type: Regulator.
+Regulator recommendation use case:
+- If the regulator asks for a recommendation or suggestion, focus on suspected fraud review only.
+- Recommend checking fraud indicators such as unusual fuel consumption, repeated applications, missed renewals, and fraud reason details.
+- If the regulator asks for admin audit recommendations, say that recommendation is only for admin users and offer a suspected fraud review recommendation instead.
+- Do not claim you confirmed fraud. Say suspected fraud needs review and evidence checking.`
+    }
+
+    if (userType === "Guest") {
+        return `Current user type: Guest.
+Guest chat behavior:
+- The guest is not logged in.
+- Help with general platform questions such as how to apply, map help, password help, and default eligibility rules.
+- If the guest asks for application status, tell them they need to log in first.
+- If the guest asks for admin, audit, regulator, or fraud recommendations, say those recommendations require the correct logged-in role.`
+    }
+
+    return `Current user type: User.
+Applicant recommendation use case:
+- Help applicants with applying, status, map, login, password, and OTP questions.
+- If applicants ask for eligibility rules, explain these default rules in simple sentences:
+${DEFAULT_ELIGIBILITY_RULES_REPLY}
+- If applicants ask for admin, audit, regulator, or fraud recommendations, say that those recommendations are not available for applicant users.
+- Never use the word fraud with applicants.`
+}
+
+function getChatUserFromToken(req) {
+    const token = req.headers?.authorization?.split(" ")[1]
+    if (!token) return null
+
+    try {
+        return jwt.verify(token, JWT_SECRET)
+    } catch {
+        return null
+    }
+}
+
+function isRecommendationQuestion(text) {
+    if (typeof text !== "string") return false
+
+    const normalizedText = text.toLowerCase()
+    return (
+        normalizedText.includes("recommend") ||
+        normalizedText.includes("suggest") ||
+        normalizedText.includes("review")
+    )
+}
+
+function isEligibilityRulesQuestion(text) {
+    if (typeof text !== "string") return false
+
+    const normalizedText = text.toLowerCase()
+    return (
+        normalizedText.includes("eligibility") &&
+        (
+            normalizedText.includes("rule") ||
+            normalizedText.includes("requirement") ||
+            normalizedText.includes("criteria") ||
+            normalizedText.includes("qualify")
+        )
+    )
+}
+
+function isApplyHelpQuestion(text) {
+    if (typeof text !== "string") return false
+
+    const normalizedText = text.toLowerCase()
+    return (
+        normalizedText.includes("apply") &&
+        (
+            normalizedText.includes("help") ||
+            normalizedText.includes("how") ||
+            normalizedText.includes("start") ||
+            normalizedText.includes("requirement") ||
+            normalizedText.includes("subsidy")
+        )
+    )
+}
+
+function buildRoleAccessReply(userType, text) {
+    if (!isRecommendationQuestion(text)) return null
+
+    const normalizedText = text.toLowerCase()
+
+    if (userType === "Admin" && (normalizedText.includes("regulator") || normalizedText.includes("fraud"))) {
+        return "That recommendation is only for regulator users. As an admin, I can suggest one audit activity to review, such as checking recent failed login attempts."
+    }
+
+    if (userType === "Regulator" && (normalizedText.includes("admin") || normalizedText.includes("audit"))) {
+        return "That recommendation is only for admin users. As a regulator, I can suggest one suspected fraud indicator to review, such as unusual fuel consumption compared with expected usage."
+    }
+
+    if (userType === "User" && (
+        normalizedText.includes("admin") ||
+        normalizedText.includes("audit") ||
+        normalizedText.includes("regulator") ||
+        normalizedText.includes("fraud")
+    )) {
+        return "That recommendation is not available for applicant users. I can help you apply, check your application status, use the map, or fix login and password issues."
+    }
+
+    if (userType === "Guest" && (
+        normalizedText.includes("admin") ||
+        normalizedText.includes("audit") ||
+        normalizedText.includes("regulator") ||
+        normalizedText.includes("fraud")
+    )) {
+        return "That recommendation requires the correct logged-in role. I can still help with general application steps, map help, password help, or eligibility rules."
+    }
+
+    return null
+}
+
+async function buildSystemPrompt(userId, userType = "User") {
+    const normalizedUserType = normalizeUserType(userType)
+    const eligibilityContext = normalizedUserType === "User"
+        ? await buildEligibilityContext(userId)
+        : "Current applicant-facing application status is not available for this user type."
+
     return `${LLM_SYSTEM_PROMPT_BASE}
 
-${await buildEligibilityContext(userId)}`
+${buildRolePrompt(normalizedUserType)}
+
+${eligibilityContext}`
 }
 
 const DATE_PRESETS = new Set(["today", "last7", "last30", "thisMonth", "thisYear"])
@@ -422,6 +563,7 @@ subsidyApp.post("/llm/chat", async (req, res) => {
     if (!geminiClient) {
         return res.status(500).json({ serverMsg: "Gemini API key is missing on the server." })
     }
+    const chatUser = getChatUserFromToken(req)
 
     const rawMessages = Array.isArray(req.body?.messages) ? req.body.messages : []
     const contents = rawMessages
@@ -436,11 +578,47 @@ subsidyApp.post("/llm/chat", async (req, res) => {
     }
 
     try {
-        const userId = typeof req.body?.userId === "string" ? req.body.userId : null
+        const userId = typeof chatUser?.id === "string" ? chatUser.id : null
+        const userType = normalizeUserType(chatUser?.type)
         const latestUserMessage = [...rawMessages].reverse().find((message) => message?.role === "user")
-        const eligibilityResult = normalizeEligibilityResult(await getEligibilityResultForUser(userId))
+        const eligibilityResult = userType === "User"
+            ? normalizeEligibilityResult(await getEligibilityResultForUser(userId))
+            : null
 
-        if (isApplicationStatusQuestion(latestUserMessage?.content)) {
+        const roleAccessReply = buildRoleAccessReply(userType, latestUserMessage?.content)
+        if (roleAccessReply) {
+            res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
+            res.setHeader("Cache-Control", "no-cache")
+            res.setHeader("Connection", "keep-alive")
+            res.write(`${JSON.stringify({ message: { content: roleAccessReply } })}\n`)
+            return res.end()
+        }
+
+        if ((userType === "User" || userType === "Guest") && isEligibilityRulesQuestion(latestUserMessage?.content)) {
+            res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
+            res.setHeader("Cache-Control", "no-cache")
+            res.setHeader("Connection", "keep-alive")
+            res.write(`${JSON.stringify({ message: { content: DEFAULT_ELIGIBILITY_RULES_REPLY } })}\n`)
+            return res.end()
+        }
+
+        if (userType === "Guest" && isApplicationStatusQuestion(latestUserMessage?.content)) {
+            res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
+            res.setHeader("Cache-Control", "no-cache")
+            res.setHeader("Connection", "keep-alive")
+            res.write(`${JSON.stringify({ message: { content: "Please log in before checking your application status." } })}\n`)
+            return res.end()
+        }
+
+        if ((userType === "User" || userType === "Guest") && isApplyHelpQuestion(latestUserMessage?.content)) {
+            res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
+            res.setHeader("Cache-Control", "no-cache")
+            res.setHeader("Connection", "keep-alive")
+            res.write(`${JSON.stringify({ message: { content: APPLY_HELP_REPLY } })}\n`)
+            return res.end()
+        }
+
+        if (userType === "User" && isApplicationStatusQuestion(latestUserMessage?.content)) {
             res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
             res.setHeader("Cache-Control", "no-cache")
             res.setHeader("Connection", "keep-alive")
@@ -448,7 +626,7 @@ subsidyApp.post("/llm/chat", async (req, res) => {
             return res.end()
         }
 
-        const systemInstruction = await buildSystemPrompt(userId)
+        const systemInstruction = await buildSystemPrompt(userId, userType)
 
         res.setHeader("Content-Type", "application/x-ndjson; charset=utf-8")
         res.setHeader("Cache-Control", "no-cache")
