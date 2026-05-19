@@ -282,7 +282,7 @@ function buildApplicantStatusReply(eligibilityResult) {
         const reason = formatEligibilityReason(eligibilityResult.Reason)
 
         if (reason) {
-            return `Your application is not eligible because your ${reason} is too high.`
+            return `Your application is not eligible because your ${reason} does not meet the requirements.`
         }
 
         return "Your application is not eligible."
@@ -303,7 +303,7 @@ async function buildEligibilityContext(userId) {
     }
 
     const reasonText = eligibilityResult.ApplicantStatus === "not eligible" && eligibilityResult.Reason
-        ? ` Explanation to include: ${eligibilityResult.Reason} is too high.`
+        ? ` Explanation to include: ${eligibilityResult.Reason} does not meet the requirements.`
         : ""
 
     return `Current applicant-facing application status: ${eligibilityResult.ApplicantMessage}${reasonText}`
