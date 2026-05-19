@@ -1421,7 +1421,7 @@ subsidyApp.post("/createData",
                 }
             }
 
-
+ 
             const formatted = formatConditions(req.body.Conditions)
             
            
