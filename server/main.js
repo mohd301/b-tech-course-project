@@ -85,7 +85,6 @@ async function writeDatasetForMl(dataset) {
         //DONT ADD ANYTHING HERE
     }
     await fs.writeFile(ML_TRAINING_DATASET_PATH, dataset.content, "utf-8")
-    console.log(dataset.content)
     return {
         activeFile: toMlPath(ML_TRAINING_DATASET_PATH)
     }
@@ -635,7 +634,6 @@ subsidyApp.post(
     async (req, res) => {
         try {
             const userEmail = req.body.Email;
-            console.log('a')
             const userExist = await UserModel.findOne({ Email: userEmail });
 
             if (!userExist) {
