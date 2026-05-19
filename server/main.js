@@ -1555,7 +1555,12 @@ subsidyApp.post('/retrainImodel',
             } catch (parseError) {
                 responseData = { raw: rawText };
             }
-            console.log(responseData["5_fruad_user"])
+            if (response.ok && responseData.Data) {
+                await DatasetModel.findByIdAndUpdate(
+                    activeDatasetSync.dataset._id,
+                    { $set: { content: JSON.stringify(responseData.Data) } }
+                )
+            }
             req.auditSuccess = response.ok;
             return res.status(response.ok ? 200 : response.status).json({
                 serverMsg: response.ok
