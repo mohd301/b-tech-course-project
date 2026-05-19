@@ -315,9 +315,9 @@ const AuditLogCard = ({ logs, theme, onRemove }) => {
                 </Table>
             </CardBody>
             <CardFooter className="py-1 text-center">
-                <small>Recent Audit Log</small>
+                <small style={{color:theme.textColorAlt}}>Recent Audit Log</small>
                 {onRemove && (
-                    <Button size="sm" className="ms-2" onClick={onRemove}>
+                    <Button size="sm" className="simpleButton ms-2" style={{background: theme.secondaryColor}} onClick={onRemove}>
                         <FaTrash />
                     </Button>
                 )}
