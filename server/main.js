@@ -1407,21 +1407,24 @@ subsidyApp.post("/createData",
             });
 
             function formatConditions(conditions) {
-                if (typeof conditions === Object) {
-                    return conditions
+                if ( conditions === 0) {
+                    return conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
+                    
+                } else {
+                     return conditions
                         .map(group =>
                             group
                                 .map(({ col, op, val }) => `${col} ${op} ${val}`)
                                 .join(" AND ")
                         )
                         .join("\n");
-                } else {
-                    conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
-
                 }
             }
 
+
             const formatted = formatConditions(req.body.Conditions)
+            
+           
 
             req.auditSuccess = true;
             sendConditionEmail(PrivUserModel, `New conditions has been added! the condition ID is: ${condition._id} \n Conditions are: \n ${formatted}`)
