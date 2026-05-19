@@ -1364,7 +1364,7 @@ subsidyApp.post("/createData",
                     data: responseData
                 });
             }
-            
+
             const rawContent = typeof responseData.Data === "string"
                 ? responseData.Data
                 : JSON.stringify(responseData.Data);
@@ -1400,8 +1400,8 @@ subsidyApp.post("/createData",
                 fileSize: Buffer.byteLength(rawContent, "utf8"),
                 uploadedBy: req.user.username || req.user.id,
                 uploaderId: req.user.id,
-                rowCount,        
-                columnCount,     
+                rowCount,
+                columnCount,
                 columns,
                 content: rawContent,
                 description: req.body.description || "Synthetic dataset",
@@ -1409,7 +1409,7 @@ subsidyApp.post("/createData",
             });
 
             function formatConditions(conditions) {
-                if (typeof condition === Object) {
+                if (typeof conditions === Object) {
                     return conditions
                         .map(group =>
                             group
@@ -1424,8 +1424,9 @@ subsidyApp.post("/createData",
             }
 
             const formatted = formatConditions(req.body.Conditions)
+
             req.auditSuccess = true;
-            sendConditionEmail(PrivUserModel, `New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
+            sendConditionEmail(PrivUserModel, `New conditions has been added! the condition ID is: ${condition._id} \n Conditions are: \n ${formatted}`)
 
             return res.json({
                 serverMsg: "Synthetic data generated successfully",
@@ -1496,14 +1497,14 @@ subsidyApp.post('/retrainEmodel',
                     : responseData.error || "Eligibility model retraining failed",
                 flag: response.ok,
                 data: {
-                    accuracy_score:responseData['accuracy_score'],
-                    confusion_matrix:responseData['confusion_matrix'],
-                    F1_score:responseData['F1_score'],
-                    Recall_score:responseData['Recall_score'],
-                    
-                },activeDataset: datasetSummary(activeDatasetSync.dataset),
-                    mlFiles: activeDatasetSync.files,
-                    mlServerDatasetSync: activeDatasetSync.mlServer
+                    accuracy_score: responseData['accuracy_score'],
+                    confusion_matrix: responseData['confusion_matrix'],
+                    F1_score: responseData['F1_score'],
+                    Recall_score: responseData['Recall_score'],
+
+                }, activeDataset: datasetSummary(activeDatasetSync.dataset),
+                mlFiles: activeDatasetSync.files,
+                mlServerDatasetSync: activeDatasetSync.mlServer
             });
         } catch (e) {
             req.auditSuccess = false;
@@ -1561,11 +1562,11 @@ subsidyApp.post('/retrainImodel',
                     : responseData.error || "Fraud model retraining failed",
                 flag: response.ok,
                 data: {
-                    fraud:responseData['5_fruad_user'],
-                    
-                },activeDataset: datasetSummary(activeDatasetSync.dataset),
-                    mlFiles: activeDatasetSync.files,
-                    mlServerDatasetSync: activeDatasetSync.mlServer
+                    fraud: responseData['5_fruad_user'],
+
+                }, activeDataset: datasetSummary(activeDatasetSync.dataset),
+                mlFiles: activeDatasetSync.files,
+                mlServerDatasetSync: activeDatasetSync.mlServer
             });
         } catch (e) {
             req.auditSuccess = false;
