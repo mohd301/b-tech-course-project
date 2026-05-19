@@ -1309,20 +1309,19 @@ subsidyApp.post("/createData",
                 req.auditSuccess = false;
                 return res.status(400).json({ serverMsg: "Invalid synthetic data payload", flag: false });
             }
-            let c= req.body.Conditions
-            if(c===0){
-                c= [[{col:"Salary",op:"<=",value:600},
-                    {col:"Total_Household_Income",op:"<=",value:900},
-                    {col:"Vehicle_Ownership",op:"==",value:1}],
-                    [{col:"Marital_Status",op:"==",value:'Married'},
-                    {col:"Number_of_Children",op:">=",value:1},
-                    {col:"Vehicle_Ownership",op:"==",value:1}],
-                    [{col:"Age",op:"between",value:[18, 24]}
-                    ,{col:"Employment_Status",op:"isin",value:['Student', 'Unemployed']}
-                    ,{col:"Vehicle_Ownership",op:"==",value:1}]]
-                            
-            } 
-            console.log(c)
+            let c = req.body.Conditions
+            if (c === 0) {
+                c = [[{ col: "Salary", op: "<=", value: 600 },
+                { col: "Total_Household_Income", op: "<=", value: 900 },
+                { col: "Vehicle_Ownership", op: "==", value: 1 }],
+                [{ col: "Marital_Status", op: "==", value: 'Married' },
+                { col: "Number_of_Children", op: ">=", value: 1 },
+                { col: "Vehicle_Ownership", op: "==", value: 1 }],
+                [{ col: "Age", op: "between", value: [18, 24] }
+                    , { col: "Employment_Status", op: "isin", value: ['Student', 'Unemployed'] }
+                    , { col: "Vehicle_Ownership", op: "==", value: 1 }]]
+
+            }
             const condition = await ConditionModel.create({
                 name: req.body.name || "synthetic_subsidy_cylinders",
                 createdBy: req.user.username || req.user.id,
@@ -1365,40 +1364,65 @@ subsidyApp.post("/createData",
                     data: responseData
                 });
             }
-            const csvContent = typeof responseData.Data === "string" ? responseData.Data : JSON.stringify(responseData.Data);
             
-            const lines = csvContent.trim().split("\n");
-            const columns = lines[0] ? lines[0].split(",").map(c => c.trim()) : [];
-            const rowCount = lines.length - 1;
+            const rawContent = typeof responseData.Data === "string"
+                ? responseData.Data
+                : JSON.stringify(responseData.Data);
+
+            let objects;
+            try {
+                objects = JSON.parse(rawContent);
+            } catch (e) {
+                throw new Error("Invalid JSON format: expected a JSON array");
+            }
+
+            if (!Array.isArray(objects)) {
+                throw new Error("Expected data to be an array of objects");
+            }
+
+            // Row count = number of objects
+            const rowCount = objects.length;
+
+            // Collect unique keys (columns)
+            const columnSet = new Set();
+            objects.forEach(obj => {
+                if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+                    Object.keys(obj).forEach(key => columnSet.add(key));
+                }
+            });
+
+            const columns = Array.from(columnSet);
             const columnCount = columns.length;
+
+            // Save dataset
             const dataset = await DatasetModel.create({
                 originalName: (req.body.name || "synthetic_subsidy_cylinders") + ".csv",
-                fileSize: Buffer.byteLength(csvContent, "utf8"),
+                fileSize: Buffer.byteLength(rawContent, "utf8"),
                 uploadedBy: req.user.username || req.user.id,
                 uploaderId: req.user.id,
-                rowCount,
-                columnCount,
+                rowCount,        
+                columnCount,     
                 columns,
-                content: csvContent,
+                content: rawContent,
                 description: req.body.description || "Synthetic dataset",
                 conditionId: condition._id,
-            })
+            });
 
-            
             function formatConditions(conditions) {
-                if(typeof condition === Object){
-                return conditions
-                    .map(group =>
-                        group
-                            .map(({ col, op, val }) => `${col} ${op} ${val}`)
-                            .join(" AND ")
-                    )
-                    .join("\n");
-            }else{
-                conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
-                        
-            }}
-            
+                if (typeof condition === Object) {
+                    return conditions
+                        .map(group =>
+                            group
+                                .map(({ col, op, val }) => `${col} ${op} ${val}`)
+                                .join(" AND ")
+                        )
+                        .join("\n");
+                } else {
+                    conditions = "Salary <= 600 and Total_Household_Income <= 900 and Vehicle_Ownership == 1 \n Marital_Status == 'Married' and Number_of_Children >= 1 and Vehicle_Ownership == 1 \n Age between(18, 24) and Employment_Status is in ['Student', 'Unemployed'] and Vehicle_Ownership == 1"
+
+                }
+            }
+
             const formatted = formatConditions(req.body.Conditions)
             req.auditSuccess = true;
             sendConditionEmail(PrivUserModel, `New codition has been made! the condition ID is: ${condition._id} \n Conditions are ${formatted}`)
